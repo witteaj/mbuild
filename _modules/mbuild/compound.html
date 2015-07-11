@@ -230,7 +230,7 @@
 <span class="sd">        Other compounds that reference this part with labels.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">periodicity</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subcompounds</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">periodicity</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Compound</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">kind</span><span class="p">:</span>
@@ -245,6 +245,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">parts</span> <span class="o">=</span> <span class="n">OrderedSet</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+
+        <span class="c"># self.add() must be called after labels and parts are initialized.</span>
+        <span class="k">if</span> <span class="n">subcompounds</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">subcompounds</span><span class="p">)</span>
 
     <span class="nd">@property</span>
 <div class="viewcode-block" id="Compound.atoms"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.atoms">[docs]</a>    <span class="k">def</span> <span class="nf">atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -476,24 +480,25 @@
 <span class="sd">            Replace the label if it already exists.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_part</span><span class="p">,</span> <span class="p">(</span><span class="n">Part</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">containment</span><span class="p">:</span>
-            <span class="c"># Support batch add via lists, tuples and sets.</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_part</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
-                <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">new_part</span><span class="p">:</span>
-                    <span class="k">assert</span> <span class="n">elem</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="bp">None</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
-                    <span class="n">elem</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span>
-                <span class="k">return</span>
+        <span class="c"># Support batch add via lists, tuples and sets.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_part</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">new_part</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+            <span class="k">return</span>
 
-            <span class="k">assert</span> <span class="n">new_part</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;Part {} already has a parent: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">new_part</span><span class="p">,</span> <span class="n">new_part</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_part</span><span class="p">,</span> <span class="n">Part</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Only objects that inherit from mbuild.Part &#39;</span>
+                             <span class="s">&#39;can be added to Compounds. You tried to add &#39;</span>
+                             <span class="s">&#39;{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">new_part</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">containment</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">new_part</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Part {} already has a parent: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">new_part</span><span class="p">,</span> <span class="n">new_part</span><span class="o">.</span><span class="n">parent</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_part</span><span class="p">)</span>
             <span class="n">new_part</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span>
 
         <span class="c"># Add new_part to labels. Does not currently support batch add.</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_part</span><span class="p">,</span> <span class="n">Part</span><span class="p">)</span>
-
         <span class="k">if</span> <span class="ow">not</span> <span class="n">containment</span> <span class="ow">and</span> <span class="n">label</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">label</span> <span class="o">=</span> <span class="s">&#39;_{0}[$]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">new_part</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
 
