@@ -72,13 +72,7 @@
 </ul>
 </li>
 </ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/tutorials.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
-</ul>
-</li>
+<ul class="simple">
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../apidoc/mbuild.html">mbuild package</a><ul>
@@ -152,6 +146,7 @@
 <span class="kn">from</span> <span class="nn">mdtraj.core.element</span> <span class="kn">import</span> <span class="n">get_by_symbol</span>
 <span class="kn">from</span> <span class="nn">mdtraj.core.topology</span> <span class="kn">import</span> <span class="n">Topology</span>
 
+<span class="kn">import</span> <span class="nn">mbuild</span>
 <span class="kn">from</span> <span class="nn">mbuild.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
 <span class="kn">from</span> <span class="nn">mbuild.box</span> <span class="kn">import</span> <span class="n">Box</span>
 <span class="kn">from</span> <span class="nn">mbuild.bond</span> <span class="kn">import</span> <span class="n">Bond</span>
@@ -159,6 +154,7 @@
 <span class="kn">from</span> <span class="nn">mbuild.orderedset</span> <span class="kn">import</span> <span class="n">OrderedSet</span>
 <span class="kn">from</span> <span class="nn">mbuild.part</span> <span class="kn">import</span> <span class="n">Part</span>
 
+<span class="kn">import</span> <span class="nn">json</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;load&#39;</span><span class="p">,</span> <span class="s">&#39;Compound&#39;</span><span class="p">]</span>
 
@@ -376,7 +372,7 @@
             <span class="n">the_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
         <span class="n">webbrowser</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s">&#39;file:&#39;</span> <span class="o">+</span> <span class="n">html_file</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 </div>
-<div class="viewcode-block" id="Compound.visualize"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.visualize"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">export_topology</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Visualize the Compound using VMD.</span>
 
 <span class="sd">        Assumes you have VMD installed and can call it from the command line via</span>
@@ -408,7 +404,21 @@
             <span class="kn">from</span> <span class="nn">mdtraj.html</span> <span class="kn">import</span> <span class="n">TrajectoryView</span><span class="p">,</span> <span class="n">enable_notebook</span>
             <span class="n">enable_notebook</span><span class="p">()</span>
             <span class="n">traj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="n">show_ports</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">TrajectoryView</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">colorBy</span><span class="o">=</span><span class="s">&#39;atom&#39;</span><span class="p">)</span>
+            <span class="n">traj_view</span> <span class="o">=</span> <span class="n">TrajectoryView</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">colorBy</span><span class="o">=</span><span class="s">&#39;atom&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">export_topology</span><span class="p">:</span>
+                <span class="c"># get topology</span>
+                <span class="n">topology</span> <span class="o">=</span> <span class="n">traj_view</span><span class="o">.</span><span class="n">_computeTopology</span><span class="p">()</span>
+                <span class="c"># export json</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;topology_{}.json&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()),</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+                    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">topology</span><span class="p">,</span> <span class="n">json_file</span><span class="p">)</span>
+
+            <span class="c"># import pdb</span>
+            <span class="c"># pdb.set_trace()</span>
+
+            <span class="k">return</span> <span class="n">traj_view</span>
+            <span class="c"># return TrajectoryView(traj, colorBy=&#39;atom&#39;)</span>
+
 </div>
     <span class="nd">@property</span>
 <div class="viewcode-block" id="Compound.xyz"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.xyz">[docs]</a>    <span class="k">def</span> <span class="nf">xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
