@@ -954,7 +954,7 @@ backfill (Compound, optional):</dd>
 <dl class="class">
 <dt id="mbuild.periodic_kdtree.PeriodicCKDTree">
 <em class="property">class </em><tt class="descclassname">mbuild.periodic_kdtree.</tt><tt class="descname">PeriodicCKDTree</tt><big>(</big><em>data</em>, <em>leafsize=10</em>, <em>bounds=None</em><big>)</big><a class="reference internal" href="../_modules/mbuild/periodic_kdtree.html#PeriodicCKDTree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">scipy.spatial.ckdtree.cKDTree</span></tt></p>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">ckdtree.cKDTree</span></tt></p>
 <p>Cython kd-tree for quick nearest-neighbor lookup with periodic boundaries</p>
 <p>See scipy.spatial.ckdtree for details on kd-trees.</p>
 <p>Searches with periodic boundaries are implemented by mapping all
@@ -974,6 +974,11 @@ box dimension.</p>
 <dl class="attribute">
 <dt id="mbuild.periodic_kdtree.PeriodicCKDTree.data">
 <tt class="descname">data</tt><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree.data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.periodic_kdtree.PeriodicCKDTree.indices">
+<tt class="descname">indices</tt><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree.indices" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1115,6 +1120,11 @@ PeriodicCKDTree and using query_ball_tree.</p>
 <dl class="method">
 <dt id="mbuild.periodic_kdtree.PeriodicCKDTree.sparse_distance_matrix">
 <tt class="descname">sparse_distance_matrix</tt><big>(</big><em>other</em>, <em>max_distance</em>, <em>p=2.0</em><big>)</big><a class="reference internal" href="../_modules/mbuild/periodic_kdtree.html#PeriodicCKDTree.sparse_distance_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree.sparse_distance_matrix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.periodic_kdtree.PeriodicCKDTree.tree">
+<tt class="descname">tree</tt><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree.tree" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>

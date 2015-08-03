@@ -148,16 +148,19 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mins</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">maxs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">lengths</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">assert</span><span class="p">(</span><span class="n">mins</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">maxs</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">mins</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">maxs</span> <span class="ow">is</span> <span class="bp">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_mins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_maxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_lengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span>
-
         <span class="k">elif</span> <span class="n">maxs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">assert</span><span class="p">(</span><span class="n">mins</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">lengths</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">mins</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">lengths</span> <span class="ow">is</span> <span class="bp">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_mins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mins</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_maxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">maxs</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_lengths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxs</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mins</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Either provide (`lengths`) or (`mins` and `maxs`). &#39;</span>
+                             <span class="s">&#39;You provided: lengths={} mins={} maxs={}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">lengths</span><span class="p">,</span> <span class="n">mins</span><span class="p">,</span> <span class="n">maxs</span><span class="p">))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">mins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
