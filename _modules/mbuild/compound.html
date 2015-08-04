@@ -136,6 +136,7 @@
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">webbrowser</span>
@@ -385,18 +386,21 @@
         <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">tempfile</span>
             <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;win&#39;</span><span class="p">):</span>
-                <span class="n">filename</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s">&#39;.mol2&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">filedescriptor</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s">&#39;.mol2&#39;</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">filedescriptor</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="n">show_ports</span><span class="p">)</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&#39;start &quot;&quot; &quot;vmd.exe&quot; &quot;{}&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+                    <span class="c"># subprocess.call([&quot;vmd.exe&quot;, filename], shell=True)</span>
+                    <span class="n">DETACHED_PROCESS</span> <span class="o">=</span> <span class="mh">0x00000008</span>
+                    <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s">&quot;vmd.exe&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">],</span> <span class="n">close_fds</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="s">&#39;Visualization with VMD failed. Make sure it is installed&#39;</span>
-                                  <span class="s">&#39;correctly and launchable from the command line via &quot;start &quot;&quot; &quot;vmd.exe&quot;&quot;.&#39;</span><span class="p">)</span>
+                                  <span class="s">&#39;correctly and launchable from the command line via &quot;vmd.exe&quot;.&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">filename</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s">&#39;visualize_{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">),</span> <span class="n">suffix</span><span class="o">=</span><span class="s">&#39;.mol2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="n">show_ports</span><span class="p">)</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&#39;vmd {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+                    <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">([</span><span class="s">&quot;vmd&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">])</span>
                 <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="s">&quot;Visualization with VMD failed. Make sure it is installed&quot;</span>
                                   <span class="s">&quot;correctly and launchable from the command line via &#39;vmd&#39;.&quot;</span><span class="p">)</span>
