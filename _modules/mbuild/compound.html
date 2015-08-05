@@ -139,6 +139,7 @@
 <span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">from</span> <span class="nn">tempfile</span> <span class="kn">import</span> <span class="n">mkstemp</span>
 <span class="kn">import</span> <span class="nn">webbrowser</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
@@ -146,6 +147,7 @@
 <span class="kn">from</span> <span class="nn">mdtraj.core.element</span> <span class="kn">import</span> <span class="n">Element</span>
 <span class="kn">from</span> <span class="nn">mdtraj.core.element</span> <span class="kn">import</span> <span class="n">get_by_symbol</span>
 <span class="kn">from</span> <span class="nn">mdtraj.core.topology</span> <span class="kn">import</span> <span class="n">Topology</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">close</span><span class="p">,</span> <span class="n">fdopen</span>
 
 <span class="kn">import</span> <span class="nn">mbuild</span>
 <span class="kn">from</span> <span class="nn">mbuild.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
@@ -344,8 +346,11 @@
             <span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
         <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s">&#39;Networkx is required to visualize the compound hierarchy.&#39;</span><span class="p">)</span>
+        <span class="kn">import</span> <span class="nn">urlparse</span><span class="o">,</span> <span class="nn">urllib</span>
         <span class="kn">from</span> <span class="nn">networkx.readwrite</span> <span class="kn">import</span> <span class="n">json_graph</span>
         <span class="kn">from</span> <span class="nn">mbuild.utils.visualization</span> <span class="kn">import</span> <span class="n">d3_tree_template</span>
+
+        <span class="n">tempdir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s">&#39;mbuild_view_hierarchy_&#39;</span><span class="p">)</span>
 
         <span class="n">compound_tree</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
         <span class="n">compound_tree</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">)</span>
@@ -357,7 +362,8 @@
             <span class="n">compound_tree</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">sub_compound</span><span class="o">.</span><span class="n">kind</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">sub_compound</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
                 <span class="n">compound_tree</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">sub_compound</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">sub_compound</span><span class="o">.</span><span class="n">kind</span><span class="p">)</span>
-        <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;&#39;children&#39;&quot;</span><span class="p">:</span> <span class="s">&#39;&quot;children&quot;&#39;</span><span class="p">,</span> <span class="s">&quot;&#39;name&#39;&quot;</span><span class="p">:</span> <span class="s">&#39;&quot;name&quot;&#39;</span><span class="p">}</span>
+
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;&#39;children&#39;&quot;</span><span class="p">:</span> <span class="s">&#39;&quot;children&quot;&#39;</span><span class="p">}</span>
         <span class="k">for</span> <span class="n">compound</span> <span class="ow">in</span> <span class="n">compound_tree</span><span class="p">:</span>
             <span class="n">node_key</span> <span class="o">=</span> <span class="s">&quot;&#39;{}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
             <span class="n">labels</span><span class="p">[</span><span class="n">node_key</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;&quot;{} {:d}&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">compound_frequency</span><span class="p">[</span><span class="n">compound</span><span class="p">])</span>
@@ -367,11 +373,36 @@
         <span class="n">json_template</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">json_template</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
             <span class="n">json_template</span> <span class="o">=</span> <span class="n">json_template</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">labels</span><span class="p">[</span><span class="n">label</span><span class="p">])</span>
+
+        <span class="c"># generate png image from the compound</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_png</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempdir</span><span class="p">,</span> <span class="s">&#39;visualize_{}.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">)),</span> <span class="n">show_ports</span><span class="o">=</span><span class="n">show_ports</span><span class="p">)</span>
+        <span class="n">sub_compounds_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">labels</span><span class="p">[</span><span class="s">&quot;&#39;{}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">)]:</span><span class="s">&quot;visualize_{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">)}</span>
+
+        <span class="c"># generate png image from all subcompounds</span>
+        <span class="k">for</span> <span class="n">sub_compound</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yield_parts</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">show_ports</span> <span class="ow">and</span> <span class="n">sub_compound</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;Port&quot;</span><span class="p">,</span> <span class="s">&quot;subport&quot;</span><span class="p">]:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">labels</span><span class="p">[</span><span class="s">&quot;&#39;{}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sub_compound</span><span class="o">.</span><span class="n">kind</span><span class="p">)]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sub_compounds_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">show_ports</span> <span class="ow">and</span> <span class="n">sub_compound</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;Port&quot;</span><span class="p">,</span> <span class="s">&quot;subport&quot;</span><span class="p">]:</span>
+                    <span class="k">continue</span>
+                <span class="n">sub_compound</span><span class="o">.</span><span class="n">save_png</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempdir</span><span class="p">,</span> <span class="s">&#39;visualize_{}.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sub_compound</span><span class="o">.</span><span class="n">kind</span><span class="p">)),</span> <span class="n">show_ports</span><span class="o">=</span><span class="n">show_ports</span><span class="p">)</span>
+
+                <span class="n">label</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s">&quot;&#39;{}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sub_compound</span><span class="o">.</span><span class="n">kind</span><span class="p">)]</span>
+                <span class="n">sub_compounds_dict</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;visualize_{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sub_compound</span><span class="o">.</span><span class="n">kind</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">sub_compounds_dict</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">sub_compounds_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="n">json_template</span> <span class="o">=</span> <span class="n">json_template</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;&#39;name&#39;: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">),</span>
+                                                  <span class="s">&#39;&quot;name&quot;: {0}, &quot;icon&quot;: &quot;{1}&quot;&#39;</span>
+                                                  <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">filename</span><span class="o">+</span><span class="s">&#39;.png&#39;</span><span class="p">))</span>
+
         <span class="n">html</span> <span class="o">=</span> <span class="n">d3_tree_template</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">json_template</span><span class="p">)</span>
-        <span class="n">html_file</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s">&#39;.html&#39;</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span> <span class="p">(</span><span class="n">html_file</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">the_file</span><span class="p">:</span>
+        <span class="n">html_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempdir</span><span class="p">,</span><span class="s">&#39;view_hierarchy.html&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span> <span class="p">(</span><span class="n">html_file</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">the_file</span><span class="p">:</span>
             <span class="n">the_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
-        <span class="n">webbrowser</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s">&#39;file:&#39;</span> <span class="o">+</span> <span class="n">html_file</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">webbrowser</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">urlparse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="s">&#39;file:&#39;</span><span class="p">,</span> <span class="n">urllib</span><span class="o">.</span><span class="n">pathname2url</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempdir</span><span class="p">,</span> <span class="n">html_file</span><span class="p">))))</span>
+        <span class="c"># and leave all temp files in place...</span>
 </div>
 <div class="viewcode-block" id="Compound.visualize"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">export_topology</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Visualize the Compound using VMD.</span>
@@ -417,11 +448,44 @@
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;topology_{}.json&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()),</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
                     <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">topology</span><span class="p">,</span> <span class="n">json_file</span><span class="p">)</span>
 
-            <span class="c"># import pdb</span>
-            <span class="c"># pdb.set_trace()</span>
 
             <span class="k">return</span> <span class="n">traj_view</span>
-            <span class="c"># return TrajectoryView(traj, colorBy=&#39;atom&#39;)</span>
+</div>
+<div class="viewcode-block" id="Compound.save_png"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.save_png">[docs]</a>    <span class="k">def</span> <span class="nf">save_png</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_filename</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+        <span class="c"># create a mol2 temp file</span>
+        <span class="n">mol2_fd</span><span class="p">,</span> <span class="n">mol2_filename</span> <span class="o">=</span> <span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s">&#39;visualize_{}.mol2&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">))</span>
+        <span class="n">close</span><span class="p">(</span><span class="n">mol2_fd</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">mol2_filename</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="n">show_ports</span><span class="p">)</span>
+
+        <span class="c"># use vmd to convert the mol2 to a png</span>
+        <span class="n">vmd_command</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">        display resetview</span>
+<span class="s">        pbc unwrap</span>
+<span class="s">        rotate x by -45</span>
+<span class="s">        display depthcue off</span>
+<span class="s">        color Display Background 8</span>
+<span class="s">        mol modstyle 0 0 cpk 2.75 0.3 12 12</span>
+<span class="s">        axes location off</span>
+<span class="s">        display projection orthographic</span>
+<span class="s">        render snapshot {0}</span>
+<span class="s">        exit</span>
+<span class="s">        &quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">image_filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\\</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;/&#39;</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">vmd_command_fd</span><span class="p">,</span> <span class="n">vmd_command_filename</span><span class="o">=</span> <span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s">&#39;.vmd&#39;</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">fdopen</span><span class="p">(</span><span class="n">vmd_command_fd</span><span class="p">,</span><span class="s">&#39;w&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">vmd_command</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">([</span><span class="s">&#39;vmd&#39;</span><span class="p">,</span> <span class="s">&#39;-e&#39;</span><span class="p">,</span> <span class="n">vmd_command_filename</span><span class="p">,</span> <span class="n">mol2_filename</span><span class="p">])</span>
+
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="s">&quot;Visualization with VMD failed. Make sure it is installed&quot;</span>
+                          <span class="s">&quot;correctly and launchable from the command line via &#39;vmd&#39;.&quot;</span><span class="p">)</span>
+
+        <span class="c"># delete mol2 file</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">mol2_filename</span><span class="p">)</span>
 
 </div>
     <span class="nd">@property</span>
@@ -654,11 +718,6 @@
 <div class="viewcode-block" id="Compound.save_gromacs"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.save_gromacs">[docs]</a>    <span class="k">def</span> <span class="nf">save_gromacs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">traj</span><span class="p">,</span> <span class="n">force_overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Interface to InterMol missing&#39;</span><span class="p">)</span>
-        <span class="c"># Create separate file paths for .gro and .top</span>
-        <span class="c"># filepath, filename = os.path.split(filename)</span>
-        <span class="c"># basename = os.path.splitext(filename)[0]</span>
-        <span class="c"># top_filename = os.path.join(filepath, basename + &#39;.top&#39;)</span>
-        <span class="c"># gro_filename = os.path.join(filepath, basename + &#39;.gro&#39;)</span>
 </div>
 <div class="viewcode-block" id="Compound.save_lammpsdata"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.save_lammpsdata">[docs]</a>    <span class="k">def</span> <span class="nf">save_lammpsdata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">traj</span><span class="p">,</span> <span class="n">force_overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
