@@ -30,8 +30,7 @@
   
 
   
-    <link rel="top" title="mbuild 0.5.0.dev0 documentation" href="../index.html"/>
-        <link rel="prev" title="Installation" href="../installation.html"/> 
+    <link rel="top" title="mbuild 0.5.0.dev0 documentation" href="../index.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -65,35 +64,21 @@
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-conda-preferred">Install with conda (preferred)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-pip">Install with pip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-source">Install from source</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#testing-your-installation">Testing your installation</a></li>
 </ul>
 </li>
 </ul>
-<ul class="simple">
-</ul>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="">mbuild package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.atom">mbuild.atom module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.bond">mbuild.bond module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.box">mbuild.box module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.compound">mbuild.compound module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.mask">mbuild.mask module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.orderedset">mbuild.orderedset module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.packing">mbuild.packing module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.part">mbuild.part module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#mbuild-polymer-module">mbuild.polymer module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.port">mbuild.port module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#mbuild-tiled-compound-module">mbuild.tiled_compound module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.version">mbuild.version module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild">Module contents</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/tutorial_methane.html">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/tutorial_ethane.html">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/tutorial_monolayer.html">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
 </ul>
 </li>
+</ul>
+<ul class="simple">
 </ul>
 
           
@@ -384,7 +369,11 @@ methods.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>kind</strong> : str, optional, default=self.__class__.__name__</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>subcompounds</strong> : Parts, optional, default=None</p>
+<blockquote>
+<div><p>One or more parts to be added to self.</p>
+</div></blockquote>
+<p><strong>kind</strong> : str, optional, default=self.__class__.__name__</p>
 <blockquote>
 <div><p>The type of Compound.</p>
 </div></blockquote>
@@ -505,6 +494,11 @@ instead be used to add a reference to the part to self.labels. See
 <tt class="descname">atoms</tt><a class="reference internal" href="../_modules/mbuild/compound.html#Compound.atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>A list of all Atoms in the Compound and sub-Compounds.</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.atoms_in_range">
+<tt class="descname">atoms_in_range</tt><big>(</big><em>atom</em>, <em>dmax</em>, <em>max_atoms=20</em>, <em>atom_kdtree=None</em>, <em>atom_array=None</em><big>)</big><a class="reference internal" href="../_modules/mbuild/compound.html#Compound.atoms_in_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.atoms_in_range" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.bond_list_by_kind">
@@ -677,11 +671,8 @@ The tree is then rendered in a web browser window using D3.js.</p>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.visualize">
-<tt class="descname">visualize</tt><big>(</big><em>show_ports=False</em>, <em>export_topology=False</em><big>)</big><a class="reference internal" href="../_modules/mbuild/compound.html#Compound.visualize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.visualize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Visualize the Compound using VMD.</p>
-<p>Assumes you have VMD installed and can call it from the command line via
-&#8216;vmd&#8217;.</p>
-<p>TODO: Look into pizza.py&#8217;s vmd.py. See issue #32.</p>
+<tt class="descname">visualize</tt><big>(</big><em>show_ports=False</em>, <em>shader='lambert'</em>, <em>drawing_type='ball and stick'</em>, <em>camera_type='perspective'</em><big>)</big><a class="reference internal" href="../_modules/mbuild/compound.html#Compound.visualize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.visualize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize the Compound using imolecule.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1258,6 +1249,11 @@ instead be used to add a reference to the part to self.labels. See
 </dd></dl>
 
 <dl class="method">
+<dt id="mbuild.port.Port.atoms_in_range">
+<tt class="descname">atoms_in_range</tt><big>(</big><em>atom</em>, <em>dmax</em>, <em>max_atoms=20</em>, <em>atom_kdtree=None</em>, <em>atom_array=None</em><big>)</big><a class="headerlink" href="#mbuild.port.Port.atoms_in_range" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="mbuild.port.Port.bond_list_by_kind">
 <tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em><big>)</big><a class="headerlink" href="#mbuild.port.Port.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of Bonds filtered by their kind.</p>
@@ -1428,11 +1424,8 @@ The tree is then rendered in a web browser window using D3.js.</p>
 
 <dl class="method">
 <dt id="mbuild.port.Port.visualize">
-<tt class="descname">visualize</tt><big>(</big><em>show_ports=False</em>, <em>export_topology=False</em><big>)</big><a class="headerlink" href="#mbuild.port.Port.visualize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Visualize the Compound using VMD.</p>
-<p>Assumes you have VMD installed and can call it from the command line via
-&#8216;vmd&#8217;.</p>
-<p>TODO: Look into pizza.py&#8217;s vmd.py. See issue #32.</p>
+<tt class="descname">visualize</tt><big>(</big><em>show_ports=False</em>, <em>shader='lambert'</em>, <em>drawing_type='ball and stick'</em>, <em>camera_type='perspective'</em><big>)</big><a class="headerlink" href="#mbuild.port.Port.visualize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize the Compound using imolecule.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1474,13 +1467,6 @@ The tree is then rendered in a web browser window using D3.js.</p>
 
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-      
-        <a href="../installation.html" class="btn btn-neutral" title="Installation"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>

@@ -31,7 +31,7 @@
 
   
     <link rel="top" title="mbuild 0.5.0.dev0 documentation" href="index.html"/>
-        <link rel="next" title="mbuild package" href="apidoc/mbuild.html"/>
+        <link rel="next" title="Tutorials" href="tutorials/tutorials.html"/>
         <link rel="prev" title="mBuild" href="index.html"/> 
 
   
@@ -66,35 +66,21 @@
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#install-with-conda-preferred">Install with conda (preferred)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#install-with-pip">Install with pip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install-from-source">Install from source</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing-your-installation">Testing your installation</a></li>
 </ul>
 </li>
 </ul>
-<ul class="simple">
-</ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="apidoc/mbuild.html">mbuild package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.atom">mbuild.atom module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.bond">mbuild.bond module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.box">mbuild.box module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.mask">mbuild.mask module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.packing">mbuild.packing module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.part">mbuild.part module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#mbuild-polymer-module">mbuild.polymer module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.port">mbuild.port module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#mbuild-tiled-compound-module">mbuild.tiled_compound module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.version">mbuild.version module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild">Module contents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_methane.html">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_ethane.html">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_monolayer.html">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
 </ul>
 </li>
+</ul>
+<ul class="simple">
 </ul>
 
           
@@ -134,19 +120,27 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="install-with-conda-preferred">
 <h2>Install with conda (preferred)<a class="headerlink" href="#install-with-conda-preferred" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>$ conda install --channel imodels mbuild
+<div class="highlight-python"><div class="highlight"><pre>$ conda install -c omnia -c patrickfuller -c imodels mbuild
 </pre></div>
 </div>
-</div>
-<div class="section" id="install-with-pip">
-<h2>Install with pip<a class="headerlink" href="#install-with-pip" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>$ pip install mbuild
+<p>or alternatively you can add all the required channels to your <tt class="docutils literal"><span class="pre">.condarc</span></tt>
+after which you can simply <tt class="docutils literal"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">mbuild</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ conda config --add channels omnia
+$ conda config --add channels patrickfuller
+$ conda config --add channels imodels
+$ conda install mbuild
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <tt class="docutils literal"><span class="pre">omnia</span></tt> channel provides <a class="reference external" href="http://mdtraj.org/">MDTraj</a>,
+<tt class="docutils literal"><span class="pre">patrickfuller</span></tt> provides <a class="reference external" href="http://patrick-fuller.com/imolecule/">imolecule</a>,
+and <tt class="docutils literal"><span class="pre">imodels</span></tt> is our channel where mBuild is hosted.</p>
 </div>
 </div>
 <div class="section" id="install-from-source">
 <h2>Install from source<a class="headerlink" href="#install-from-source" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>$ git clone https://github.com/iModels/mbuild
+<div class="highlight-python"><div class="highlight"><pre>$ git clone https://github.com/imodels/mbuild
 $ cd mbuild
 $ python setup.py install
 </pre></div>
@@ -154,21 +148,24 @@ $ python setup.py install
 </div>
 <div class="section" id="dependencies">
 <h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
-<p>To use mbuild, the following libraries and software will need to be installed.</p>
+<p>To use mBuild, the following libraries and software will need to be installed.</p>
 <blockquote>
 <div><dl class="docutils">
 <dt>Linux, Mac OS X or Windows operating system</dt>
-<dd>We develop mainly on 64-bit OS X Yosemite and Windows 7 machines.
-TravisCI is currently only set up to perform testing on Ubuntu 12.04
-LTS Server Edition 64 bit</dd>
+<dd>We develop mainly on 64-bit OS X and Windows machines.
+Continuous integration is run on TravisCI and Appveyor.</dd>
 <dt><a class="reference external" href="http://python.org">Python</a> = 2.7 or 3.3+</dt>
-<dd>TravisCI currently tests on 2.7, 3.3 and 3.4.</dd>
+<dd>TravisCI and Appveyor currently test on 2.7 and 3.4.</dd>
 <dt><a class="reference external" href="http://mdtraj.org/">MDTraj</a> &gt;=1.0.0</dt>
 <dd>MDTraj is a Python library for reading, writing and analyizing
 molecular dynamics trajectories. mBuild uses MDTraj as an entry and
 exit point for several types of molecule data formats. See their
 installation instructions
 <a class="reference external" href="http://mdtraj.org/latest/installation.html">here</a>.</dd>
+<dt><a class="reference external" href="http://patrick-fuller.com/imolecule/">imolecule</a> &gt;=0.1.9</dt>
+<dd>imolecule is an embeddable webGL molecule viewer and file format
+converter. mBuild uses imolecule to visualize components either inline
+if you&#8217;re using an IPython notebook or in a browser window if not.</dd>
 </dl>
 </div></blockquote>
 <p>To make your life easier, we recommend that you use a pre-packaged Python
@@ -179,8 +176,8 @@ in order to get all of the dependencies.</p>
 <h2>Testing your installation<a class="headerlink" href="#testing-your-installation" title="Permalink to this headline">¶</a></h2>
 <p>mBuild uses <tt class="docutils literal"><span class="pre">py.test</span></tt> for unit testing. To run them simply type run the
 following while in the base directory:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ pip install pytest
-$ py.test
+<div class="highlight-python"><div class="highlight"><pre>$ conda install pytest
+$ py.test -v
 </pre></div>
 </div>
 </div>
@@ -192,7 +189,7 @@ $ py.test
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="apidoc/mbuild.html" class="btn btn-neutral float-right" title="mbuild package">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="tutorials/tutorials.html" class="btn btn-neutral float-right" title="Tutorials">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="index.html" class="btn btn-neutral" title="mBuild"><span class="fa fa-arrow-circle-left"></span> Previous</a>
