@@ -31,7 +31,7 @@
 
   
     <link rel="top" title="mbuild 0.5.0.dev0 documentation" href="../../../index.html"/>
-        <link rel="up" title="mbuild.recipes" href="../recipes.html"/> 
+        <link rel="up" title="Module code" href="../../index.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -79,7 +79,23 @@
 </ul>
 </li>
 </ul>
-<ul class="simple">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../data_structures.html">Data Structures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../data_structures.html#atom">Atom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../data_structures.html#bond">Bond</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../data_structures.html#compound">Compound</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../data_structures.html#port">Port</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../data_structures.html#part">Part</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../recipes.html">Recipes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes.html#monolayer">Monolayer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes.html#polymer">Polymer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes.html#tiled-compound">Tiled Compound</a></li>
+</ul>
+</li>
 </ul>
 
           
@@ -106,8 +122,6 @@
       
           <li><a href="../../index.html">Module code</a> &raquo;</li>
       
-          <li><a href="../recipes.html">mbuild.recipes</a> &raquo;</li>
-      
     <li>mbuild.recipes.polymer</li>
       <li class="wy-breadcrumbs-aside">
         
@@ -122,19 +136,31 @@
 
 <span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
 <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">equivalence_transform</span>
+<span class="kn">from</span> <span class="nn">mbuild.utils.validation</span> <span class="kn">import</span> <span class="n">assert_port_exists</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Polymer&#39;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="Polymer"><a class="viewcode-back" href="../../../apidoc/mbuild.recipes.html#mbuild.recipes.polymer.Polymer">[docs]</a><span class="k">class</span> <span class="nc">Polymer</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Polymer"><a class="viewcode-back" href="../../../recipes.html#mbuild.recipes.polymer.Polymer">[docs]</a><span class="k">class</span> <span class="nc">Polymer</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Connect a component to successive copies of itself.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    proto : mb.Compound</span>
+<span class="sd">        The compound to replicate.</span>
+<span class="sd">    port_labels : 2-tuple of strs</span>
+<span class="sd">        The names of the two ports to use to connect copies of proto.</span>
+<span class="sd">    n : int, optional, default=2</span>
+<span class="sd">        The number of times to replicate proto.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proto</span><span class="p">,</span> <span class="n">port_labels</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;up&quot;</span><span class="p">,</span> <span class="s">&quot;down&quot;</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;n must be 1 or more&#39;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Polymer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
 
-        <span class="k">assert</span><span class="p">(</span><span class="n">port_labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">proto</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
-        <span class="k">assert</span><span class="p">(</span><span class="n">port_labels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">proto</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">port_labels</span><span class="p">:</span>
+            <span class="n">assert_port_exists</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">proto</span><span class="p">)</span>
 
         <span class="n">last_part</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="k">for</span> <span class="n">body_count</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>

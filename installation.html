@@ -80,7 +80,23 @@
 </ul>
 </li>
 </ul>
-<ul class="simple">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="data_structures.html">Data Structures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data_structures.html#atom">Atom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_structures.html#bond">Bond</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_structures.html#compound">Compound</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_structures.html#port">Port</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_structures.html#part">Part</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="recipes.html">Recipes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="recipes.html#monolayer">Monolayer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes.html#polymer">Polymer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes.html#tiled-compound">Tiled Compound</a></li>
+</ul>
+</li>
 </ul>
 
           
@@ -119,11 +135,17 @@
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="install-with-conda-preferred">
-<h2>Install with conda (preferred)<a class="headerlink" href="#install-with-conda-preferred" title="Permalink to this headline">¶</a></h2>
+<h2>Install with <a class="reference external" href="http://continuum.io/downloads">conda</a> (preferred)<a class="headerlink" href="#install-with-conda-preferred" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><div class="highlight"><pre>$ conda install -c omnia -c patrickfuller -c imodels mbuild
 </pre></div>
 </div>
-<p>or alternatively you can add all the required channels to your <tt class="docutils literal"><span class="pre">.condarc</span></tt>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <tt class="docutils literal"><span class="pre">omnia</span></tt> channel provides <a class="reference external" href="http://mdtraj.org/">MDTraj</a>,
+<tt class="docutils literal"><span class="pre">patrickfuller</span></tt> provides <a class="reference external" href="http://patrick-fuller.com/imolecule/">imolecule</a>,
+and <tt class="docutils literal"><span class="pre">imodels</span></tt> is our channel where mBuild is hosted.</p>
+</div>
+<p>Alternatively you can add all the required channels to your <tt class="docutils literal"><span class="pre">.condarc</span></tt>
 after which you can simply <tt class="docutils literal"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">mbuild</span></tt>:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ conda config --add channels omnia
 $ conda config --add channels patrickfuller
@@ -133,9 +155,10 @@ $ conda install mbuild
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The <tt class="docutils literal"><span class="pre">omnia</span></tt> channel provides <a class="reference external" href="http://mdtraj.org/">MDTraj</a>,
-<tt class="docutils literal"><span class="pre">patrickfuller</span></tt> provides <a class="reference external" href="http://patrick-fuller.com/imolecule/">imolecule</a>,
-and <tt class="docutils literal"><span class="pre">imodels</span></tt> is our channel where mBuild is hosted.</p>
+<p class="last">The <a class="reference external" href="http://mdtraj.org/latest/new_to_python.html">MDTraj website</a> makes a
+nice case for using Python and in particular the
+<a class="reference external" href="http://continuum.io/downloads">Anaconda scientific python distribution</a>
+to manage your numerical and scientific Python packages.</p>
 </div>
 </div>
 <div class="section" id="install-from-source">
