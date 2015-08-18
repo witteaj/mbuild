@@ -969,17 +969,39 @@ backfill (Compound, optional):</dd>
 <dt id="mbuild.periodic_kdtree.PeriodicCKDTree">
 <em class="property">class </em><tt class="descclassname">mbuild.periodic_kdtree.</tt><tt class="descname">PeriodicCKDTree</tt><big>(</big><em>data</em>, <em>leafsize=10</em>, <em>bounds=None</em><big>)</big><a class="reference internal" href="../_modules/mbuild/periodic_kdtree.html#PeriodicCKDTree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">ckdtree.cKDTree</span></tt></p>
-<p>Cython kd-tree for quick nearest-neighbor lookup with periodic boundaries</p>
+<p>Cython kd-tree for nearest-neighbor lookup with periodic boundaries.</p>
 <p>See scipy.spatial.ckdtree for details on kd-trees.</p>
 <p>Searches with periodic boundaries are implemented by mapping all
 initial data points to one canonical periodic image, building an
 ordinary kd-tree with these points, then querying this kd-tree multiple
 times, if necessary, with all the relevant periodic images of the
 query point.</p>
-<p>Note that to ensure that no two distinct images of the same point
-appear in the results, it is essential to restrict the maximum
-distance between a query point and a data point to half the smallest
-box dimension.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>bounds</strong> : array_like, shape (k,)</p>
+<blockquote>
+<div><p>Size of the periodic box along each spatial dimension.  A
+negative or zero size for dimension k means that space is not
+periodic along k.</p>
+</div></blockquote>
+<p><strong>data</strong> : array-like, shape (n,m)</p>
+<blockquote>
+<div><p>The n data points of dimension mto be indexed. This array is
+not copied unless this is necessary to produce a contiguous
+array of doubles, and so modifying this data will result in
+bogus results.</p>
+</div></blockquote>
+<p><strong>leafsize</strong> : positive integer</p>
+<blockquote class="last">
+<div><p>The number of points at which the algorithm switches over to
+brute-force.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="mbuild.periodic_kdtree.PeriodicCKDTree.count_neighbors">
 <tt class="descname">count_neighbors</tt><big>(</big><em>other</em>, <em>r</em>, <em>p=2.0</em><big>)</big><a class="reference internal" href="../_modules/mbuild/periodic_kdtree.html#PeriodicCKDTree.count_neighbors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree.count_neighbors" title="Permalink to this definition">¶</a></dt>
@@ -1023,7 +1045,7 @@ box dimension.</p>
 <dl class="method">
 <dt id="mbuild.periodic_kdtree.PeriodicCKDTree.query">
 <tt class="descname">query</tt><big>(</big><em>x</em>, <em>k=1</em>, <em>eps=0</em>, <em>p=2</em>, <em>distance_upper_bound=inf</em><big>)</big><a class="reference internal" href="../_modules/mbuild/periodic_kdtree.html#PeriodicCKDTree.query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree.query" title="Permalink to this definition">¶</a></dt>
-<dd><p>Query the kd-tree for nearest neighbors</p>
+<dd><p>Query the kd-tree for nearest neighbors.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

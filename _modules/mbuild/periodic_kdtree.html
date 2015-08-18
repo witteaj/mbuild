@@ -157,8 +157,7 @@
 
 
 <span class="k">def</span> <span class="nf">_gen_relevant_images</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="p">):</span>
-    <span class="c"># Map x onto the canonical unit cell, then produce the relevant</span>
-    <span class="c"># mirror images</span>
+    <span class="sd">&quot;&quot;&quot;Map x onto canonical unit cell and produce mirror images. &quot;&quot;&quot;</span>
 
     <span class="n">real_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
@@ -200,8 +199,7 @@
 
 
 <div class="viewcode-block" id="PeriodicCKDTree"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree">[docs]</a><span class="k">class</span> <span class="nc">PeriodicCKDTree</span><span class="p">(</span><span class="n">cKDTree</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Cython kd-tree for quick nearest-neighbor lookup with periodic boundaries</span>
+    <span class="sd">&quot;&quot;&quot;Cython kd-tree for nearest-neighbor lookup with periodic boundaries.</span>
 
 <span class="sd">    See scipy.spatial.ckdtree for details on kd-trees.</span>
 
@@ -211,32 +209,30 @@
 <span class="sd">    times, if necessary, with all the relevant periodic images of the</span>
 <span class="sd">    query point.</span>
 
-<span class="sd">    Note that to ensure that no two distinct images of the same point</span>
-<span class="sd">    appear in the results, it is essential to restrict the maximum</span>
-<span class="sd">    distance between a query point and a data point to half the smallest</span>
-<span class="sd">    box dimension.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bounds : array_like, shape (k,)</span>
+<span class="sd">        Size of the periodic box along each spatial dimension.  A</span>
+<span class="sd">        negative or zero size for dimension k means that space is not</span>
+<span class="sd">        periodic along k.</span>
+<span class="sd">    data : array-like, shape (n,m)</span>
+<span class="sd">        The n data points of dimension mto be indexed. This array is</span>
+<span class="sd">        not copied unless this is necessary to produce a contiguous</span>
+<span class="sd">        array of doubles, and so modifying this data will result in</span>
+<span class="sd">        bogus results.</span>
+<span class="sd">    leafsize : positive integer</span>
+<span class="sd">        The number of points at which the algorithm switches over to</span>
+<span class="sd">        brute-force.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    To ensure that no two distinct images of the same point appear in the</span>
+<span class="sd">    results, it is essential to restrict the maximum distance between a</span>
+<span class="sd">    query point and a data point to half the smallest box dimension.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">leafsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct a kd-tree.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        bounds : array_like, shape (k,)</span>
-<span class="sd">            Size of the periodic box along each spatial dimension.  A</span>
-<span class="sd">            negative or zero size for dimension k means that space is not</span>
-<span class="sd">            periodic along k.</span>
-<span class="sd">        data : array-like, shape (n,m)</span>
-<span class="sd">            The n data points of dimension mto be indexed. This array is</span>
-<span class="sd">            not copied unless this is necessary to produce a contiguous</span>
-<span class="sd">            array of doubles, and so modifying this data will result in</span>
-<span class="sd">            bogus results.</span>
-<span class="sd">        leafsize : positive integer</span>
-<span class="sd">            The number of points at which the algorithm switches over to</span>
-<span class="sd">            brute-force.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c"># Map all points to canonical periodic image</span>
+        <span class="c"># Map all points to canonical periodic image.</span>
         <span class="k">if</span> <span class="n">bounds</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
@@ -247,7 +243,7 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">coord</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-                    <span class="n">wrapped_data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                    <span class="n">wrapped_data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
 
         <span class="c"># if all(v == 0 for v in bounds):</span>
         <span class="c">#     wrapped_data = self.real_data</span>
@@ -296,8 +292,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Invalid k in periodic_kdtree._KDTree__query&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PeriodicCKDTree.query"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.query">[docs]</a>    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Query the kd-tree for nearest neighbors</span>
+        <span class="sd">&quot;&quot;&quot;Query the kd-tree for nearest neighbors.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -334,43 +329,48 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;x must consist of vectors of length </span><span class="si">%d</span><span class="s"> but has shape </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
-        <span class="k">if</span> <span class="n">p</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;x must consist of vectors of length </span><span class="si">%d</span><span class="s"> but has &quot;</span>
+                             <span class="s">&quot;shape </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">p</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Only p-norms with 1&lt;=p&lt;=infinity permitted&quot;</span><span class="p">)</span>
         <span class="n">retshape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">x</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">retshape</span><span class="o">!=</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">k</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
-                <span class="n">dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">retshape</span><span class="o">+</span><span class="p">(</span><span class="n">k</span><span class="p">,),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">retshape</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">retshape</span> <span class="o">+</span> <span class="p">(</span><span class="n">k</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
                 <span class="n">dd</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
-                <span class="n">ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">retshape</span><span class="o">+</span><span class="p">(</span><span class="n">k</span><span class="p">,),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+                <span class="n">ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">retshape</span> <span class="o">+</span> <span class="p">(</span><span class="n">k</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
                 <span class="n">ii</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">k</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
-                <span class="n">dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">retshape</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">retshape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
                 <span class="n">dd</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
-                <span class="n">ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">retshape</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+                <span class="n">ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">retshape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
                 <span class="n">ii</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Requested </span><span class="si">%s</span><span class="s"> nearest neighbors; acceptable numbers are integers greater than or equal to one, or None&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Requested </span><span class="si">%s</span><span class="s"> nearest neighbors; acceptable &quot;</span>
+                                 <span class="s">&quot;numbers are integers greater than or equal to&quot;</span>
+                                 <span class="s">&quot; one, or None&quot;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndindex</span><span class="p">(</span><span class="n">retshape</span><span class="p">):</span>
-                <span class="n">hits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">distance_upper_bound</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">k</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hits</span><span class="p">)):</span>
-                        <span class="n">dd</span><span class="p">[</span><span class="n">c</span><span class="o">+</span><span class="p">(</span><span class="n">j</span><span class="p">,)],</span> <span class="n">ii</span><span class="p">[</span><span class="n">c</span><span class="o">+</span><span class="p">(</span><span class="n">j</span><span class="p">,)]</span> <span class="o">=</span> <span class="n">hits</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
-                <span class="k">elif</span> <span class="n">k</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hits</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">hits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
+                                    <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">distance_upper_bound</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">hits</span><span class="p">):</span>
+                        <span class="n">dd</span><span class="p">[</span><span class="n">c</span> <span class="o">+</span> <span class="p">(</span><span class="n">j</span><span class="p">,)],</span> <span class="n">ii</span><span class="p">[</span><span class="n">c</span> <span class="o">+</span> <span class="p">(</span><span class="n">j</span><span class="p">,)]</span> <span class="o">=</span> <span class="n">hits</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="n">dd</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">ii</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">hits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">dd</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
                         <span class="n">ii</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
             <span class="k">return</span> <span class="n">dd</span><span class="p">,</span> <span class="n">ii</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">hits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">distance_upper_bound</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">k</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hits</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">hits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
+                                <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">distance_upper_bound</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">hits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
-            <span class="k">elif</span> <span class="n">k</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
                 <span class="n">dd</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
                 <span class="n">ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
@@ -379,7 +379,9 @@
                     <span class="n">dd</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">ii</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">hits</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
                 <span class="k">return</span> <span class="n">dd</span><span class="p">,</span> <span class="n">ii</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Requested </span><span class="si">%s</span><span class="s"> nearest neighbors; acceptable numbers are integers greater than or equal to one, or None&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Requested </span><span class="si">%s</span><span class="s"> nearest neighbors; acceptable &quot;</span>
+                                 <span class="s">&quot;numbers are integers greater than or equal to&quot;</span>
+                                 <span class="s">&quot; one, or None&quot;</span><span class="p">)</span>
 
     <span class="c"># Ideally, KDTree and cKDTree would expose identical __query_ball_point</span>
     <span class="c"># interfaces.  But they don&#39;t, and cKDTree.__query_ball_point is also</span>
@@ -399,8 +401,7 @@
         <span class="k">return</span> <span class="n">results</span>
 
 <div class="viewcode-block" id="PeriodicCKDTree.query_ball_point"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.query_ball_point">[docs]</a>    <span class="k">def</span> <span class="nf">query_ball_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Find all points within distance r of point(s) x.</span>
+        <span class="sd">&quot;&quot;&quot;Find all points within distance r of point(s) x.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>

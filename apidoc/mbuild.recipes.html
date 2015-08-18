@@ -126,6 +126,40 @@
 <em class="property">class </em><tt class="descclassname">mbuild.recipes.monolayer.</tt><tt class="descname">Monolayer</tt><big>(</big><em>surface</em>, <em>chain</em>, <em>backfill=None</em>, <em>mask=None</em>, <em>tile_x=1</em>, <em>tile_y=1</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/mbuild/recipes/monolayer.html#Monolayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="mbuild.html#mbuild.compound.Compound" title="mbuild.compound.Compound"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.compound.Compound</span></tt></a></p>
 <p>A general monolayer recipe.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>surface</strong> : mb.Compound</p>
+<blockquote>
+<div><p>Surface on which the monolayer will be built.</p>
+</div></blockquote>
+<p><strong>chain</strong> : list of mb.Compound</p>
+<blockquote>
+<div><p>The chain to be replicated and attached to the surface.</p>
+</div></blockquote>
+<p><strong>backfill</strong> : list of mb.Compound, optional, default=None</p>
+<blockquote>
+<div><p>If there are fewer chains than there are ports on the surface,
+copies of <cite>backfill</cite> will be used to fill the remaining ports.</p>
+</div></blockquote>
+<p><strong>mask</strong> : np.ndarray, shape=(n, 3), optional, default=None</p>
+<blockquote>
+<div><p>An array of planar binding locations. If not provided, the entire
+surface will be filled with <cite>chain</cite>.</p>
+</div></blockquote>
+<p><strong>tile_x</strong> : int, optional, default=1</p>
+<blockquote>
+<div><p>Number of times to replicate substrate in x-direction.</p>
+</div></blockquote>
+<p><strong>tile_y</strong> : int, optional, default=1</p>
+<blockquote class="last">
+<div><p>Number of times to replicate substrate in y-direction.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="mbuild.recipes.monolayer.Monolayer.add">
 <tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><big>)</big><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.add" title="Permalink to this definition">¶</a></dt>
@@ -1632,6 +1666,40 @@ The tree is then rendered in a web browser window using D3.js.</p>
 <em class="property">class </em><tt class="descclassname">mbuild.recipes.</tt><tt class="descname">Monolayer</tt><big>(</big><em>surface</em>, <em>chain</em>, <em>backfill=None</em>, <em>mask=None</em>, <em>tile_x=1</em>, <em>tile_y=1</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.recipes.Monolayer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="mbuild.html#mbuild.compound.Compound" title="mbuild.compound.Compound"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.compound.Compound</span></tt></a></p>
 <p>A general monolayer recipe.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>surface</strong> : mb.Compound</p>
+<blockquote>
+<div><p>Surface on which the monolayer will be built.</p>
+</div></blockquote>
+<p><strong>chain</strong> : list of mb.Compound</p>
+<blockquote>
+<div><p>The chain to be replicated and attached to the surface.</p>
+</div></blockquote>
+<p><strong>backfill</strong> : list of mb.Compound, optional, default=None</p>
+<blockquote>
+<div><p>If there are fewer chains than there are ports on the surface,
+copies of <cite>backfill</cite> will be used to fill the remaining ports.</p>
+</div></blockquote>
+<p><strong>mask</strong> : np.ndarray, shape=(n, 3), optional, default=None</p>
+<blockquote>
+<div><p>An array of planar binding locations. If not provided, the entire
+surface will be filled with <cite>chain</cite>.</p>
+</div></blockquote>
+<p><strong>tile_x</strong> : int, optional, default=1</p>
+<blockquote>
+<div><p>Number of times to replicate substrate in x-direction.</p>
+</div></blockquote>
+<p><strong>tile_y</strong> : int, optional, default=1</p>
+<blockquote class="last">
+<div><p>Number of times to replicate substrate in y-direction.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="mbuild.recipes.Monolayer.add">
 <tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><big>)</big><a class="headerlink" href="#mbuild.recipes.Monolayer.add" title="Permalink to this definition">¶</a></dt>

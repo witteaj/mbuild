@@ -122,29 +122,33 @@
 
 
 <div class="viewcode-block" id="Monolayer"><a class="viewcode-back" href="../../../apidoc/mbuild.recipes.html#mbuild.recipes.monolayer.Monolayer">[docs]</a><span class="k">class</span> <span class="nc">Monolayer</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A general monolayer recipe. &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;A general monolayer recipe.</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface</span><span class="p">,</span> <span class="n">chain</span><span class="p">,</span> <span class="n">backfill</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tile_x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tile_y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Create an alkylsilane monolayer on beta-cristobalite.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    surface : mb.Compound</span>
+<span class="sd">        Surface on which the monolayer will be built.</span>
+<span class="sd">    chain : list of mb.Compound</span>
+<span class="sd">        The chain to be replicated and attached to the surface.</span>
+<span class="sd">    backfill : list of mb.Compound, optional, default=None</span>
+<span class="sd">        If there are fewer chains than there are ports on the surface,</span>
+<span class="sd">        copies of `backfill` will be used to fill the remaining ports.</span>
+<span class="sd">    mask : np.ndarray, shape=(n, 3), optional, default=None</span>
+<span class="sd">        An array of planar binding locations. If not provided, the entire</span>
+<span class="sd">        surface will be filled with `chain`.</span>
+<span class="sd">    tile_x : int, optional, default=1</span>
+<span class="sd">        Number of times to replicate substrate in x-direction.</span>
+<span class="sd">    tile_y : int, optional, default=1</span>
+<span class="sd">        Number of times to replicate substrate in y-direction.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        surface : mb.Compound</span>
-<span class="sd">            Surface on which the monolayer will be built.</span>
-<span class="sd">        chain : list of mb.Compound</span>
-<span class="sd">            The chain to be replicated and attached to the surface.</span>
-<span class="sd">        backfill : list of mb.Compound, optional, default=None</span>
-<span class="sd">            If there are fewer chains than there are ports on the surface,</span>
-<span class="sd">            copies of `backfill` will be used to fill the remaining ports.</span>
-<span class="sd">        mask : np.ndarray, shape=(n, 3), optional, default=None</span>
-<span class="sd">            An array of planar binding locations. If not provided, the entire</span>
-<span class="sd">            surface will be filled with `chain`.</span>
-<span class="sd">        tile_x : int, optional, default=1</span>
-<span class="sd">            Number of times to replicate substrate in x-direction.</span>
-<span class="sd">        tile_y : int, optional, default=1</span>
-<span class="sd">            Number of times to replicate substrate in y-direction.</span>
+<span class="sd">    TODO</span>
+<span class="sd">    ----</span>
+<span class="sd">    * Support for arbitrary number of chain types and relative proportions</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface</span><span class="p">,</span> <span class="n">chain</span><span class="p">,</span> <span class="n">backfill</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tile_x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">tile_y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Monolayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
 
         <span class="c"># Replicate the surface.</span>
