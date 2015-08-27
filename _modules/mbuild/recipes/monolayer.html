@@ -180,9 +180,9 @@
 
 </div>
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">mbuild.components.surfaces.betacristobalite</span> <span class="kn">import</span> <span class="n">Betacristobalite</span>
-    <span class="kn">from</span> <span class="nn">mbuild.examples.alkane_monolayer.alkylsilane</span> <span class="kn">import</span> <span class="n">AlkylSilane</span>
-    <span class="kn">from</span> <span class="nn">mbuild.components.atoms.H</span> <span class="kn">import</span> <span class="n">H</span>
+    <span class="kn">from</span> <span class="nn">mbuild.lib.surfaces</span> <span class="kn">import</span> <span class="n">Betacristobalite</span>
+    <span class="kn">from</span> <span class="nn">mbuild.examples</span> <span class="kn">import</span> <span class="n">AlkylSilane</span>
+    <span class="kn">from</span> <span class="nn">mbuild.lib.atoms</span> <span class="kn">import</span> <span class="n">H</span>
 
     <span class="n">mask</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">grid_mask_2d</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>  <span class="c"># Evenly spaced, 2D grid of points.</span>
     <span class="n">monolayer</span> <span class="o">=</span> <span class="n">Monolayer</span><span class="p">(</span><span class="n">surface</span><span class="o">=</span><span class="n">Betacristobalite</span><span class="p">(),</span> <span class="n">chain</span><span class="o">=</span><span class="n">AlkylSilane</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span>

@@ -436,7 +436,7 @@
             <span class="n">new_part</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span>
 
         <span class="c"># Add new_part to labels. Does not currently support batch add.</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">containment</span> <span class="ow">and</span> <span class="n">label</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">label</span> <span class="o">=</span> <span class="s">&#39;_{0}[$]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">new_part</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
@@ -477,7 +477,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_remove_bonds</span><span class="p">(</span><span class="n">removed_part</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_remove_references</span><span class="p">(</span><span class="n">removed_part</span><span class="p">)</span>
 
-        <span class="c"># Remove the part recursively from sub-components.</span>
+        <span class="c"># Remove the part recursively from sub-compounds.</span>
         <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">Compound</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">objs_to_remove</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">part</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">objs_to_remove</span><span class="p">)</span>
