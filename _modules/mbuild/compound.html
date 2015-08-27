@@ -155,7 +155,7 @@
 <span class="kn">from</span> <span class="nn">mbuild.periodic_kdtree</span> <span class="kn">import</span> <span class="n">PeriodicCKDTree</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;load&#39;</span><span class="p">,</span> <span class="s">&#39;Compound&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;load&#39;</span><span class="p">,</span> <span class="s">&#39;clone&#39;</span><span class="p">,</span> <span class="s">&#39;Compound&#39;</span><span class="p">]</span>
 
 
 <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
@@ -176,6 +176,11 @@
     <span class="n">compound</span><span class="o">.</span><span class="n">from_trajectory</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">,</span> <span class="n">coords_only</span><span class="o">=</span><span class="n">coords_only</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">compound</span>
 
+
+<span class="k">def</span> <span class="nf">clone</span><span class="p">(</span><span class="n">what</span><span class="p">,</span> <span class="n">clone_of</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">root_container</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="c"># we can use the good old deepcopy if we wanted to</span>
+    <span class="c"># return deepcopy(what)</span>
+    <span class="k">return</span> <span class="n">what</span><span class="o">.</span><span class="n">_clone</span><span class="p">(</span><span class="n">clone_of</span><span class="o">=</span><span class="n">clone_of</span><span class="p">,</span> <span class="n">root_container</span><span class="o">=</span><span class="n">root_container</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Compound"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound">[docs]</a><span class="k">class</span> <span class="nc">Compound</span><span class="p">(</span><span class="n">Part</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A building block in the mBuild hierarchy.</span>
@@ -963,7 +968,73 @@
         <span class="n">descr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;; ID: {}&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)))</span>
         <span class="k">return</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">descr</span><span class="p">)</span>
 
+
+    <span class="k">def</span> <span class="nf">_clone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clone_of</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">root_container</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+        <span class="c"># make the current container the root container if it&#39;s not yet specified</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">root_container</span><span class="p">:</span>
+            <span class="n">root_container</span><span class="o">=</span><span class="bp">self</span>
+
+        <span class="c"># create the clone_of dict if it&#39;s None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">clone_of</span><span class="p">:</span>
+            <span class="n">clone_of</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+
+        <span class="c"># if this compound has been cloned, return it</span>
+        <span class="k">if</span> <span class="bp">self</span> <span class="ow">in</span> <span class="n">clone_of</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">clone_of</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span>
+
+        <span class="c"># else we make a new clone</span>
+
+        <span class="n">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span>
+        <span class="n">newone</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+
+        <span class="c"># remember that we&#39;re cloning the new one of of self</span>
+        <span class="n">clone_of</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span> <span class="o">=</span> <span class="n">newone</span>
+
+        <span class="c"># First copy those attributes that don&#39;t need deepcopying.</span>
+
+        <span class="n">newone</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kind</span>
+
+        <span class="n">newone</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">)</span>
+
+        <span class="c"># Create empty containers.</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">parts</span> <span class="o">=</span> <span class="n">OrderedSet</span><span class="p">()</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">referrers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="c"># parent should be None initially</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="c"># Add parts to clone</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">Bond</span><span class="p">)</span> <span class="ow">and</span> <span class="n">part</span><span class="o">.</span><span class="n">has_atoms_outside_of</span><span class="p">(</span><span class="n">root_container</span><span class="p">):</span>
+                <span class="c"># ignore bonds with atoms outside the hierarchy.</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">newpart</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">clone_of</span><span class="p">,</span> <span class="n">root_container</span><span class="p">)</span>
+                <span class="n">newone</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">newpart</span><span class="p">)</span>
+                <span class="n">newpart</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">newone</span>
+
+        <span class="c"># Copy labels, except bonds with atoms outside the hierarchy</span>
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">Bond</span><span class="p">)</span> <span class="ow">and</span> <span class="n">part</span><span class="o">.</span><span class="n">has_atoms_outside_of</span><span class="p">(</span><span class="n">root_container</span><span class="p">):</span>
+                <span class="c"># it&#39;s a bond that has atoms outside the current containment hierarchy, so we skip it</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">newone</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">clone_of</span><span class="p">,</span> <span class="n">root_container</span><span class="p">)</span>
+                    <span class="n">part</span><span class="o">.</span><span class="n">referrers</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">clone_of</span><span class="p">[</span><span class="n">part</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c"># part is a list of parts, so we create an empty list, and add the clones of the original list elements</span>
+                    <span class="n">newone</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">part</span><span class="p">:</span>
+                        <span class="n">newone</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clone</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">clone_of</span><span class="p">,</span> <span class="n">root_container</span><span class="p">))</span>
+                        <span class="c"># referrers must have been handled already, or the will be handled</span>
+        <span class="k">return</span> <span class="n">newone</span>
+
+
     <span class="k">def</span> <span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">):</span>
+
         <span class="n">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span>
         <span class="n">newone</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">memo</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
