@@ -132,12 +132,15 @@
           <div role="main" class="document">
             
   <h1>Source code for mbuild.port</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">mbuild.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
 <span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
 <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">rotate_around_z</span>
 <span class="kn">from</span> <span class="nn">mbuild</span> <span class="kn">import</span> <span class="n">clone</span>
+
 
 <div class="viewcode-block" id="Port"><a class="viewcode-back" href="../../data_structures.html#mbuild.port.Port">[docs]</a><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A set of four ghost Atoms used to connect parts.</span>
@@ -187,7 +190,6 @@
         <span class="k">return</span> <span class="n">newone</span>
 
     <span class="k">def</span> <span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
         <span class="n">newone</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Port</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__deepcopy__</span><span class="p">(</span><span class="n">memo</span><span class="p">)</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">anchor</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anchor</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">newone</span></div>

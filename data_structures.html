@@ -238,13 +238,13 @@ the addition or subtraction of the Atoms&#8217; cartesian coordinates.</p>
 <dl class="method">
 <dt id="mbuild.bond.Bond.has_atoms_outside_of">
 <tt class="descname">has_atoms_outside_of</tt><big>(</big><em>root_compound</em><big>)</big><a class="reference internal" href="_modules/mbuild/bond.html#Bond.has_atoms_outside_of"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.bond.Bond.has_atoms_outside_of" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check either (or both) atoms are outside of the containment hierarchy of a root_compound.</p>
+<dd><p>Has atoms outside of the containment hierarchy of a Compound.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.bond.Bond.has_both_atoms_within">
 <tt class="descname">has_both_atoms_within</tt><big>(</big><em>root_compound</em><big>)</big><a class="reference internal" href="_modules/mbuild/bond.html#Bond.has_both_atoms_within"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.bond.Bond.has_both_atoms_within" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check both atoms are within the containment hierarchy of a root_compound.</p>
+<dd><p>Both atoms are within the containment hierarchy of a Compound.</p>
 </dd></dl>
 
 <dl class="method">
@@ -408,6 +408,12 @@ instead be used to add a reference to the part to self.labels. See
 </dd></dl>
 
 <dl class="method">
+<dt id="mbuild.compound.Compound.atoms_in_range">
+<tt class="descname">atoms_in_range</tt><big>(</big><em>atom</em>, <em>dmax</em>, <em>max_atoms=20</em>, <em>atom_kdtree=None</em>, <em>atom_array=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.atoms_in_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.atoms_in_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find atoms within a specified range of another atom.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="mbuild.compound.Compound.bond_list_by_kind">
 <tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.bond_list_by_kind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of Bonds filtered by their kind.</p>
@@ -556,7 +562,8 @@ prefix will be parsed and will control the format.</p>
 <dl class="method">
 <dt id="mbuild.compound.Compound.update_coordinates">
 <tt class="descname">update_coordinates</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.update_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.update_coordinates" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Update the coordinates of this Compound from a file.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.view_hierarchy">

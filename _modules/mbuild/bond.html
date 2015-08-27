@@ -132,13 +132,15 @@
           <div role="main" class="document">
             
   <h1>Source code for mbuild.bond</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">mbuild.part</span> <span class="kn">import</span> <span class="n">Part</span>
 
 
-<span class="k">class</span> <span class="nc">Bond</span><span class="p">(</span><span class="n">Part</span><span class="p">):</span>
-<div class="viewcode-block" id="Bond"><a class="viewcode-back" href="../../data_structures.html#mbuild.bond.Bond">[docs]</a>    <span class="sd">&quot;&quot;&quot;Connection between two Atoms.</span>
+<div class="viewcode-block" id="Bond"><a class="viewcode-back" href="../../data_structures.html#mbuild.bond.Bond">[docs]</a><span class="k">class</span> <span class="nc">Bond</span><span class="p">(</span><span class="n">Part</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Connection between two Atoms.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -178,53 +180,62 @@
     <span class="k">def</span> <span class="nf">atom1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atom1</span>
 
+    <span class="nd">@atom1.setter</span>
+    <span class="k">def</span> <span class="nf">atom1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_atom1</span> <span class="o">=</span> <span class="n">atom</span>
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">atom2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atom2</span>
 
-    <span class="k">def</span> <span class="nf">other_atom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom</span><span class="p">):</span>
-<div class="viewcode-block" id="Bond.other_atom"><a class="viewcode-back" href="../../data_structures.html#mbuild.bond.Bond.other_atom">[docs]</a>        <span class="sd">&quot;&quot;&quot;Returns the other Atom in the Bond. &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atom1</span> <span class="ow">is</span> <span class="n">atom</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atom2</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atom2</span> <span class="ow">is</span> <span class="n">atom</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atom1</span>
+    <span class="nd">@atom2.setter</span>
+    <span class="k">def</span> <span class="nf">atom2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_atom2</span> <span class="o">=</span> <span class="n">atom</span>
 
-    <span class="k">def</span> <span class="nf">length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">periodicity</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></div>
-<div class="viewcode-block" id="Bond.length"><a class="viewcode-back" href="../../data_structures.html#mbuild.bond.Bond.length">[docs]</a>        <span class="sd">&quot;&quot;&quot;Calculate the bond length considering minimum image. &quot;&quot;&quot;</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom2</span><span class="p">)</span>
+<div class="viewcode-block" id="Bond.other_atom"><a class="viewcode-back" href="../../data_structures.html#mbuild.bond.Bond.other_atom">[docs]</a>    <span class="k">def</span> <span class="nf">other_atom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the other Atom in the Bond. &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom1</span> <span class="ow">is</span> <span class="n">atom</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom2</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom2</span> <span class="ow">is</span> <span class="n">atom</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom1</span>
+</div>
+<div class="viewcode-block" id="Bond.length"><a class="viewcode-back" href="../../data_structures.html#mbuild.bond.Bond.length">[docs]</a>    <span class="k">def</span> <span class="nf">length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">periodicity</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the bond length considering minimum image. &quot;&quot;&quot;</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom2</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">periodicity</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">d</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">dist</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">periodicity</span><span class="p">,</span> <span class="n">periodicity</span> <span class="o">-</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">d</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
-
-    <span class="k">def</span> <span class="nf">has_both_atoms_within</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_compound</span><span class="p">):</span></div>
-<div class="viewcode-block" id="Bond.has_both_atoms_within"><a class="viewcode-back" href="../../data_structures.html#mbuild.bond.Bond.has_both_atoms_within">[docs]</a>        <span class="sd">&quot;&quot;&quot;Check both atoms are within the containment hierarchy of a root_compound.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">root_compound</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom1</span><span class="o">.</span><span class="n">ancestors</span><span class="p">()</span> <span class="ow">or</span> <span class="n">root_compound</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom2</span><span class="o">.</span><span class="n">ancestors</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">has_atoms_outside_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_compound</span><span class="p">):</span></div>
-<div class="viewcode-block" id="Bond.has_atoms_outside_of"><a class="viewcode-back" href="../../data_structures.html#mbuild.bond.Bond.has_atoms_outside_of">[docs]</a>        <span class="sd">&quot;&quot;&quot;Check either (or both) atoms are outside of the containment hierarchy of a root_compound.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">root_compound</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom1</span><span class="o">.</span><span class="n">ancestors</span><span class="p">()</span> <span class="ow">or</span> <span class="n">root_compound</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom2</span><span class="o">.</span><span class="n">ancestors</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dist</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">periodicity</span><span class="p">,</span> <span class="n">periodicity</span> <span class="o">-</span> <span class="n">dist</span><span class="p">,</span> <span class="n">dist</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">dist</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Bond.has_both_atoms_within"><a class="viewcode-back" href="../../data_structures.html#mbuild.bond.Bond.has_both_atoms_within">[docs]</a>    <span class="k">def</span> <span class="nf">has_both_atoms_within</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_compound</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Both atoms are within the containment hierarchy of a Compound. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">root_compound</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom1</span><span class="o">.</span><span class="n">ancestors</span><span class="p">()</span> <span class="ow">or</span>
+                <span class="n">root_compound</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom2</span><span class="o">.</span><span class="n">ancestors</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="Bond.has_atoms_outside_of"><a class="viewcode-back" href="../../data_structures.html#mbuild.bond.Bond.has_atoms_outside_of">[docs]</a>    <span class="k">def</span> <span class="nf">has_atoms_outside_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_compound</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Has atoms outside of the containment hierarchy of a Compound.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">root_compound</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom1</span><span class="o">.</span><span class="n">ancestors</span><span class="p">()</span> <span class="ow">or</span>
+                <span class="n">root_compound</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom2</span><span class="o">.</span><span class="n">ancestors</span><span class="p">())</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s">&quot;Bond{0}({1}, {2})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom2</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_clone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clone_of</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">root_container</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">mbuild</span> <span class="kn">import</span> <span class="n">clone</span>
-        <span class="c"># create the clone_of dict if it&#39;s None</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">clone_of</span><span class="p">:</span>
-            <span class="n">clone_of</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
 
-        <span class="c"># if this bond has been cloned, return it</span>
+        <span class="k">if</span> <span class="n">clone_of</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">clone_of</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="c"># If this bond has already been cloned, return that.</span>
         <span class="k">if</span> <span class="bp">self</span> <span class="ow">in</span> <span class="n">clone_of</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">clone_of</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span>
 
-        <span class="c"># else we make a new clone</span>
-
+        <span class="c"># Otherwise, we make a new clone.</span>
         <span class="n">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span>
         <span class="n">newone</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
 
-        <span class="c"># remember that we&#39;re cloning the new one of of self</span>
+        <span class="c"># Remember that we&#39;re cloning the new one of self.</span>
         <span class="n">clone_of</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span> <span class="o">=</span> <span class="n">newone</span>
 
         <span class="c"># Copy fields that don&#39;t need recursion.</span>
@@ -232,19 +243,15 @@
         <span class="n">newone</span><span class="o">.</span><span class="n">referrers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
         <span class="c"># Do the rest recursively.</span>
-        <span class="n">newone</span><span class="o">.</span><span class="n">_atom1</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom1</span><span class="p">,</span> <span class="n">clone_of</span><span class="p">,</span> <span class="n">root_container</span><span class="p">)</span>
-        <span class="n">newone</span><span class="o">.</span><span class="n">_atom2</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom2</span><span class="p">,</span> <span class="n">clone_of</span><span class="p">,</span> <span class="n">root_container</span><span class="p">)</span>
-        <span class="n">newone</span><span class="o">.</span><span class="n">_atom1</span><span class="o">.</span><span class="n">bonds</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">newone</span><span class="p">)</span>
-        <span class="n">newone</span><span class="o">.</span><span class="n">_atom2</span><span class="o">.</span><span class="n">bonds</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">newone</span><span class="p">)</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">atom1</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom1</span><span class="p">,</span> <span class="n">clone_of</span><span class="p">,</span> <span class="n">root_container</span><span class="p">)</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">atom2</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom2</span><span class="p">,</span> <span class="n">clone_of</span><span class="p">,</span> <span class="n">root_container</span><span class="p">)</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">atom1</span><span class="o">.</span><span class="n">bonds</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">newone</span><span class="p">)</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">atom2</span><span class="o">.</span><span class="n">bonds</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">newone</span><span class="p">)</span>
 
-        <span class="c"># we set newone.parent in compound</span>
-
+        <span class="c"># We set newone.parent in compound.</span>
         <span class="k">return</span> <span class="n">newone</span>
 
-
     <span class="k">def</span> <span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
-
         <span class="n">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span>
         <span class="n">newone</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
 
@@ -259,10 +266,10 @@
         <span class="n">newone</span><span class="o">.</span><span class="n">referrers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
         <span class="c"># Do the rest recursively.</span>
-        <span class="n">newone</span><span class="o">.</span><span class="n">_atom1</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom1</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
-        <span class="n">newone</span><span class="o">.</span><span class="n">_atom2</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom2</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
-        <span class="n">newone</span><span class="o">.</span><span class="n">_atom1</span><span class="o">.</span><span class="n">bonds</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">newone</span><span class="p">)</span>
-        <span class="n">newone</span><span class="o">.</span><span class="n">_atom2</span><span class="o">.</span><span class="n">bonds</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">newone</span><span class="p">)</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">atom1</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom1</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">atom2</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom2</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">atom1</span><span class="o">.</span><span class="n">bonds</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">newone</span><span class="p">)</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">atom2</span><span class="o">.</span><span class="n">bonds</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">newone</span><span class="p">)</span>
 
         <span class="c"># Copy parents, except the topmost compound being deepcopied.</span>
         <span class="k">if</span> <span class="n">memo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="p">:</span>
@@ -270,8 +277,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">newone</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">newone</span>
-</pre></div></div>
+        <span class="k">return</span> <span class="n">newone</span></div>
+</pre></div>
 
           </div>
           <footer>

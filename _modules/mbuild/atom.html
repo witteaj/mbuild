@@ -224,27 +224,23 @@
         <span class="k">return</span> <span class="s">&quot;Atom{0}({1}, {2})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_clone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clone_of</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">root_container</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="c"># create the clone_of dict if it&#39;s None</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">clone_of</span><span class="p">:</span>
-            <span class="n">clone_of</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">clone_of</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">clone_of</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="c"># if this atom has been cloned, return it</span>
+        <span class="c"># If this atom has already been cloned, return that.</span>
         <span class="k">if</span> <span class="bp">self</span> <span class="ow">in</span> <span class="n">clone_of</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">clone_of</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span>
 
-        <span class="c"># else we make a new clone</span>
-
+        <span class="c"># Otherwise, we make a new clone.</span>
         <span class="n">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span>
         <span class="n">newone</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
 
-        <span class="c"># remember that we&#39;re cloning the new one of of self</span>
+        <span class="c"># Remember that we&#39;re cloning the new one of self.</span>
         <span class="n">clone_of</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span> <span class="o">=</span> <span class="n">newone</span>
 
         <span class="c"># Copy fields that don&#39;t need recursion.</span>
-        <span class="n">newone</span><span class="o">.</span><span class="n">referrers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="c"># we fill up the referrers set in compound</span>
-        <span class="n">newone</span><span class="o">.</span><span class="n">bonds</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="c"># we fill up the bonds set in bonds</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">referrers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c"># We fill up the referrers set in compound.</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">bonds</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c"># We fill up the bonds set in bonds.</span>
 
         <span class="c"># Do the rest recursively.</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span>
@@ -252,8 +248,7 @@
         <span class="n">newone</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">charge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">charge</span>
 
-        <span class="c"># we set newone.parent in compound</span>
-
+        <span class="c"># We set newone.parent in compound.</span>
         <span class="k">return</span> <span class="n">newone</span>
 
     <span class="k">def</span> <span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">):</span>

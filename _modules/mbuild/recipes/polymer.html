@@ -136,6 +136,7 @@
 <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">equivalence_transform</span>
 <span class="kn">from</span> <span class="nn">mbuild.utils.validation</span> <span class="kn">import</span> <span class="n">assert_port_exists</span>
 <span class="kn">from</span> <span class="nn">mbuild</span> <span class="kn">import</span> <span class="n">clone</span>
+
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Polymer&#39;</span><span class="p">]</span>
 
 
@@ -161,7 +162,7 @@
             <span class="n">assert_port_exists</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">proto</span><span class="p">)</span>
 
         <span class="n">last_part</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="k">for</span> <span class="n">body_count</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
             <span class="n">this_part</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">proto</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">this_part</span><span class="p">,</span> <span class="s">&#39;monomer[$]&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">last_part</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
