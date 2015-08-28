@@ -142,6 +142,8 @@
 <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">translate</span>
 <span class="kn">from</span> <span class="nn">mbuild.periodic_kdtree</span> <span class="kn">import</span> <span class="n">PeriodicCKDTree</span>
 <span class="kn">from</span> <span class="nn">mbuild</span> <span class="kn">import</span> <span class="n">clone</span>
+
+
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;TiledCompound&#39;</span><span class="p">]</span>
 
 
@@ -179,7 +181,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tile</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">*</span> <span class="n">n_tiles</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">n_tiles</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_tile_and_hoist_ports</span><span class="p">(</span><span class="n">tile</span><span class="p">,</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_tile</span><span class="p">(</span><span class="n">tile</span><span class="p">,</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hoist_ports</span><span class="p">(</span><span class="n">tile</span><span class="p">)</span>
             <span class="k">return</span>  <span class="c"># Don&#39;t waste time copying and checking bonds.</span>
 
         <span class="c"># For every tile, assign temporary ID&#39;s to atoms which are internal to</span>
@@ -197,9 +200,8 @@
                               <span class="nb">range</span><span class="p">(</span><span class="n">n_tiles</span><span class="p">[</span><span class="mi">2</span><span class="p">])):</span>
             <span class="n">new_tile</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">tile</span><span class="p">)</span>
             <span class="n">translate</span><span class="p">(</span><span class="n">new_tile</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ijk</span> <span class="o">*</span> <span class="n">tile</span><span class="o">.</span><span class="n">periodicity</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_tile_and_hoist_ports</span><span class="p">(</span><span class="n">new_tile</span><span class="p">,</span> <span class="n">ijk</span><span class="p">)</span>
-
-
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_tile</span><span class="p">(</span><span class="n">new_tile</span><span class="p">,</span> <span class="n">ijk</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hoist_ports</span><span class="p">(</span><span class="n">new_tile</span><span class="p">)</span>
 
         <span class="c"># Fix bonds across periodic boundaries.</span>
         <span class="c"># -------------------------------------</span>
@@ -210,7 +212,8 @@
         <span class="n">atom_indices_of_periodic_bonds</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="n">tile</span><span class="o">.</span><span class="n">yield_bonds</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">bond</span><span class="o">.</span><span class="n">length</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">bond_dist_thres</span><span class="p">:</span>
-                <span class="n">atom_indices_of_periodic_bonds</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">bond</span><span class="o">.</span><span class="n">atom1</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">bond</span><span class="o">.</span><span class="n">atom2</span><span class="o">.</span><span class="n">index</span><span class="p">))</span>
+                <span class="n">atom_indices_of_periodic_bonds</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">bond</span><span class="o">.</span><span class="n">atom1</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                                                    <span class="n">bond</span><span class="o">.</span><span class="n">atom2</span><span class="o">.</span><span class="n">index</span><span class="p">))</span>
 
         <span class="c"># Build a periodic kdtree of all atom positions.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atom_kdtree</span> <span class="o">=</span> <span class="n">PeriodicCKDTree</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">xyz</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">)</span>
@@ -237,11 +240,13 @@
             <span class="n">atom</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_kdtree</span>
 
-    <span class="k">def</span> <span class="nf">_add_tile_and_hoist_ports</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_tile</span><span class="p">,</span> <span class="n">ijk</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_add_tile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_tile</span><span class="p">,</span> <span class="n">ijk</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a tile with a label indicating its tiling position. &quot;&quot;&quot;</span>
         <span class="n">tile_label</span> <span class="o">=</span> <span class="s">&quot;{0}_{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ijk</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_tile</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">tile_label</span><span class="p">,</span> <span class="n">inherit_periodicity</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 
-        <span class="c"># Hoist ports.</span>
+    <span class="k">def</span> <span class="nf">_hoist_ports</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_tile</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add labels for all the ports to the parent (TiledCompound). &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">new_tile</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">Port</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">containment</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
