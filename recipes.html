@@ -31,7 +31,7 @@
 
   
     <link rel="top" title="mbuild 0.6.0.dev0 documentation" href="index.html"/>
-        <link rel="prev" title="Data Structures" href="data_structures.html"/> 
+        <link rel="prev" title="Coordinate transformations" href="coordinate_transforms.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -64,8 +64,9 @@
           
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#install-with-conda-preferred">Install with conda (preferred)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#install-with-conda">Install with conda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#install-from-source">Install from source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#get-the-latest-development-package">Get the latest development package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#testing-your-installation">Testing your installation</a></li>
 </ul>
@@ -75,19 +76,19 @@
 <li class="toctree-l1"><a class="reference internal" href="tutorials/tutorials.html">Tutorials</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_methane.html">Methane: Atoms, Bonds and Compounds</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_ethane.html">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_monolayer.html">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_monolayer.html">Monolayer: Complex hierarchies, patterns, tiling and writing to files</a></li>
 </ul>
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="data_structures.html">Data Structures</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="data_structures.html#atom">Atom</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data_structures.html#bond">Bond</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_structures.html">Data Structure</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="data_structures.html#compound">Compound</a></li>
 <li class="toctree-l2"><a class="reference internal" href="data_structures.html#port">Port</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data_structures.html#part">Part</a></li>
 </ul>
 </li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="coordinate_transforms.html">Coordinate transformations</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="">Recipes</a><ul>
@@ -137,7 +138,7 @@
 <h2>Monolayer<a class="headerlink" href="#monolayer" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="mbuild.recipes.monolayer.Monolayer">
-<em class="property">class </em><tt class="descclassname">mbuild.recipes.monolayer.</tt><tt class="descname">Monolayer</tt><big>(</big><em>surface</em>, <em>chain</em>, <em>backfill=None</em>, <em>mask=None</em>, <em>tile_x=1</em>, <em>tile_y=1</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/recipes/monolayer.html#Monolayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">mbuild.recipes.monolayer.</code><code class="descname">Monolayer</code><span class="sig-paren">(</span><em>surface</em>, <em>chain</em>, <em>backfill=None</em>, <em>pattern=None</em>, <em>tile_x=1</em>, <em>tile_y=1</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/recipes/monolayer.html#Monolayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer" title="Permalink to this definition">¶</a></dt>
 <dd><p>A general monolayer recipe.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -156,7 +157,7 @@
 <div><p>If there are fewer chains than there are ports on the surface,
 copies of <cite>backfill</cite> will be used to fill the remaining ports.</p>
 </div></blockquote>
-<p><strong>mask</strong> : np.ndarray, shape=(n, 3), optional, default=None</p>
+<p><strong>pattern</strong> : mb.Pattern, optional, default=mb.Random2DPattern</p>
 <blockquote>
 <div><p>An array of planar binding locations. If not provided, the entire
 surface will be filled with <cite>chain</cite>.</p>
@@ -180,7 +181,7 @@ surface will be filled with <cite>chain</cite>.</p>
 <h2>Polymer<a class="headerlink" href="#polymer" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="mbuild.recipes.polymer.Polymer">
-<em class="property">class </em><tt class="descclassname">mbuild.recipes.polymer.</tt><tt class="descname">Polymer</tt><big>(</big><em>proto</em>, <em>port_labels=('up'</em>, <em>'down')</em>, <em>n=2</em><big>)</big><a class="reference internal" href="_modules/mbuild/recipes/polymer.html#Polymer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.recipes.polymer.Polymer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">mbuild.recipes.polymer.</code><code class="descname">Polymer</code><span class="sig-paren">(</span><em>proto</em>, <em>port_labels=('up'</em>, <em>'down')</em>, <em>n=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/recipes/polymer.html#Polymer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.recipes.polymer.Polymer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Connect a component to successive copies of itself.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -209,7 +210,7 @@ surface will be filled with <cite>chain</cite>.</p>
 <h2>Tiled Compound<a class="headerlink" href="#tiled-compound" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="mbuild.recipes.tiled_compound.TiledCompound">
-<em class="property">class </em><tt class="descclassname">mbuild.recipes.tiled_compound.</tt><tt class="descname">TiledCompound</tt><big>(</big><em>tile</em>, <em>n_tiles</em>, <em>kind=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/recipes/tiled_compound.html#TiledCompound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">mbuild.recipes.tiled_compound.</code><code class="descname">TiledCompound</code><span class="sig-paren">(</span><em>tile</em>, <em>n_tiles</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/recipes/tiled_compound.html#TiledCompound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound" title="Permalink to this definition">¶</a></dt>
 <dd><p>Replicates a Compound in any cartesian direction(s).</p>
 <p>Correctly updates connectivity while respecting periodic boundary
 conditions.</p>
@@ -225,7 +226,7 @@ conditions.</p>
 <blockquote>
 <div><p>Number of times to replicate tile in the x, y and z-directions.</p>
 </div></blockquote>
-<p><strong>kind</strong> : str, optional, default=tile.kind</p>
+<p><strong>name</strong> : str, optional, default=tile.name</p>
 <blockquote class="last">
 <div><p>Descriptive string for the compound.</p>
 </div></blockquote>
@@ -245,7 +246,7 @@ conditions.</p>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="data_structures.html" class="btn btn-neutral" title="Data Structures"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="coordinate_transforms.html" class="btn btn-neutral" title="Coordinate transformations"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -65,8 +65,9 @@
           
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#install-with-conda-preferred">Install with conda (preferred)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-with-conda">Install with conda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install-from-source">Install from source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#get-the-latest-development-package">Get the latest development package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing-your-installation">Testing your installation</a></li>
 </ul>
@@ -76,19 +77,19 @@
 <li class="toctree-l1"><a class="reference internal" href="tutorials/tutorials.html">Tutorials</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_methane.html">Methane: Atoms, Bonds and Compounds</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_ethane.html">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_monolayer.html">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_monolayer.html">Monolayer: Complex hierarchies, patterns, tiling and writing to files</a></li>
 </ul>
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="data_structures.html">Data Structures</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="data_structures.html#atom">Atom</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data_structures.html#bond">Bond</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_structures.html">Data Structure</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="data_structures.html#compound">Compound</a></li>
 <li class="toctree-l2"><a class="reference internal" href="data_structures.html#port">Port</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data_structures.html#part">Part</a></li>
 </ul>
 </li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="coordinate_transforms.html">Coordinate transformations</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="recipes.html">Recipes</a><ul>
@@ -134,19 +135,19 @@
             
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="install-with-conda-preferred">
-<h2>Install with <a class="reference external" href="http://continuum.io/downloads">conda</a> (preferred)<a class="headerlink" href="#install-with-conda-preferred" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="install-with-conda">
+<h2>Install with <a class="reference external" href="http://continuum.io/downloads">conda</a><a class="headerlink" href="#install-with-conda" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><div class="highlight"><pre>$ conda install -c omnia -c patrickfuller -c imodels mbuild
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The <tt class="docutils literal"><span class="pre">omnia</span></tt> channel provides <a class="reference external" href="http://mdtraj.org/">MDTraj</a>,
-<tt class="docutils literal"><span class="pre">patrickfuller</span></tt> provides <a class="reference external" href="http://patrick-fuller.com/imolecule/">imolecule</a>,
-and <tt class="docutils literal"><span class="pre">imodels</span></tt> is our channel where mBuild is hosted.</p>
+<p class="last">The <code class="docutils literal"><span class="pre">omnia</span></code> channel provides <a class="reference external" href="http://mdtraj.org/">MDTraj</a>,
+<code class="docutils literal"><span class="pre">patrickfuller</span></code> provides <a class="reference external" href="http://patrick-fuller.com/imolecule/">imolecule</a>,
+and <code class="docutils literal"><span class="pre">imodels</span></code> is our channel where mBuild is hosted.</p>
 </div>
-<p>Alternatively you can add all the required channels to your <tt class="docutils literal"><span class="pre">.condarc</span></tt>
-after which you can simply <tt class="docutils literal"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">mbuild</span></tt>:</p>
+<p>Alternatively you can add all the required channels to your <code class="docutils literal"><span class="pre">.condarc</span></code>
+after which you can simply <code class="docutils literal"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">mbuild</span></code>:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ conda config --add channels omnia
 $ conda config --add channels patrickfuller
 $ conda config --add channels imodels
@@ -165,7 +166,13 @@ to manage your numerical and scientific Python packages.</p>
 <h2>Install from source<a class="headerlink" href="#install-from-source" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><div class="highlight"><pre>$ git clone https://github.com/imodels/mbuild
 $ cd mbuild
-$ python setup.py install
+$ pip install .
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-the-latest-development-package">
+<h2>Get the latest development package<a class="headerlink" href="#get-the-latest-development-package" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre>$ conda install mbuild-dev
 </pre></div>
 </div>
 </div>
@@ -197,7 +204,7 @@ in order to get all of the dependencies.</p>
 </div>
 <div class="section" id="testing-your-installation">
 <h2>Testing your installation<a class="headerlink" href="#testing-your-installation" title="Permalink to this headline">¶</a></h2>
-<p>mBuild uses <tt class="docutils literal"><span class="pre">py.test</span></tt> for unit testing. To run them simply type run the
+<p>mBuild uses <code class="docutils literal"><span class="pre">py.test</span></code> for unit testing. To run them simply type run the
 following while in the base directory:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ conda install pytest
 $ py.test -v

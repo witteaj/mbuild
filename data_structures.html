@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Data Structures &mdash; mbuild 0.6.0.dev0 documentation</title>
+  <title>Data Structure &mdash; mbuild 0.6.0.dev0 documentation</title>
   
 
   
@@ -31,8 +31,8 @@
 
   
     <link rel="top" title="mbuild 0.6.0.dev0 documentation" href="index.html"/>
-        <link rel="next" title="Recipes" href="recipes.html"/>
-        <link rel="prev" title="Monolayer: Complex hierarchies, masks, tiling and writing to files" href="tutorials/tutorial_monolayer.html"/> 
+        <link rel="next" title="Coordinate transformations" href="coordinate_transforms.html"/>
+        <link rel="prev" title="Monolayer: Complex hierarchies, patterns, tiling and writing to files" href="tutorials/tutorial_monolayer.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -65,8 +65,9 @@
           
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#install-with-conda-preferred">Install with conda (preferred)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#install-with-conda">Install with conda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#install-from-source">Install from source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#get-the-latest-development-package">Get the latest development package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#testing-your-installation">Testing your installation</a></li>
 </ul>
@@ -76,19 +77,19 @@
 <li class="toctree-l1"><a class="reference internal" href="tutorials/tutorials.html">Tutorials</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_methane.html">Methane: Atoms, Bonds and Compounds</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_ethane.html">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_monolayer.html">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorial_monolayer.html">Monolayer: Complex hierarchies, patterns, tiling and writing to files</a></li>
 </ul>
 </li>
 </ul>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="">Data Structures</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#atom">Atom</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#bond">Bond</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Data Structure</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#compound">Compound</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#port">Port</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#part">Part</a></li>
 </ul>
 </li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="coordinate_transforms.html">Coordinate transformations</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="recipes.html">Recipes</a><ul>
@@ -121,7 +122,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>Data Structures</li>
+    <li>Data Structure</li>
       <li class="wy-breadcrumbs-aside">
         
           <a href="_sources/data_structures.txt" rel="nofollow"> View page source</a>
@@ -132,141 +133,32 @@
 </div>
           <div role="main" class="document">
             
-  <div class="section" id="data-structures">
-<h1>Data Structures<a class="headerlink" href="#data-structures" title="Permalink to this headline">¶</a></h1>
-<p>The core data structures of mBuild are illustrated below. The primary building
-blocks in an mBuild hierarchy inherit from the <tt class="docutils literal"><span class="pre">Compound</span></tt> class.
-<tt class="docutils literal"><span class="pre">Compounds</span></tt> maintain an ordered set of <tt class="docutils literal"><span class="pre">Parts</span></tt> which can be other
-<tt class="docutils literal"><span class="pre">Compounds</span></tt>, <tt class="docutils literal"><span class="pre">Atoms</span></tt> and <tt class="docutils literal"><span class="pre">Bonds</span></tt>.  In addition, an independent, ordered
-dictionary of <tt class="docutils literal"><span class="pre">labels</span></tt> is maintained through which users can reference any
-other <tt class="docutils literal"><span class="pre">Part</span></tt> in the hierarchy via descriptive strings.  Every <tt class="docutils literal"><span class="pre">Part</span></tt> knows
-its parent <tt class="docutils literal"><span class="pre">Compound</span></tt>, one step up in the hierarchy, and knows which
-<tt class="docutils literal"><span class="pre">Compounds</span></tt> reference it in their <tt class="docutils literal"><span class="pre">labels</span></tt>.  <tt class="docutils literal"><span class="pre">Ports</span></tt> are a special type
-of <tt class="docutils literal"><span class="pre">Compound</span></tt> which are used internally to connect different <tt class="docutils literal"><span class="pre">Compounds</span></tt>
-using the equivalence transformations described below.</p>
-<div class="figure align-left">
-<a class="reference internal image-reference" href="_images/data_structures.png"><img alt="Data structures." src="_images/data_structures.png" style="width: 3239.0px; height: 1904.0px;" /></a>
-<p class="caption"><strong>A)</strong> The core data structures of mBuild. <tt class="docutils literal"><span class="pre">Atom</span></tt>, Bond`` and
-<tt class="docutils literal"><span class="pre">Compound</span></tt> all inherit from <tt class="docutils literal"><span class="pre">Part</span></tt> and <tt class="docutils literal"><span class="pre">Ports</span></tt> are a special type of
-<tt class="docutils literal"><span class="pre">Compound</span></tt> which are typically only used internally but may also be
-output if desired.  <strong>B)</strong> The spatial arrangement of the atoms within
-a <tt class="docutils literal"><span class="pre">Port</span></tt>.  Both <tt class="docutils literal"><span class="pre">up</span></tt> and <tt class="docutils literal"><span class="pre">down</span></tt> contain the same arrangement of four
-non-coplanar <tt class="docutils literal"><span class="pre">Atoms</span></tt> except that they face opposite directions.</p>
-</div>
-<div class="section" id="atom">
-<h2>Atom<a class="headerlink" href="#atom" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="mbuild.atom.Atom">
-<em class="property">class </em><tt class="descclassname">mbuild.atom.</tt><tt class="descname">Atom</tt><big>(</big><em>name</em>, <em>pos=None</em>, <em>charge=0.0</em><big>)</big><a class="reference internal" href="_modules/mbuild/atom.html#Atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.atom.Atom" title="Permalink to this definition">¶</a></dt>
-<dd><p>Elementary container class - typically a leaf in the hierarchy.</p>
-<p class="rubric">Notes</p>
-<p>Atoms are also used as &#8220;ghost&#8221; particles in Ports; such atoms are named &#8216;G&#8217;.</p>
-<p>Atoms can be added and substracted using +/- operators. The result is
-the addition or subtraction of the Atoms&#8217; cartesian coordinates.</p>
-<p class="rubric">Attributes</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="11%" />
-<col width="89%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td>name</td>
-<td>(str) The name of the atom, usually the chemical element.</td>
-</tr>
-<tr class="row-even"><td>pos</td>
-<td>(np.ndarray, shape=(3,), dtype=float) Cartesian coordinates of the atom.</td>
-</tr>
-<tr class="row-odd"><td>charge</td>
-<td>(float) Partial charge on the atom.</td>
-</tr>
-<tr class="row-even"><td>parent</td>
-<td>(mb.Compound) Compound to which the Atom belongs.</td>
-</tr>
-<tr class="row-odd"><td>referrers</td>
-<td>(set of mb.Compounds) All Compounds that refer to this instance of Atom.</td>
-</tr>
-<tr class="row-even"><td>bonds</td>
-<td>(set of mb.Bonds) Every Bond that the Atom is a part of.</td>
-</tr>
-</tbody>
-</table>
-<dl class="attribute">
-<dt id="mbuild.atom.Atom.center">
-<tt class="descname">center</tt><a class="reference internal" href="_modules/mbuild/atom.html#Atom.center"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.atom.Atom.center" title="Permalink to this definition">¶</a></dt>
-<dd><p>Work around to make coordinate transforms work on Atoms.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mbuild.atom.Atom.neighbors">
-<tt class="descname">neighbors</tt><a class="reference internal" href="_modules/mbuild/atom.html#Atom.neighbors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.atom.Atom.neighbors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of all neighboring Atoms.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mbuild.atom.Atom.xyz_with_ports">
-<tt class="descname">xyz_with_ports</tt><a class="reference internal" href="_modules/mbuild/atom.html#Atom.xyz_with_ports"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.atom.Atom.xyz_with_ports" title="Permalink to this definition">¶</a></dt>
-<dd><p>Work around to make coordinate transforms work on Atoms.</p>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="bond">
-<h2>Bond<a class="headerlink" href="#bond" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="mbuild.bond.Bond">
-<em class="property">class </em><tt class="descclassname">mbuild.bond.</tt><tt class="descname">Bond</tt><big>(</big><em>atom1</em>, <em>atom2</em>, <em>kind=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/bond.html#Bond"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.bond.Bond" title="Permalink to this definition">¶</a></dt>
-<dd><p>Connection between two Atoms.</p>
-<p class="rubric">Attributes</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="11%" />
-<col width="89%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td>atom1</td>
-<td>(mb.Atom) First Atom in the bond.</td>
-</tr>
-<tr class="row-even"><td>atom2</td>
-<td>(mb.Atom) Second Atom in the bond.</td>
-</tr>
-<tr class="row-odd"><td>parent</td>
-<td>(mb.Compound) Compound to which the Bond belongs.</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="mbuild.bond.Bond.has_atoms_outside_of">
-<tt class="descname">has_atoms_outside_of</tt><big>(</big><em>root_compound</em><big>)</big><a class="reference internal" href="_modules/mbuild/bond.html#Bond.has_atoms_outside_of"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.bond.Bond.has_atoms_outside_of" title="Permalink to this definition">¶</a></dt>
-<dd><p>Has atoms outside of the containment hierarchy of a Compound.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.bond.Bond.has_both_atoms_within">
-<tt class="descname">has_both_atoms_within</tt><big>(</big><em>root_compound</em><big>)</big><a class="reference internal" href="_modules/mbuild/bond.html#Bond.has_both_atoms_within"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.bond.Bond.has_both_atoms_within" title="Permalink to this definition">¶</a></dt>
-<dd><p>Both atoms are within the containment hierarchy of a Compound.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.bond.Bond.length">
-<tt class="descname">length</tt><big>(</big><em>periodicity=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/bond.html#Bond.length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.bond.Bond.length" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the bond length considering minimum image.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.bond.Bond.other_atom">
-<tt class="descname">other_atom</tt><big>(</big><em>atom</em><big>)</big><a class="reference internal" href="_modules/mbuild/bond.html#Bond.other_atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.bond.Bond.other_atom" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the other Atom in the Bond.</p>
-</dd></dl>
-
-</dd></dl>
-
-</div>
+  <div class="section" id="data-structure">
+<h1>Data Structure<a class="headerlink" href="#data-structure" title="Permalink to this headline">¶</a></h1>
+<p>The core data structure of mBuild is illustrated below. The primary building
+blocks in an mBuild hierarchy inherit from the <code class="docutils literal"><span class="pre">Compound</span></code> class.
+<code class="docutils literal"><span class="pre">Compounds</span></code> maintain an ordered set of <code class="docutils literal"><span class="pre">children</span></code> which are other
+<code class="docutils literal"><span class="pre">Compounds</span></code>.  In addition, an independent, ordered dictionary of <code class="docutils literal"><span class="pre">labels</span></code>
+is maintained through which users can reference any other <code class="docutils literal"><span class="pre">Compound</span></code> in the
+hierarchy via descriptive strings.  Every <code class="docutils literal"><span class="pre">Compound</span></code> knows its parent
+<code class="docutils literal"><span class="pre">Compound</span></code>, one step up in the hierarchy, and knows which <code class="docutils literal"><span class="pre">Compounds</span></code>
+reference it in their <code class="docutils literal"><span class="pre">labels</span></code>.  <code class="docutils literal"><span class="pre">Ports</span></code> are a special type of <code class="docutils literal"><span class="pre">Compound</span></code>
+which are used internally to connect different <code class="docutils literal"><span class="pre">Compounds</span></code> using the
+equivalence transformations described below.</p>
+<p><code class="docutils literal"><span class="pre">Compounds</span></code> at the bottom of an mBuild hierarchy, the leafs of the tree, are
+referred to as <code class="docutils literal"><span class="pre">Particles</span></code> and can be instantiated as
+<code class="docutils literal"><span class="pre">foo</span> <span class="pre">=</span> <span class="pre">mb.Particle(name='bar')</span></code>. Note however, that this merely serves to
+illustrate that this <code class="docutils literal"><span class="pre">Compound</span></code> is at the bottom of the hierarchy;
+<code class="docutils literal"><span class="pre">Particle</span></code> is just an alias for <code class="docutils literal"><span class="pre">Compound</span></code> which can be used to clarify
+the intended role of an object you are creating. The method
+<code class="docutils literal"><span class="pre">Compound.particles()</span></code> traverses the hierarchy to the bottom and yields
+those <code class="docutils literal"><span class="pre">Compounds</span></code>. <code class="docutils literal"><span class="pre">Compound.root()</span></code> returns the compound at the top of
+the hierarchy.</p>
 <div class="section" id="compound">
 <h2>Compound<a class="headerlink" href="#compound" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="mbuild.compound.Compound">
-<em class="property">class </em><tt class="descclassname">mbuild.compound.</tt><tt class="descname">Compound</tt><big>(</big><em>subcompounds=None</em>, <em>kind=None</em>, <em>periodicity=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">mbuild.compound.</code><code class="descname">Compound</code><span class="sig-paren">(</span><em>subcompounds=None</em>, <em>name=None</em>, <em>pos=None</em>, <em>charge=0.0</em>, <em>periodicity=None</em>, <em>port_particle=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound" title="Permalink to this definition">¶</a></dt>
 <dd><p>A building block in the mBuild hierarchy.</p>
 <p>Compound is the superclass of all composite building blocks in the mBuild
 hierarchy. That is, all composite building blocks must inherit from
@@ -274,24 +166,24 @@ compound, either directly or indirectly. The design of Compound follows the
 Composite design pattern (Gamma, Erich; Richard Helm; Ralph Johnson; John
 M. Vlissides (1995). Design Patterns: Elements of Reusable Object-Oriented
 Software. Addison-Wesley. p. 395. ISBN 0-201-63361-2.), with Compound being
-the composite, and Atom playing the role of the primitive (leaf) part.</p>
-<p>Compound maintains a list of parts (contained Compounds, Atoms, Bonds,
-etc., that inherit from Part), and provides a means to tag the parts
-with labels, so that the parts can be easily looked up later. Labels may
-also point to objects outside the Compound&#8217;s containment hierarchy.
-Compound has built-in support for copying and deepcopying Compound
-hierarchies, enumerating atoms or bonds in the hierarchy, proximity based
-searches, visualization, I/O operations, and a number of other convenience
-methods.</p>
+the composite, and Particle playing the role of the primitive (leaf) part,
+where Particle is in fact simply an alias to the Compound class.</p>
+<p>Compound maintains a list of children (other Compounds contained within), and
+provides a means to tag the children with labels, so that the compounds can
+be easily looked up later. Labels may also point to objects outside the
+Compound&#8217;s containment hierarchy. Compound has built-in support for copying
+and deepcopying Compound hierarchies, enumerating particles or bonds in the
+hierarchy, proximity based searches, visualization, I/O operations, and a
+number of other convenience methods.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>subcompounds</strong> : Parts, optional, default=None</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>subcompounds</strong> : Compound, optional, default=None</p>
 <blockquote>
-<div><p>One or more parts to be added to self.</p>
+<div><p>One or more compounds to be added to self.</p>
 </div></blockquote>
-<p><strong>kind</strong> : str, optional, default=self.__class__.__name__</p>
+<p><strong>name</strong> : str, optional, default=self.__class__.__name__</p>
 <blockquote>
 <div><p>The type of Compound.</p>
 </div></blockquote>
@@ -311,17 +203,17 @@ Defaults to zeros which is treated as non-periodic.</p>
 <col width="94%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td>kind</td>
+<tr class="row-odd"><td>name</td>
 <td>(str, optional, default=self.__class__.__name__) The type of Compound.</td>
 </tr>
 <tr class="row-even"><td>periodicity</td>
 <td>(np.ndarray, shape=(3,), dtype=float, optional) The periodic lengths of the Compound in the x, y and z directions. Defaults to zeros which is treated as non-periodic.</td>
 </tr>
-<tr class="row-odd"><td>parts</td>
-<td>(OrderedSet) Contains all child parts. Parts can be Atom, Bond or Compound - anything that inherits from Part.</td>
+<tr class="row-odd"><td>children</td>
+<td>(OrderedSet) Contains all children (other Compounds).</td>
 </tr>
 <tr class="row-even"><td>labels</td>
-<td>(OrderedDict) Labels to Compound/Atom mappings. These do not necessarily need not be in parts.</td>
+<td>(OrderedDict) Labels to Compound/Atom mappings. These do not necessarily need not be in self.children.</td>
 </tr>
 <tr class="row-odd"><td>parent</td>
 <td>(mb.Compound) The parent Compound that contains this part. Can be None if this compound is the root of the containment hierarchy.</td>
@@ -333,11 +225,11 @@ Defaults to zeros which is treated as non-periodic.</p>
 </table>
 <dl class="method">
 <dt id="mbuild.compound.Compound.add">
-<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.add" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add</code><span class="sig-paren">(</span><em>new_child</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <dl class="docutils">
 <dt>Note:</dt>
-<dd>This does not necessarily add the part to self.parts but may
+<dd>This does not necessarily add the part to self.children but may
 instead be used to add a reference to the part to self.labels. See
 &#8216;containment&#8217; argument.</dd>
 </dl>
@@ -345,7 +237,7 @@ instead be used to add a reference to the part to self.labels. See
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>new_part</strong> : mb.Atom, mb.Bond or mb.Compound</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>new_child</strong> : mb.Compound</p>
 <blockquote>
 <div><p>The object to be added to this Compound.</p>
 </div></blockquote>
@@ -355,7 +247,7 @@ instead be used to add a reference to the part to self.labels. See
 </div></blockquote>
 <p><strong>containment</strong> : bool, optional, default=True</p>
 <blockquote>
-<div><p>Add the part to self.parts.</p>
+<div><p>Add the part to self.children.</p>
 </div></blockquote>
 <p><strong>replace</strong> : bool, optional, default=True</p>
 <blockquote class="last">
@@ -368,78 +260,32 @@ instead be used to add a reference to the part to self.labels. See
 </dd></dl>
 
 <dl class="method">
-<dt id="mbuild.compound.Compound.add_bonds">
-<tt class="descname">add_bonds</tt><big>(</big><em>type_a</em>, <em>type_b</em>, <em>dmin</em>, <em>dmax</em>, <em>kind=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.add_bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.add_bonds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add Bonds between all pairs of types a/b within [dmin, dmax].</p>
+<dt id="mbuild.compound.Compound.ancestors">
+<code class="descname">ancestors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.ancestors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.ancestors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all ancestors of the Compound recursively.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="mbuild.compound.Compound.atom_list_by_name">
-<tt class="descname">atom_list_by_name</tt><big>(</big><em>name='*'</em>, <em>exclude_ports=True</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.atom_list_by_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.atom_list_by_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of Atoms filtered by their name.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name</strong> : str</p>
-<blockquote>
-<div><p>Return only atoms of this type. &#8216;*&#8217; indicates all.</p>
-</div></blockquote>
-<p><strong>exclude_ports</strong> : bool</p>
-<blockquote>
-<div><p>Exclude Port particles of kind &#8216;G&#8217; - reserved for Ports.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>atom_list</strong> : list</p>
-<blockquote class="last">
-<div><p>List of Atoms matching the inputs.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mbuild.compound.Compound.atoms">
-<tt class="descname">atoms</tt><a class="reference internal" href="_modules/mbuild/compound.html#Compound.atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>A list of all Atoms in the Compound and sub-Compounds.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.compound.Compound.atoms_in_range">
-<tt class="descname">atoms_in_range</tt><big>(</big><em>atom</em>, <em>dmax</em>, <em>max_atoms=20</em>, <em>atom_kdtree=None</em>, <em>atom_array=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.atoms_in_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.atoms_in_range" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find atoms within a specified range of another atom.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.compound.Compound.bond_list_by_kind">
-<tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.bond_list_by_kind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of Bonds filtered by their kind.</p>
-</dd></dl>
-
-<dl class="attribute">
 <dt id="mbuild.compound.Compound.bonds">
-<tt class="descname">bonds</tt><a class="reference internal" href="_modules/mbuild/compound.html#Compound.bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.bonds" title="Permalink to this definition">¶</a></dt>
+<code class="descname">bonds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.bonds" title="Permalink to this definition">¶</a></dt>
 <dd><p>A list of all Bonds in the Compound and sub-Compounds.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.boundingbox">
-<tt class="descname">boundingbox</tt><a class="reference internal" href="_modules/mbuild/compound.html#Compound.boundingbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.boundingbox" title="Permalink to this definition">¶</a></dt>
+<code class="descname">boundingbox</code><a class="headerlink" href="#mbuild.compound.Compound.boundingbox" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the bounding box of the compound.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.center">
-<tt class="descname">center</tt><a class="reference internal" href="_modules/mbuild/compound.html#Compound.center"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.center" title="Permalink to this definition">¶</a></dt>
+<code class="descname">center</code><a class="headerlink" href="#mbuild.compound.Compound.center" title="Permalink to this definition">¶</a></dt>
 <dd><p>The cartesian center of the Compound based on its Atoms.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.from_trajectory">
-<tt class="descname">from_trajectory</tt><big>(</big><em>traj</em>, <em>frame=-1</em>, <em>coords_only=False</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.from_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.from_trajectory" title="Permalink to this definition">¶</a></dt>
+<code class="descname">from_trajectory</code><span class="sig-paren">(</span><em>traj</em>, <em>frame=-1</em>, <em>coords_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.from_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.from_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract atoms and bonds from a md.Trajectory.</p>
 <p>Will create sub-compounds for every chain if there is more than one
 and sub-sub-compounds for every residue.</p>
@@ -462,38 +308,49 @@ and sub-sub-compounds for every residue.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="mbuild.compound.Compound.generate_bonds">
+<code class="descname">generate_bonds</code><span class="sig-paren">(</span><em>name_a</em>, <em>name_b</em>, <em>dmin</em>, <em>dmax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.generate_bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.generate_bonds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Bonds between all pairs of types a/b within [dmin, dmax].</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="mbuild.compound.Compound.min_periodic_distance">
-<tt class="descname">min_periodic_distance</tt><big>(</big><em>xyz0</em>, <em>xyz1</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.min_periodic_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
+<code class="descname">min_periodic_distance</code><span class="sig-paren">(</span><em>xyz0</em>, <em>xyz1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.min_periodic_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Vectorized distance calculation considering minimum image.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="mbuild.compound.Compound.n_atoms">
-<tt class="descname">n_atoms</tt><a class="reference internal" href="_modules/mbuild/compound.html#Compound.n_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.n_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the number of Atoms in the Compound.</p>
-</dd></dl>
-
-<dl class="attribute">
 <dt id="mbuild.compound.Compound.n_bonds">
-<tt class="descname">n_bonds</tt><a class="reference internal" href="_modules/mbuild/compound.html#Compound.n_bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.n_bonds" title="Permalink to this definition">¶</a></dt>
+<code class="descname">n_bonds</code><a class="headerlink" href="#mbuild.compound.Compound.n_bonds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the number of Bonds in the Compound.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="mbuild.compound.Compound.particles">
+<code class="descname">particles</code><span class="sig-paren">(</span><em>include_ports=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.particles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.particles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.particles_in_range">
+<code class="descname">particles_in_range</code><span class="sig-paren">(</span><em>compound</em>, <em>dmax</em>, <em>max_particles=20</em>, <em>particle_kdtree=None</em>, <em>particle_array=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.particles_in_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.particles_in_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find particles ithin a specified range of another particle.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="mbuild.compound.Compound.referenced_ports">
-<tt class="descname">referenced_ports</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.referenced_ports"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.referenced_ports" title="Permalink to this definition">¶</a></dt>
+<code class="descname">referenced_ports</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.referenced_ports"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.referenced_ports" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all Ports referenced by this Compound.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.remove">
-<tt class="descname">remove</tt><big>(</big><em>objs_to_remove</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.remove" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove parts (Atom, Bond or Compound) from the Compound.</p>
+<code class="descname">remove</code><span class="sig-paren">(</span><em>objs_to_remove</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove children from the Compound.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.save">
-<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>show_ports=False</em>, <em>forcefield=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>show_ports=False</em>, <em>forcefield=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -503,6 +360,14 @@ and sub-sub-compounds for every residue.</p>
 <blockquote>
 <div><p>Filesystem path in which to save the trajectory. The extension or
 prefix will be parsed and will control the format.</p>
+</div></blockquote>
+<p><strong>show_ports</strong> : bool, default=False</p>
+<blockquote>
+<div><p>Save ports contained within the compound.</p>
+</div></blockquote>
+<p><strong>forcefield</strong> : str, default=None</p>
+<blockquote>
+<div><p>Apply a forcefield to the output file using the <cite>foyer</cite> package.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -516,27 +381,33 @@ prefix will be parsed and will control the format.</p>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.save_gromacs">
-<tt class="descname">save_gromacs</tt><big>(</big><em>filename</em>, <em>traj</em>, <em>force_overwrite=True</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save_gromacs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save_gromacs" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save_gromacs</code><span class="sig-paren">(</span><em>filename</em>, <em>traj</em>, <em>force_overwrite=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save_gromacs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save_gromacs" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.save_hoomdxml">
-<tt class="descname">save_hoomdxml</tt><big>(</big><em>filename</em>, <em>traj</em>, <em>force_overwrite=True</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save_hoomdxml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save_hoomdxml" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save_hoomdxml</code><span class="sig-paren">(</span><em>filename</em>, <em>traj</em>, <em>force_overwrite=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save_hoomdxml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save_hoomdxml" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.save_lammpsdata">
-<tt class="descname">save_lammpsdata</tt><big>(</big><em>filename</em>, <em>traj</em>, <em>force_overwrite=True</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save_lammpsdata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save_lammpsdata" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save_lammpsdata</code><span class="sig-paren">(</span><em>filename</em>, <em>traj</em>, <em>force_overwrite=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save_lammpsdata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save_lammpsdata" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.save_mol2">
-<tt class="descname">save_mol2</tt><big>(</big><em>filename</em>, <em>traj</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save_mol2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save_mol2" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save_mol2</code><span class="sig-paren">(</span><em>filename</em>, <em>traj</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save_mol2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save_mol2" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="mbuild.compound.Compound.successors">
+<code class="descname">successors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.successors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.successors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield Compounds below self in the hierarchy.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="mbuild.compound.Compound.to_trajectory">
-<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em>, <em>chain_types=None</em>, <em>residue_types=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.to_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_trajectory</code><span class="sig-paren">(</span><em>show_ports=False</em>, <em>chain_types=None</em>, <em>residue_types=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.to_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.to_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert to an md.Trajectory and flatten the compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -555,19 +426,19 @@ prefix will be parsed and will control the format.</p>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">_to_topology</span></tt>, <tt class="xref py py-obj docutils literal"><span class="pre">mbuild.topology</span></tt></p>
+<p class="last"><code class="xref py py-obj docutils literal"><span class="pre">_to_topology</span></code></p>
 </div>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.update_coordinates">
-<tt class="descname">update_coordinates</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.update_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.update_coordinates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">update_coordinates</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.update_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.update_coordinates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the coordinates of this Compound from a file.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.view_hierarchy">
-<tt class="descname">view_hierarchy</tt><big>(</big><em>show_ports=False</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.view_hierarchy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.view_hierarchy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">view_hierarchy</code><span class="sig-paren">(</span><em>show_ports=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.view_hierarchy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.view_hierarchy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualize a compound hierarchy as a tree.</p>
 <p>A tree is constructed from the compound hierarchy with self as the root.
 The tree is then rendered in a web browser window using D3.js.</p>
@@ -575,31 +446,21 @@ The tree is then rendered in a web browser window using D3.js.</p>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.visualize">
-<tt class="descname">visualize</tt><big>(</big><em>show_ports=False</em>, <em>shader='lambert'</em>, <em>drawing_type='ball and stick'</em>, <em>camera_type='perspective'</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.visualize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.visualize" title="Permalink to this definition">¶</a></dt>
+<code class="descname">visualize</code><span class="sig-paren">(</span><em>show_ports=False</em>, <em>shader='lambert'</em>, <em>drawing_type='ball and stick'</em>, <em>camera_type='perspective'</em>, <em>element_properties=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.visualize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.visualize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualize the Compound using imolecule.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.xyz">
-<tt class="descname">xyz</tt><a class="reference internal" href="_modules/mbuild/compound.html#Compound.xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.xyz" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return all atom coordinates in this compound.</p>
+<code class="descname">xyz</code><a class="headerlink" href="#mbuild.compound.Compound.xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all particle coordinates in this compound.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.xyz_with_ports">
-<tt class="descname">xyz_with_ports</tt><a class="reference internal" href="_modules/mbuild/compound.html#Compound.xyz_with_ports"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.xyz_with_ports" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return all atom coordinates in this compound including ports.</p>
+<code class="descname">xyz_with_ports</code><a class="headerlink" href="#mbuild.compound.Compound.xyz_with_ports" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all particle coordinates in this compound including ports.</p>
 </dd></dl>
-
-<dl class="method">
-<dt id="mbuild.compound.Compound.yield_atoms">
-<tt class="descname">yield_atoms</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.yield_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.yield_atoms" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="mbuild.compound.Compound.yield_bonds">
-<tt class="descname">yield_bonds</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.yield_bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.yield_bonds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 
@@ -608,15 +469,15 @@ The tree is then rendered in a web browser window using D3.js.</p>
 <h2>Port<a class="headerlink" href="#port" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="mbuild.port.Port">
-<em class="property">class </em><tt class="descclassname">mbuild.port.</tt><tt class="descname">Port</tt><big>(</big><em>anchor=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/port.html#Port"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.port.Port" title="Permalink to this definition">¶</a></dt>
-<dd><p>A set of four ghost Atoms used to connect parts.</p>
+<em class="property">class </em><code class="descclassname">mbuild.port.</code><code class="descname">Port</code><span class="sig-paren">(</span><em>anchor=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/port.html#Port"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.port.Port" title="Permalink to this definition">¶</a></dt>
+<dd><p>A set of four ghost Particles used to connect parts.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>anchor</strong> : mb.Atom, optional, default=None</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>anchor</strong> : mb.Particle, optional, default=None</p>
 <blockquote class="last">
-<div><p>An atom associated with the port. Used to form bonds.</p>
+<div><p>A Particle associated with the port. Used to form bonds.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -630,44 +491,20 @@ The tree is then rendered in a web browser window using D3.js.</p>
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td>anchor</td>
-<td>(mb.Atom, optional, default=None) An atom associated with the port. Used to form bonds.</td>
+<td>(mb.Particle, optional, default=None) A Particle associated with the port. Used to form bonds.</td>
 </tr>
 <tr class="row-even"><td>up</td>
-<td>(mb.Compound) Collection of 4 ghost particles used to perform equivalence transforms. Faces the opposite direction as self.down.</td>
+<td>(mb.Compound) Collection of 4 ghost particles used to perform equivalence transforms. Faces the opposite direction as self[&#8216;down&#8217;].</td>
 </tr>
 <tr class="row-odd"><td>down</td>
-<td>(mb.Compound) Collection of 4 ghost particles used to perform equivalence transforms. Faces the opposite direction as self.up.</td>
+<td>(mb.Compound) Collection of 4 ghost particles used to perform equivalence transforms. Faces the opposite direction as self[&#8216;up&#8217;].</td>
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-</div>
-<div class="section" id="part">
-<h2>Part<a class="headerlink" href="#part" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="mbuild.part.Part">
-<em class="property">class </em><tt class="descclassname">mbuild.part.</tt><tt class="descname">Part</tt><a class="reference internal" href="_modules/mbuild/part.html#Part"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.part.Part" title="Permalink to this definition">¶</a></dt>
-<dd><p>A base class that designates a part in a hierarchy. &#8220;&#8221;&#8217;</p>
-<p class="rubric">Attributes</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="7%" />
-<col width="93%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td>parent</td>
-<td>(mb.Compound) The parent Compound that contains this part. Can be None if this compound is the root of the containment hierarchy.</td>
-</tr>
-<tr class="row-even"><td>referrers</td>
-<td>(set) Other compounds that reference this part with labels.</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="mbuild.part.Part.ancestors">
-<tt class="descname">ancestors</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/part.html#Part.ancestors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.part.Part.ancestors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate all ancestors of the Compound recursively.</p>
+<dl class="attribute">
+<dt id="mbuild.port.Port.center">
+<code class="descname">center</code><a class="headerlink" href="#mbuild.port.Port.center" title="Permalink to this definition">¶</a></dt>
+<dd><p>The cartesian center of the Port</p>
 </dd></dl>
 
 </dd></dl>
@@ -681,10 +518,10 @@ The tree is then rendered in a web browser window using D3.js.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="recipes.html" class="btn btn-neutral float-right" title="Recipes">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="coordinate_transforms.html" class="btn btn-neutral float-right" title="Coordinate transformations">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="tutorials/tutorial_monolayer.html" class="btn btn-neutral" title="Monolayer: Complex hierarchies, masks, tiling and writing to files"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="tutorials/tutorial_monolayer.html" class="btn btn-neutral" title="Monolayer: Complex hierarchies, patterns, tiling and writing to files"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

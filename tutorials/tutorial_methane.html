@@ -66,8 +66,9 @@
           
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-conda-preferred">Install with conda (preferred)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-conda">Install with conda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-source">Install from source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#get-the-latest-development-package">Get the latest development package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#testing-your-installation">Testing your installation</a></li>
 </ul>
@@ -77,19 +78,19 @@
 <li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="">Methane: Atoms, Bonds and Compounds</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_ethane.html">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_monolayer.html">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_monolayer.html">Monolayer: Complex hierarchies, patterns, tiling and writing to files</a></li>
 </ul>
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../data_structures.html">Data Structures</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../data_structures.html#atom">Atom</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../data_structures.html#bond">Bond</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../data_structures.html">Data Structure</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../data_structures.html#compound">Compound</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../data_structures.html#port">Port</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../data_structures.html#part">Part</a></li>
 </ul>
 </li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../coordinate_transforms.html">Coordinate transformations</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../recipes.html">Recipes</a><ul>
@@ -137,7 +138,7 @@
             
   <div class="section" id="methane-atoms-bonds-and-compounds">
 <h1>Methane: Atoms, Bonds and Compounds<a class="headerlink" href="#methane-atoms-bonds-and-compounds" title="Permalink to this headline">¶</a></h1>
-<p>Run this interactively by downloading the IPython Notebook file <a class="reference download internal" href="../_downloads/tutorial_methane.ipynb"><tt class="xref download docutils literal"><span class="pre">tutorial_methane.ipynb</span></tt></a>.</p>
+<p>Run this interactively by downloading the IPython Notebook file <a class="reference download internal" href="../_downloads/tutorial_methane.ipynb"><code class="xref download docutils literal"><span class="pre">tutorial_methane.ipynb</span></code></a>.</p>
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" />
@@ -314,7 +315,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Methane:-Atoms,-Bonds-and-Compounds">Methane: Atoms, Bonds and Compounds<a class="anchor-link" href="#Methane:-Atoms,-Bonds-and-Compounds">&#182;</a></h2><p>The primary building block in mBuild is a <code>Compound</code>. Anything you construct will inherit from this class. Let's start with some basic imports and initialization:</p>
+<h2 id="Methane:-Compounds-and-bonds">Methane: Compounds and bonds<a class="anchor-link" href="#Methane:-Compounds-and-bonds">&#182;</a></h2><p>The primary building block in mBuild is a <code>Compound</code>. Anything you construct will inherit from this class. Let's start with some basic imports and initialization:</p>
 
 </div>
 </div>
@@ -324,7 +325,7 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+<div class=" highlight hl-ipython3"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
 
 <span class="k">class</span> <span class="nc">Methane</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -341,8 +342,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The other parts used in building molecules are <code>Atoms</code> and <code>Bonds</code>. Either of them can be added to a <code>Compound</code> using its <code>add()</code> method. Let's add a carbon
-and a hydrogen atom to our <code>Methane</code>:</p>
+<p>Any <code>Compound</code> can contain other <code>Compounds</code> which can be added using its <code>add()</code> method. <code>Compounds</code> at the bottom of such a hierarchy are referred to as <code>Particles</code>. Note however, that this is purely semantic in mBuild to help clearly designate the bottom of a hierarchy.</p>
 
 </div>
 </div>
@@ -352,15 +352,15 @@ and a hydrogen atom to our <code>Methane</code>:</p>
 <div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+<div class=" highlight hl-ipython3"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
 
 <span class="k">class</span> <span class="nc">Methane</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Methane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="n">carbon</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">carbon</span><span class="p">)</span>
+        <span class="n">carbon</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">carbon</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;C[$]&#39;</span><span class="p">)</span>
 
-        <span class="n">hydrogen</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.11</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">hydrogen</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.11</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">hydrogen</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;HC[$]&#39;</span><span class="p">)</span>
 </pre></div>
 
@@ -374,7 +374,7 @@ and a hydrogen atom to our <code>Methane</code>:</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>By default a created <code>Atom</code> will be placed at <code>0, 0, 0</code> as indicated by its <code>pos</code> attribute.  The <code>Atom</code> objects contained in a <code>Compound</code> can be referenced via the <code>atoms</code> attribute which returns a list of all <code>Atoms</code> including those in any sub-compounds.</p>
+<p>By default a created <code>Compound/Particle</code> will be placed at <code>0, 0, 0</code> as indicated by its <code>pos</code> attribute.  The <code>Particle</code> objects contained in a <code>Compound</code>, the bottoms of the hierarchy, can be referenced via the <code>particles</code> method which returns a generator of all <code>Particle</code> objects contained below the <code>Compound</code> in the hierarchy.</p>
 <p><strong>Note:</strong> All positions in mBuild are stored in nanometers.</p>
 
 </div>
@@ -386,7 +386,7 @@ and a hydrogen atom to our <code>Methane</code>:</p>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Any part added to a <code>Compound</code> can be given an optional, descriptive string label. If the label ends with the characters <code>[$]</code>, a list will be created in the labels. Any subsequent parts added to the <code>Compound</code> with the same label prefix will be appended to the list. In the example above, we've labeled the hydrogen as <code>HC[$]</code>. So this first part, with the label prefix <code>HC</code>, is
-now referenceable via <code>self.HC[0]</code>. The next part added with the label <code>HC[$]</code> will be referenceable via <code>self.HC[1]</code>.</p>
+now referenceable via <code>self['HC'][0]</code>. The next part added with the label <code>HC[$]</code> will be referenceable via <code>self['HC'][1]</code>.</p>
 <p>Now let's use these styles of referencing to connect the carbon to the hydrogen. Note that for typical use cases, you will almost never have to explicitly define a bond when using mBuild - this is just to show you what's going on
 under the hood:</p>
 
@@ -395,22 +395,21 @@ under the hood:</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+<div class=" highlight hl-ipython3"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
 
 <span class="k">class</span> <span class="nc">Methane</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Methane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="n">carbon</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">carbon</span><span class="p">)</span>
+        <span class="n">carbon</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">carbon</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;C[$]&#39;</span><span class="p">)</span>
 
-        <span class="n">hydrogen</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.11</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">hydrogen</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.11</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">hydrogen</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;HC[$]&#39;</span><span class="p">)</span>
 
-        <span class="n">ch_bond</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Bond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">HC</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ch_bond</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_bond</span><span class="p">((</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;HC&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
 </pre></div>
 
 </div>
@@ -423,8 +422,7 @@ under the hood:</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>As you can see, the carbon is placed in the zero index of the <code>atoms</code> attribute. The hydrogen could be referenced via <code>self.atoms[1]</code> but since we gave it a fancy label, it's also referenceable via <code>HC[0]</code>.</p>
-<p>Like <code>Atoms</code>, <code>Bonds</code> also have a descriptive <code>kind</code> attribute. By default, <code>kind</code> is set to <code>'{0}-{1}'.format(atom1.name, atom2.name)</code>.</p>
+<p>As you can see, the carbon is placed in the zero index of <code>self</code>. The hydrogen could be referenced via <code>self[1]</code> but since we gave it a fancy label, it's also referenceable via <code>self['HC'][0]</code>.</p>
 <p>Alright now that we've got the basics, let's finish building our <code>Methane</code> and take a look at it:</p>
 
 </div>
@@ -432,30 +430,29 @@ under the hood:</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+<div class=" highlight hl-ipython3"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
 
 <span class="k">class</span> <span class="nc">Methane</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Methane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="n">carbon</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">carbon</span><span class="p">)</span>
+        <span class="n">carbon</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">carbon</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;C[$]&#39;</span><span class="p">)</span>
 
-        <span class="n">hydrogen</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">])</span>
+        <span class="n">hydrogen</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">hydrogen</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;HC[$]&#39;</span><span class="p">)</span>
         
-        <span class="n">ch_bond</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Bond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">HC</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ch_bond</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_bond</span><span class="p">((</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;HC&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;HC[$]&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;HC[$]&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;HC[$]&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;HC[$]&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;HC[$]&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;HC[$]&#39;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Bond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">HC</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Bond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">HC</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Bond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">HC</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_bond</span><span class="p">((</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;HC&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_bond</span><span class="p">((</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;HC&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_bond</span><span class="p">((</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;HC&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">]))</span>
 </pre></div>
 
 </div>
@@ -465,10 +462,10 @@ under the hood:</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="n">methane</span> <span class="o">=</span> <span class="n">Methane</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span class="n">methane</span> <span class="o">=</span> <span class="n">Methane</span><span class="p">()</span>
 <span class="n">methane</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
 </pre></div>
 
@@ -483,18 +480,20 @@ under the hood:</p>
 <div class="output_area"><div class="prompt"></div>
 
 <div class="output_html rendered_html output_subarea ">
-<div id="molecule_2a0ff768-3f2a-4741-a592-1cde605851e2"></div>
+<div id="molecule_4ff067fd-8606-4a99-973c-c5725ec63fea"></div>
            <script type="text/javascript">
            require.config({baseUrl: '/',
                            paths: {imolecule: ['nbextensions/imolecule.min', 'https://rawgit.com/patrickfuller/imolecule/master/imolecule/js/build/imolecule.min']}});
            require(['imolecule'], function () {
-               var $d = $('#molecule_2a0ff768-3f2a-4741-a592-1cde605851e2');
+               var $d = $('#molecule_4ff067fd-8606-4a99-973c-c5725ec63fea');
                $d.width(400); $d.height(300);
                $d.imolecule = jQuery.extend({}, imolecule);
                $d.imolecule.create($d, {drawingType: 'ball and stick',
                                         cameraType: 'perspective',
-                                        shader: 'lambert'});
-               $d.imolecule.draw({"atoms":[{"element":"C","location":[0.000000,0.000000,0.000000]},{"element":"H","location":[1.000000,0.000000,-0.700000]},{"element":"H","location":[-1.000000,0.000000,-0.700000]},{"element":"H","location":[0.000000,1.000000,0.700000]},{"element":"H","location":[0.000000,-1.000000,0.700000]}],"bonds":[{"atoms":[0,1],"order":1},{"atoms":[0,2],"order":1},{"atoms":[0,3],"order":1},{"atoms":[0,4],"order":1}],"name":"Methane"});
+                                        shader: 'lambert',
+                                        showSave: false});
+               $d.imolecule.addElements({});
+               $d.imolecule.draw({"atoms":[{"element":"C","location":[0.0,0.0,0.0]},{"element":"H","location":[1.0,0.0,-0.7000000000000001]},{"element":"H","location":[-1.0,0.0,-0.7000000000000001]},{"element":"H","location":[0.0,1.0,0.7000000000000001]},{"element":"H","location":[0.0,-1.0,0.7000000000000001]}],"bonds":[{"atoms":[3,0],"order":1},{"atoms":[1,0],"order":1},{"atoms":[0,4],"order":1},{"atoms":[0,2],"order":1}],"name":"Methane"});
 
                $d.resizable({
                    aspectRatio: 400 / 300,
@@ -518,7 +517,7 @@ under the hood:</p>
 <div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre> 
+<div class=" highlight hl-ipython3"><pre> 
 </pre></div>
 
 </div>

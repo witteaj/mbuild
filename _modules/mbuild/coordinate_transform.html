@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mbuild.coordinate_transform &mdash; mbuild 0.5.0.dev0 documentation</title>
+  <title>mbuild.coordinate_transform &mdash; mbuild 0.6.0.dev0 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="mbuild 0.5.0.dev0 documentation" href="../../index.html"/>
+    <link rel="top" title="mbuild 0.6.0.dev0 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -64,8 +64,9 @@
           
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../installation.html#install-with-conda-preferred">Install with conda (preferred)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../installation.html#install-with-conda">Install with conda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../installation.html#install-from-source">Install from source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../installation.html#get-the-latest-development-package">Get the latest development package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../installation.html#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../installation.html#testing-your-installation">Testing your installation</a></li>
 </ul>
@@ -75,11 +76,27 @@
 <li class="toctree-l1"><a class="reference internal" href="../../tutorials/tutorials.html">Tutorials</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/tutorial_methane.html">Methane: Atoms, Bonds and Compounds</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/tutorial_ethane.html">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tutorial_monolayer.html">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tutorial_monolayer.html">Monolayer: Complex hierarchies, patterns, tiling and writing to files</a></li>
 </ul>
 </li>
 </ul>
-<ul class="simple">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../data_structures.html">Data Structure</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../data_structures.html#compound">Compound</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../data_structures.html#port">Port</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../coordinate_transforms.html">Coordinate transformations</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes.html">Recipes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../recipes.html#monolayer">Monolayer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../recipes.html#polymer">Polymer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../recipes.html#tiled-compound">Tiled Compound</a></li>
+</ul>
+</li>
 </ul>
 
           
@@ -116,8 +133,6 @@
           <div role="main" class="document">
             
   <h1>Source code for mbuild.coordinate_transform</h1><div class="highlight"><pre>
-<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;sallai&#39;</span>
-
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="kn">import</span> <span class="n">norm</span><span class="p">,</span> <span class="n">svd</span><span class="p">,</span> <span class="n">inv</span>
 
@@ -139,7 +154,7 @@
     <span class="k">def</span> <span class="nf">apply_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Apply the coordinate transformation to points in A. &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">A</span> <span class="o">=</span> <span class="n">expand_dims</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">A_new</span> <span class="o">=</span> <span class="n">hstack</span><span class="p">([</span><span class="n">A</span><span class="p">,</span> <span class="n">ones</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="mi">1</span><span class="p">))])</span>
 
@@ -316,45 +331,27 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">RigidTransform</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">unit_vector</span><span class="p">(</span><span class="n">vector</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">unit_vector</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Returns the unit vector of the vector. &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">vector</span> <span class="o">/</span> <span class="n">norm</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">v</span> <span class="o">/</span> <span class="n">norm</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">vec_angle</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Returns the angle in radians between vectors &#39;v1&#39; and &#39;v2&#39;</span>
-
-<span class="sd">    &gt;&gt;&gt; vec_angle((1, 0, 0), (0, 1, 0))</span>
-<span class="sd">    1.5707963267948966</span>
-<span class="sd">    &gt;&gt;&gt; vec_angle((1, 0, 0), (1, 0, 0))</span>
-<span class="sd">    0.0</span>
-<span class="sd">    &gt;&gt;&gt; vec_angle((1, 0, 0), (-1, 0, 0))</span>
-<span class="sd">    3.141592653589793</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">v1_u</span> <span class="o">=</span> <span class="n">unit_vector</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span>
-    <span class="n">v2_u</span> <span class="o">=</span> <span class="n">unit_vector</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span>
-
-    <span class="n">d</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">v1_u</span><span class="p">,</span> <span class="n">v2_u</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">d</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.000000001</span><span class="p">:</span>
-        <span class="n">angle</span> <span class="o">=</span> <span class="mf">0.0</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">angle</span> <span class="o">=</span> <span class="n">arccos</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">isnan</span><span class="p">(</span><span class="n">angle</span><span class="p">):</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">v1_u</span> <span class="o">==</span> <span class="n">v2_u</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
-            <span class="k">return</span> <span class="mf">0.0</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">pi</span>
-    <span class="k">return</span> <span class="n">angle</span>
+<span class="k">def</span> <span class="nf">angle</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns the angle in radians between two vectors. &quot;&quot;&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">/</span> <span class="n">norm</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">/</span> <span class="n">norm</span> <span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">arccos</span><span class="p">(</span><span class="n">clip</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
 
-<span class="k">def</span> <span class="nf">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">arrnx3</span><span class="p">):</span>
-    <span class="kn">from</span> <span class="nn">mbuild.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">Atom</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_set_particle_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">arrnx3</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">compound</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">arrnx3</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Trying to set position of {} with more than one&#39;</span>
+                             <span class="s">&#39;coordinate: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">arrnx3</span><span class="p">))</span>
         <span class="n">compound</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">squeeze</span><span class="p">(</span><span class="n">arrnx3</span><span class="p">)</span>
-        <span class="k">return</span>
-    <span class="n">arr</span> <span class="o">=</span> <span class="n">arrnx3</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">atom</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">compound</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">()):</span>
-        <span class="n">atom</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">arr</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">atom</span><span class="p">,</span> <span class="n">coords</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">compound</span><span class="o">.</span><span class="n">_particles</span><span class="p">(</span><span class="n">include_ports</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">arrnx3</span><span class="p">):</span>
+            <span class="n">atom</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">coords</span>
 
 
 <span class="k">def</span> <span class="nf">_create_equivalence_transform</span><span class="p">(</span><span class="n">equiv</span><span class="p">):</span>
@@ -373,7 +370,6 @@
 <span class="sd">        coordinates system.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">mbuild.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
     <span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
     <span class="n">self_points</span> <span class="o">=</span> <span class="n">array</span><span class="p">([])</span>
     <span class="n">self_points</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
@@ -383,26 +379,25 @@
     <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">equiv</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Equivalence pair not a 2-tuple&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="p">((</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Compound</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Compound</span><span class="p">))</span> <span class="ow">or</span>
-                <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Atom</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Atom</span><span class="p">))):</span>
-            <span class="c"># TODO: is the Atom and Atom comparison necessary?</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Compound</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Compound</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Equivalence pair type mismatch: pair[0] is a {0} &#39;</span>
                             <span class="s">&#39;and pair[1] is a {1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">type</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Atom</span><span class="p">):</span>
+        <span class="c"># TODO: vstack is slow, replace with list concatenation</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
             <span class="n">self_points</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">([</span><span class="n">self_points</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span><span class="p">])</span>
             <span class="n">other_points</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">([</span><span class="n">other_points</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span><span class="p">])</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Compound</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">atom0</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">():</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">atom0</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_particles</span><span class="p">(</span><span class="n">include_ports</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
                 <span class="n">self_points</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">([</span><span class="n">self_points</span><span class="p">,</span> <span class="n">atom0</span><span class="o">.</span><span class="n">pos</span><span class="p">])</span>
-            <span class="k">for</span> <span class="n">atom1</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">atom1</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_particles</span><span class="p">(</span><span class="n">include_ports</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
                 <span class="n">other_points</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">([</span><span class="n">other_points</span><span class="p">,</span> <span class="n">atom1</span><span class="o">.</span><span class="n">pos</span><span class="p">])</span>
 
     <span class="n">T</span> <span class="o">=</span> <span class="n">RigidTransform</span><span class="p">(</span><span class="n">self_points</span><span class="p">,</span> <span class="n">other_points</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">T</span>
 
 
-<div class="viewcode-block" id="equivalence_transform"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.equivalence_transform">[docs]</a><span class="k">def</span> <span class="nf">equivalence_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">from_positions</span><span class="p">,</span> <span class="n">to_positions</span><span class="p">,</span> <span class="n">add_bond</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">equivalence_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">from_positions</span><span class="p">,</span> <span class="n">to_positions</span><span class="p">,</span> <span class="n">add_bond</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Computes an affine transformation that maps the from_positions to the</span>
 <span class="sd">    respective to_positions, and applies this transformation to the compound.</span>
 
@@ -417,24 +412,29 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">mbuild.port</span> <span class="kn">import</span> <span class="n">Port</span>
-    <span class="kn">from</span> <span class="nn">mbuild.bond</span> <span class="kn">import</span> <span class="n">Bond</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="bp">None</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">from_positions</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">to_positions</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
         <span class="n">equivalence_pairs</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">from_positions</span><span class="p">,</span> <span class="n">to_positions</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">from_positions</span><span class="p">,</span> <span class="n">Port</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">to_positions</span><span class="p">,</span> <span class="n">Port</span><span class="p">):</span>
-        <span class="n">equivalence_pairs</span> <span class="o">=</span> <span class="n">_choose_correct_port</span><span class="p">(</span><span class="n">from_positions</span><span class="p">,</span> <span class="n">to_positions</span><span class="p">)</span>
+        <span class="n">equivalence_pairs</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="n">_choose_correct_port</span><span class="p">(</span><span class="n">from_positions</span><span class="p">,</span> <span class="n">to_positions</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">equivalence_pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">from_positions</span><span class="p">,</span> <span class="n">to_positions</span><span class="p">)]</span>
 
-    <span class="n">T</span> <span class="o">=</span> <span class="n">_create_equivalence_transform</span><span class="p">(</span><span class="n">equivalence_pairs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">T</span><span class="p">:</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">_create_equivalence_transform</span><span class="p">(</span><span class="n">equivalence_pairs</span><span class="p">)</span>
     <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
     <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
-    <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_set_particle_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">add_bond</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">from_positions</span><span class="p">,</span> <span class="n">Port</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">to_positions</span><span class="p">,</span> <span class="n">Port</span><span class="p">):</span>
-            <span class="n">compound</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Bond</span><span class="p">(</span><span class="n">from_positions</span><span class="p">,</span> <span class="n">to_positions</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">from_positions</span><span class="o">.</span><span class="n">anchor</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">to_positions</span><span class="o">.</span><span class="n">anchor</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Attempting to form bond from port that has no anchor&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">from_positions</span><span class="o">.</span><span class="n">anchor</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">add_bond</span><span class="p">((</span><span class="n">from_positions</span><span class="o">.</span><span class="n">anchor</span><span class="p">,</span> <span class="n">to_positions</span><span class="o">.</span><span class="n">anchor</span><span class="p">))</span>
+                <span class="n">to_positions</span><span class="o">.</span><span class="n">anchor</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">add_bond</span><span class="p">((</span><span class="n">from_positions</span><span class="o">.</span><span class="n">anchor</span><span class="p">,</span> <span class="n">to_positions</span><span class="o">.</span><span class="n">anchor</span><span class="p">))</span>
 
-</div>
+
 <span class="k">def</span> <span class="nf">_choose_correct_port</span><span class="p">(</span><span class="n">from_port</span><span class="p">,</span> <span class="n">to_port</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Chooses the direction when using an equivalence transform on two Ports.</span>
 
@@ -460,132 +460,243 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c"># First we try matching the two &#39;up&#39; ports.</span>
-    <span class="n">T</span> <span class="o">=</span> <span class="n">_create_equivalence_transform</span><span class="p">([(</span><span class="n">from_port</span><span class="o">.</span><span class="n">up</span><span class="p">,</span> <span class="n">to_port</span><span class="o">.</span><span class="n">up</span><span class="p">)])</span>
-    <span class="n">new_position</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">array</span><span class="p">(</span><span class="n">from_port</span><span class="o">.</span><span class="n">anchor</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">T1</span> <span class="o">=</span> <span class="n">_create_equivalence_transform</span><span class="p">([(</span><span class="n">from_port</span><span class="p">[</span><span class="s">&#39;up&#39;</span><span class="p">],</span> <span class="n">to_port</span><span class="p">[</span><span class="s">&#39;up&#39;</span><span class="p">])])</span>
+    <span class="n">new_position</span> <span class="o">=</span> <span class="n">T1</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">array</span><span class="p">(</span><span class="n">from_port</span><span class="o">.</span><span class="n">anchor</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
 
-    <span class="c">#dist_between_anchors_up_up = norm(from_port.anchor - to_port.anchor)</span>
     <span class="n">dist_between_anchors_up_up</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">new_position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">to_port</span><span class="o">.</span><span class="n">anchor</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
 
     <span class="c"># Then matching a &#39;down&#39; with an &#39;up&#39; port.</span>
-    <span class="n">T</span> <span class="o">=</span> <span class="n">_create_equivalence_transform</span><span class="p">([(</span><span class="n">from_port</span><span class="o">.</span><span class="n">down</span><span class="p">,</span> <span class="n">to_port</span><span class="o">.</span><span class="n">up</span><span class="p">)])</span>
-    <span class="n">new_position</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">array</span><span class="p">(</span><span class="n">from_port</span><span class="o">.</span><span class="n">anchor</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">T2</span> <span class="o">=</span> <span class="n">_create_equivalence_transform</span><span class="p">([(</span><span class="n">from_port</span><span class="p">[</span><span class="s">&#39;down&#39;</span><span class="p">],</span> <span class="n">to_port</span><span class="p">[</span><span class="s">&#39;up&#39;</span><span class="p">])])</span>
+    <span class="n">new_position</span> <span class="o">=</span> <span class="n">T2</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">array</span><span class="p">(</span><span class="n">from_port</span><span class="o">.</span><span class="n">anchor</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
 
-    <span class="c"># Determine which transform places the anchors further away from each other</span>
+    <span class="c"># Determine which transform places the anchors further away from each other.</span>
     <span class="n">dist_between_anchors_down_up</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">new_position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">to_port</span><span class="o">.</span><span class="n">anchor</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
     <span class="n">difference_between_distances</span> <span class="o">=</span> <span class="n">dist_between_anchors_down_up</span> <span class="o">-</span> <span class="n">dist_between_anchors_up_up</span>
 
     <span class="k">if</span> <span class="n">difference_between_distances</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">correct_port</span> <span class="o">=</span> <span class="n">from_port</span><span class="o">.</span><span class="n">down</span>
+        <span class="n">correct_port</span> <span class="o">=</span> <span class="n">from_port</span><span class="p">[</span><span class="s">&#39;down&#39;</span><span class="p">]</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">T2</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">correct_port</span> <span class="o">=</span> <span class="n">from_port</span><span class="o">.</span><span class="n">up</span>
-    <span class="k">return</span> <span class="p">[(</span><span class="n">correct_port</span><span class="p">,</span> <span class="n">to_port</span><span class="o">.</span><span class="n">up</span><span class="p">)]</span>
+        <span class="n">correct_port</span> <span class="o">=</span> <span class="n">from_port</span><span class="p">[</span><span class="s">&#39;up&#39;</span><span class="p">]</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">T1</span>
+    <span class="k">return</span> <span class="p">[(</span><span class="n">correct_port</span><span class="p">,</span> <span class="n">to_port</span><span class="p">[</span><span class="s">&#39;up&#39;</span><span class="p">])],</span> <span class="n">T</span>
 
 
-<div class="viewcode-block" id="translate"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.translate">[docs]</a><span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">Translation</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
-    <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
-
-</div>
-<div class="viewcode-block" id="translate_to"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.translate_to">[docs]</a><span class="k">def</span> <span class="nf">translate_to</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
-    <span class="n">atom_positions</span> <span class="o">-=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">Translation</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
-    <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
-
-</div>
-<div class="viewcode-block" id="rotate_around_z"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.rotate_around_z">[docs]</a><span class="k">def</span> <span class="nf">rotate_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">RotationAroundZ</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
-    <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
-
-</div>
-<div class="viewcode-block" id="rotate_around_y"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.rotate_around_y">[docs]</a><span class="k">def</span> <span class="nf">rotate_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">RotationAroundY</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
-    <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
-
-</div>
-<div class="viewcode-block" id="rotate_around_x"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.rotate_around_x">[docs]</a><span class="k">def</span> <span class="nf">rotate_around_x</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">RotationAroundX</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
-    <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
-
-</div>
-<div class="viewcode-block" id="x_axis_transform"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.x_axis_transform">[docs]</a><span class="k">def</span> <span class="nf">x_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                     <span class="n">point_on_x_axis</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                     <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="translate"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.translate">[docs]</a><span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Translate a compound by a vector.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    compound:</span>
-<span class="sd">    new_origin:</span>
-<span class="sd">    point_on_x_axis:</span>
-<span class="sd">    point_on_xy_plane:</span>
+<span class="sd">    compound : mb.Compound</span>
+<span class="sd">        The compound being translated.</span>
+<span class="sd">    pos : np.ndarray, shape=(3,), dtype=float</span>
+<span class="sd">        The vector to translate the compound by.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Atom</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">Translation</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_set_particle_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_origin</span><span class="p">,</span> <span class="n">Atom</span><span class="p">):</span>
-        <span class="n">new_origin</span> <span class="o">=</span> <span class="n">new_origin</span><span class="o">.</span><span class="n">pos</span>
-    <span class="k">elif</span> <span class="n">new_origin</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+</div>
+<div class="viewcode-block" id="translate_to"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.translate_to">[docs]</a><span class="k">def</span> <span class="nf">translate_to</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Translate a compound to a coordinate.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    compound : mb.Compound</span>
+<span class="sd">        The compound being translated.</span>
+<span class="sd">    pos : np.ndarray, shape=(3,), dtype=float</span>
+<span class="sd">        The coordinate to translate the compound to.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
+    <span class="n">atom_positions</span> <span class="o">-=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">Translation</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_set_particle_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="rotate_around_x"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.rotate_around_x">[docs]</a><span class="k">def</span> <span class="nf">rotate_around_x</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rotate a compound around the x axis.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    compound : mb.Compound</span>
+<span class="sd">        The compound being rotated.</span>
+<span class="sd">    theta : float</span>
+<span class="sd">        The angle by which to rotate the compound.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">RotationAroundX</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_set_particle_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="rotate_around_y"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.rotate_around_y">[docs]</a><span class="k">def</span> <span class="nf">rotate_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rotate a compound around the y axis.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    compound : mb.Compound</span>
+<span class="sd">        The compound being rotated.</span>
+<span class="sd">    theta : float</span>
+<span class="sd">        The angle by which to rotate the compound.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">RotationAroundY</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_set_particle_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="rotate_around_z"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.rotate_around_z">[docs]</a><span class="k">def</span> <span class="nf">rotate_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rotate a compound around the z axis.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    compound : mb.Compound</span>
+<span class="sd">        The compound being rotated.</span>
+<span class="sd">    theta : float</span>
+<span class="sd">        The angle by which to rotate the compound.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">RotationAroundZ</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_set_particle_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="revolve_around_x"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.revolve_around_x">[docs]</a><span class="k">def</span> <span class="nf">revolve_around_x</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rotate a compound in place around the x axis.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    compound : mb.Compound</span>
+<span class="sd">        The compound being rotated.</span>
+<span class="sd">    theta : float</span>
+<span class="sd">        The angle by which to rotate the compound.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">center_pos</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="o">-</span><span class="n">center_pos</span><span class="p">)</span>
+    <span class="n">rotate_around_x</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">center_pos</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="revolve_around_y"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.revolve_around_y">[docs]</a><span class="k">def</span> <span class="nf">revolve_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rotate a compound in place around the y axis.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    compound : mb.Compound</span>
+<span class="sd">        The compound being rotated.</span>
+<span class="sd">    theta : float</span>
+<span class="sd">        The angle by which to rotate the compound.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">center_pos</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="o">-</span><span class="n">center_pos</span><span class="p">)</span>
+    <span class="n">rotate_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">center_pos</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="revolve_around_z"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.revolve_around_z">[docs]</a><span class="k">def</span> <span class="nf">revolve_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rotate a compound in place around the z axis.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    compound : mb.Compound</span>
+<span class="sd">        The compound being rotated.</span>
+<span class="sd">    theta : float</span>
+<span class="sd">        The angle by which to rotate the compound.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">center_pos</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="o">-</span><span class="n">center_pos</span><span class="p">)</span>
+    <span class="n">rotate_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">center_pos</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="x_axis_transform"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.x_axis_transform">[docs]</a><span class="k">def</span> <span class="nf">x_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">point_on_x_axis</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Move a compound such that the x-axis lies on specified points.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    compound : mb.Compound</span>
+<span class="sd">        The compound to move.</span>
+<span class="sd">    new_origin : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 0.0]</span>
+<span class="sd">        Where to place the new origin of the coordinate system.</span>
+<span class="sd">    point_on_x_axis : mb.Compound or np.ndarray, optional, default=[1.0, 0.0, 0.0]</span>
+<span class="sd">        A point on the new x-axis.</span>
+<span class="sd">    point_on_xy_plane : mb.Compound or np.ndarray, optional, default=[1.0, 0.0, 0.0]</span>
+<span class="sd">        A point on the new xy-plane.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">new_origin</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">new_origin</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">point_on_x_axis</span><span class="p">,</span> <span class="n">Atom</span><span class="p">):</span>
-        <span class="n">point_on_x_axis</span> <span class="o">=</span> <span class="n">point_on_x_axis</span><span class="o">.</span><span class="n">pos</span>
-    <span class="k">elif</span> <span class="n">point_on_x_axis</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_origin</span> <span class="o">=</span> <span class="n">new_origin</span><span class="o">.</span><span class="n">pos</span>
+    <span class="k">if</span> <span class="n">point_on_x_axis</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">point_on_x_axis</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">point_on_xy_plane</span><span class="p">,</span> <span class="n">Atom</span><span class="p">):</span>
-        <span class="n">point_on_xy_plane</span> <span class="o">=</span> <span class="n">point_on_xy_plane</span><span class="o">.</span><span class="n">pos</span>
-    <span class="k">elif</span> <span class="n">point_on_xy_plane</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">point_on_x_axis</span> <span class="o">=</span> <span class="n">point_on_x_axis</span><span class="o">.</span><span class="n">pos</span>
+    <span class="k">if</span> <span class="n">point_on_xy_plane</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">point_on_xy_plane</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">point_on_xy_plane</span> <span class="o">=</span> <span class="n">point_on_xy_plane</span><span class="o">.</span><span class="n">pos</span>
 
     <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
     <span class="n">transform</span> <span class="o">=</span> <span class="n">AxisTransform</span><span class="p">(</span><span class="n">new_origin</span><span class="o">=</span><span class="n">new_origin</span><span class="p">,</span>
                               <span class="n">point_on_x_axis</span><span class="o">=</span><span class="n">point_on_x_axis</span><span class="p">,</span>
                               <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">point_on_xy_plane</span><span class="p">)</span>
     <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
-    <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_set_particle_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="y_axis_transform"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.y_axis_transform">[docs]</a><span class="k">def</span> <span class="nf">y_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+<div class="viewcode-block" id="y_axis_transform"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.y_axis_transform">[docs]</a><span class="k">def</span> <span class="nf">y_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                      <span class="n">point_on_y_axis</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                      <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Move a compound such that the y-axis lies on specified points.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    compound : mb.Compound</span>
+<span class="sd">        The compound to move.</span>
+<span class="sd">    new_origin : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 0.0]</span>
+<span class="sd">        Where to place the new origin of the coordinate system.</span>
+<span class="sd">    point_on_y_axis : mb.Compound or np.ndarray, optional, default=[0.0, 1.0, 0.0]</span>
+<span class="sd">        A point on the new x-axis.</span>
+<span class="sd">    point_on_xy_plane : mb.Compound or np.ndarray, optional, default=[0.0, 1.0, 0.0]</span>
+<span class="sd">        A point on the new xy-plane.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">x_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="n">new_origin</span><span class="p">,</span>
                      <span class="n">point_on_x_axis</span><span class="o">=</span><span class="n">point_on_y_axis</span><span class="p">,</span>
                      <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">point_on_xy_plane</span><span class="p">)</span>
     <span class="n">rotate_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="z_axis_transform"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.z_axis_transform">[docs]</a><span class="k">def</span> <span class="nf">z_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+<div class="viewcode-block" id="z_axis_transform"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.z_axis_transform">[docs]</a><span class="k">def</span> <span class="nf">z_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                      <span class="n">point_on_z_axis</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                      <span class="n">point_on_zx_plane</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Move a compound such that the z-axis lies on specified points.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    compound : mb.Compound</span>
+<span class="sd">        The compound to move.</span>
+<span class="sd">    new_origin : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 0.0]</span>
+<span class="sd">        Where to place the new origin of the coordinate system.</span>
+<span class="sd">    point_on_y_axis : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 1.0]</span>
+<span class="sd">        A point on the new z-axis.</span>
+<span class="sd">    point_on_xy_plane : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 1.0]</span>
+<span class="sd">        A point on the new xz-plane.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">x_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="n">new_origin</span><span class="p">,</span>
                      <span class="n">point_on_x_axis</span><span class="o">=</span><span class="n">point_on_z_axis</span><span class="p">,</span>
                      <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">point_on_zx_plane</span><span class="p">)</span>
     <span class="n">rotate_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">pi</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
-
-</div>
-<span class="k">def</span> <span class="nf">revolve_around_x</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
-    <span class="n">center_pos</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
-    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="o">-</span><span class="n">center_pos</span><span class="p">)</span>
-    <span class="n">rotate_around_x</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
-    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">center_pos</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">revolve_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
-    <span class="n">center_pos</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
-    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="o">-</span><span class="n">center_pos</span><span class="p">)</span>
-    <span class="n">rotate_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
-    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">center_pos</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">revolve_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
-    <span class="n">center_pos</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
-    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="o">-</span><span class="n">center_pos</span><span class="p">)</span>
-    <span class="n">rotate_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
-    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">center_pos</span><span class="p">)</span>
-</pre></div>
+</pre></div></div>
 
           </div>
           <footer>
@@ -595,7 +706,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2014, Vanderbilt University.
+        &copy; Copyright 2014-2015, Vanderbilt University.
     </p>
   </div>
 
@@ -616,7 +727,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.5.0.dev0',
+            VERSION:'0.6.0.dev0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

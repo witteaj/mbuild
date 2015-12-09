@@ -32,7 +32,7 @@
   
     <link rel="top" title="mbuild 0.6.0.dev0 documentation" href="../index.html"/>
         <link rel="up" title="Tutorials" href="tutorials.html"/>
-        <link rel="next" title="Monolayer: Complex hierarchies, masks, tiling and writing to files" href="tutorial_monolayer.html"/>
+        <link rel="next" title="Monolayer: Complex hierarchies, patterns, tiling and writing to files" href="tutorial_monolayer.html"/>
         <link rel="prev" title="Methane: Atoms, Bonds and Compounds" href="tutorial_methane.html"/> 
 
   
@@ -66,8 +66,9 @@
           
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-conda-preferred">Install with conda (preferred)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-conda">Install with conda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-source">Install from source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#get-the-latest-development-package">Get the latest development package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#testing-your-installation">Testing your installation</a></li>
 </ul>
@@ -77,19 +78,19 @@
 <li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Tutorials</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="tutorial_methane.html">Methane: Atoms, Bonds and Compounds</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_monolayer.html">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_monolayer.html">Monolayer: Complex hierarchies, patterns, tiling and writing to files</a></li>
 </ul>
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../data_structures.html">Data Structures</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../data_structures.html#atom">Atom</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../data_structures.html#bond">Bond</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../data_structures.html">Data Structure</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../data_structures.html#compound">Compound</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../data_structures.html#port">Port</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../data_structures.html#part">Part</a></li>
 </ul>
 </li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../coordinate_transforms.html">Coordinate transformations</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../recipes.html">Recipes</a><ul>
@@ -137,7 +138,7 @@
             
   <div class="section" id="ethane-reading-from-files-ports-and-coordinate-transforms">
 <h1>Ethane: Reading from files, Ports and coordinate transforms<a class="headerlink" href="#ethane-reading-from-files-ports-and-coordinate-transforms" title="Permalink to this headline">¶</a></h1>
-<p>Run this interactively by downloading the IPython Notebook file <a class="reference download internal" href="../_downloads/tutorial_ethane.ipynb"><tt class="xref download docutils literal"><span class="pre">tutorial_ethane.ipynb</span></tt></a> and <a class="reference download internal" href="../_downloads/ch3.pdb"><tt class="xref download docutils literal"><span class="pre">ch3.pdb</span></tt></a>.</p>
+<p>Run this interactively by downloading the IPython Notebook file <a class="reference download internal" href="../_downloads/tutorial_ethane.ipynb"><code class="xref download docutils literal"><span class="pre">tutorial_ethane.ipynb</span></code></a> and <a class="reference download internal" href="../_downloads/ch3.pdb"><code class="xref download docutils literal"><span class="pre">ch3.pdb</span></code></a>.</p>
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" />
@@ -315,7 +316,7 @@ div#notebook {
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Ethane:-Reading-from-files,-Ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms<a class="anchor-link" href="#Ethane:-Reading-from-files,-Ports-and-coordinate-transforms">&#182;</a></h2><p>In this example, we'll cover reading molecular components from files, introduce the concept of <code>Ports</code> and start using some coordinate transforms.</p>
-<p>As you probably noticed while creating your methane mocule in the last tutorial, manually adding <code>Atoms</code> and <code>Bonds</code> to a <code>Compound</code> is a bit cumbersome. The easiest way to create small, reusable components, such as methyls, amines or monomers, is to hand draw them using software like <a href="http://avogadro.cc/wiki/Main_Page">Avogadro</a> and export them as either a .pdb or .mol2 file (the file should contain connectivity information).</p>
+<p>As you probably noticed while creating your methane mocule in the last tutorial, manually adding <code>Particles</code> and <code>Bonds</code> to a <code>Compound</code> is a bit cumbersome. The easiest way to create small, reusable components, such as methyls, amines or monomers, is to hand draw them using software like <a href="http://avogadro.cc/wiki/Main_Page">Avogadro</a> and export them as either a .pdb or .mol2 file (the file should contain connectivity information).</p>
 <p>Let's start by reading a methyl group from a <code>.pdb</code> file:</p>
 
 </div>
@@ -326,11 +327,11 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+<div class=" highlight hl-ipython3"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
 
 <span class="k">class</span> <span class="nc">CH3</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">CH3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CH3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
 
         <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;ch3.pdb&#39;</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
 </pre></div>
@@ -355,14 +356,14 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+<div class=" highlight hl-ipython3"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
 
 <span class="k">class</span> <span class="nc">CH3</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">CH3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
 
         <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;ch3.pdb&#39;</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
-        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c"># Move carbon to origin.</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>  <span class="c"># Move carbon to origin.</span>
 </pre></div>
 
 </div>
@@ -375,9 +376,8 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Here, when referring to the <code>Atom</code> object in a mathematical expression, we operate directly on its coordinates. This functionality is currently implemented for addition and subtraction only.</p>
-<p>So now we have a methyl group loaded up and centered. In order to connect <code>Compounds</code> in mBuild, we make use of a special type of <code>Compound</code>: the <code>Port</code>. A <code>Port</code> is a <code>Compound</code> with two sets of four "ghost" <code>Atoms</code> (of kind <code>'G'</code> by convention). In addition <code>Ports</code> have an <code>anchor</code> attribute which typically points to an <code>Atom</code> that the <code>Port</code> should be associated with. In our methyl group, the <code>Port</code> should be anchored to the carbon atom so that we
-can now form <code>Bonds</code> to this carbon:</p>
+<p>Now we have a methyl group loaded up and centered. In order to connect <code>Compounds</code> in mBuild, we make use of a special type of <code>Compound</code>: the <code>Port</code>. A <code>Port</code> is a <code>Compound</code> with two sets of four "ghost" <code>Particles</code>. In addition <code>Ports</code> have an <code>anchor</code> attribute which typically points to a <code>Compound</code> that the <code>Port</code> should be associated with. In our methyl group, the <code>Port</code> should be anchored to the carbon atom so that we
+can now form bonds to this carbon:</p>
 
 </div>
 </div>
@@ -387,18 +387,18 @@ can now form <code>Bonds</code> to this carbon:</p>
 <div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+<div class=" highlight hl-ipython3"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
 
 <span class="k">class</span> <span class="nc">CH3</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">CH3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
 
         <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;ch3.pdb&#39;</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
-        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c"># Move carbon to origin.</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>  <span class="c"># Move carbon to origin.</span>
 
-        <span class="n">port</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;up&#39;</span><span class="p">)</span>
-        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;up&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 </pre></div>
 
 </div>
@@ -421,7 +421,7 @@ can now form <code>Bonds</code> to this carbon:</p>
 <div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="n">CH3</span><span class="p">()</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span class="n">CH3</span><span class="p">()</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="k">True</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -435,18 +435,20 @@ can now form <code>Bonds</code> to this carbon:</p>
 <div class="output_area"><div class="prompt"></div>
 
 <div class="output_html rendered_html output_subarea ">
-<div id="molecule_b51d21ec-b80b-47d8-9fe4-1d0561d043fd"></div>
+<div id="molecule_71e25b40-8a59-473f-a873-deddcf5b850e"></div>
            <script type="text/javascript">
            require.config({baseUrl: '/',
                            paths: {imolecule: ['nbextensions/imolecule.min', 'https://rawgit.com/patrickfuller/imolecule/master/imolecule/js/build/imolecule.min']}});
            require(['imolecule'], function () {
-               var $d = $('#molecule_b51d21ec-b80b-47d8-9fe4-1d0561d043fd');
+               var $d = $('#molecule_71e25b40-8a59-473f-a873-deddcf5b850e');
                $d.width(400); $d.height(300);
                $d.imolecule = jQuery.extend({}, imolecule);
                $d.imolecule.create($d, {drawingType: 'ball and stick',
                                         cameraType: 'perspective',
-                                        shader: 'lambert'});
-               $d.imolecule.draw({"atoms":[{"element":"C","location":[0.000000,0.000000,0.000000]},{"element":"H","location":[1.070000,0.000000,0.000000]},{"element":"H","location":[-0.357000,0.769000,0.653000]},{"element":"H","location":[-0.357000,0.181000,-0.993000]},{"element":"G","location":[0.000000,-0.700000,0.000000]},{"element":"G","location":[0.000000,-0.500000,0.000000]},{"element":"G","location":[-0.200000,-0.800000,0.000000]},{"element":"G","location":[0.000000,-0.900000,0.100000]},{"element":"G","location":[0.000000,-0.700000,0.000000]},{"element":"G","location":[-0.000000,-0.900000,0.000000]},{"element":"G","location":[0.200000,-0.600000,0.000000]},{"element":"G","location":[0.000000,-0.500000,0.100000]}],"bonds":[{"atoms":[0,1],"order":1},{"atoms":[0,2],"order":1},{"atoms":[0,3],"order":1}],"name":"CH3"});
+                                        shader: 'lambert',
+                                        showSave: false});
+               $d.imolecule.addElements({});
+               $d.imolecule.draw({"atoms":[{"element":"C","location":[0.0,0.0,0.0]},{"element":"H","location":[1.0699999332427979,0.0,0.0]},{"element":"H","location":[-0.35700008273124695,0.7690000534057617,0.6530000269412994]},{"element":"H","location":[-0.35700008273124695,0.18100008368492126,-0.9929999709129333]},{"element":"G","location":[0.0,-0.7000000000000001,0.0]},{"element":"G","location":[0.0,-0.5,0.0]},{"element":"G","location":[-0.2,-0.8,0.0]},{"element":"G","location":[0.0,-0.9000000000000001,0.1]},{"element":"G","location":[0.0,-0.7000000000000001,0.0]},{"element":"G","location":[-2.4492935982947065e-17,-0.9000000000000001,0.0]},{"element":"G","location":[0.2,-0.6000000000000001,0.0]},{"element":"G","location":[2.4492935982947065e-17,-0.5,0.1]}],"bonds":[{"atoms":[0,1],"order":1},{"atoms":[0,2],"order":1},{"atoms":[0,3],"order":1}],"name":"CH3"});
 
                $d.resizable({
                    aspectRatio: 400 / 300,
@@ -471,8 +473,8 @@ can now form <code>Bonds</code> to this carbon:</p>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>When two <code>Ports</code> are connected, they are forced to overlap in space and their parent <code>Compounds</code> are rotated and translated by the same amount.</p>
-<p><strong>Note:</strong> If we tried to connect two of our methyls right now using only one set of four ghost atoms, not only would the <code>Ports</code> overlap perfectly, but the carbons and hydrogens would also perfectly overlap. This is why every port contains a second set of 4 ghost atoms pointing in the opposite direction. When two <code>Compounds</code> are
-connected, the port that places the anchor atoms the farthest away from each other is chosen automatically to prevent this overlap scenario. By convention, we try to label <code>Ports</code> successively as 'up', 'down', 'left', 'right', 'front', 'back' which should roughly correspond to the relative. This is a bit tricky to enforce because the system is so flexible so use your best judgement and try to be consistent! The more components we collect in our library with the same labeling conventions, the easier it becomes to build ever more complex structures.</p>
+<p><strong>Note:</strong> If we tried to connect two of our methyls right now using only one set of four ghost particles, not only would the <code>Ports</code> overlap perfectly, but the carbons and hydrogens would also perfectly overlap. This is why every port contains a second set of 4 ghost atoms pointing in the opposite direction. When two <code>Compounds</code> are
+connected, the port that places the anchor atoms the farthest away from each other is chosen automatically to prevent this overlap scenario. By convention, we try to label <code>Ports</code> successively as 'up', 'down', 'left', 'right', 'front', 'back' which should roughly correspond to their relative orientations. This is a bit tricky to enforce because the system is so flexible so use your best judgement and try to be consistent! The more components we collect in our library with the same labeling conventions, the easier it becomes to build ever more complex structures.</p>
 <p>Now the fun part: stick 'em together to create an ethane:</p>
 
 </div>
@@ -483,7 +485,7 @@ connected, the port that places the anchor atoms the farthest away from each oth
 <div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+<div class=" highlight hl-ipython3"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
 
 <span class="k">class</span> <span class="nc">Ethane</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -491,7 +493,7 @@ connected, the port that places the anchor atoms the farthest away from each oth
 
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CH3</span><span class="p">(),</span> <span class="s">&quot;methyl1&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CH3</span><span class="p">(),</span> <span class="s">&quot;methyl2&quot;</span><span class="p">)</span>
-        <span class="n">mb</span><span class="o">.</span><span class="n">equivalence_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">methyl1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">methyl1</span><span class="o">.</span><span class="n">up</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">methyl2</span><span class="o">.</span><span class="n">up</span><span class="p">)</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">equivalence_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;methyl1&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;methyl1&#39;</span><span class="p">][</span><span class="s">&#39;up&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;methyl2&#39;</span><span class="p">][</span><span class="s">&#39;up&#39;</span><span class="p">])</span>
 </pre></div>
 
 </div>
@@ -504,7 +506,7 @@ connected, the port that places the anchor atoms the farthest away from each oth
 <div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="n">Ethane</span><span class="p">()</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span class="n">Ethane</span><span class="p">()</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="k">True</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -518,18 +520,20 @@ connected, the port that places the anchor atoms the farthest away from each oth
 <div class="output_area"><div class="prompt"></div>
 
 <div class="output_html rendered_html output_subarea ">
-<div id="molecule_500f1dd7-b6bf-4f5c-b96f-d1553c8445d0"></div>
+<div id="molecule_3af09726-09ea-4079-a752-82d06f50fae0"></div>
            <script type="text/javascript">
            require.config({baseUrl: '/',
                            paths: {imolecule: ['nbextensions/imolecule.min', 'https://rawgit.com/patrickfuller/imolecule/master/imolecule/js/build/imolecule.min']}});
            require(['imolecule'], function () {
-               var $d = $('#molecule_500f1dd7-b6bf-4f5c-b96f-d1553c8445d0');
+               var $d = $('#molecule_3af09726-09ea-4079-a752-82d06f50fae0');
                $d.width(400); $d.height(300);
                $d.imolecule = jQuery.extend({}, imolecule);
                $d.imolecule.create($d, {drawingType: 'ball and stick',
                                         cameraType: 'perspective',
-                                        shader: 'lambert'});
-               $d.imolecule.draw({"atoms":[{"element":"C","location":[0.000000,-1.400000,-0.000000]},{"element":"H","location":[-1.070000,-1.400000,0.000000]},{"element":"H","location":[0.357000,-2.169000,0.653000]},{"element":"H","location":[0.357000,-1.581000,-0.993000]},{"element":"G","location":[-0.000000,-0.700000,-0.000000]},{"element":"G","location":[-0.000000,-0.900000,-0.000000]},{"element":"G","location":[0.200000,-0.600000,-0.000000]},{"element":"G","location":[-0.000000,-0.500000,0.100000]},{"element":"G","location":[-0.000000,-0.700000,-0.000000]},{"element":"G","location":[-0.000000,-0.500000,-0.000000]},{"element":"G","location":[-0.200000,-0.800000,0.000000]},{"element":"G","location":[-0.000000,-0.900000,0.100000]},{"element":"C","location":[0.000000,0.000000,0.000000]},{"element":"H","location":[1.070000,0.000000,0.000000]},{"element":"H","location":[-0.357000,0.769000,0.653000]},{"element":"H","location":[-0.357000,0.181000,-0.993000]},{"element":"G","location":[0.000000,-0.700000,0.000000]},{"element":"G","location":[0.000000,-0.500000,0.000000]},{"element":"G","location":[-0.200000,-0.800000,0.000000]},{"element":"G","location":[0.000000,-0.900000,0.100000]},{"element":"G","location":[0.000000,-0.700000,0.000000]},{"element":"G","location":[-0.000000,-0.900000,0.000000]},{"element":"G","location":[0.200000,-0.600000,0.000000]},{"element":"G","location":[0.000000,-0.500000,0.100000]}],"bonds":[{"atoms":[0,1],"order":1},{"atoms":[0,2],"order":1},{"atoms":[0,3],"order":1},{"atoms":[0,12],"order":1},{"atoms":[12,13],"order":1},{"atoms":[12,14],"order":1},{"atoms":[12,15],"order":1}],"name":"Ethane"});
+                                        shader: 'lambert',
+                                        showSave: false});
+               $d.imolecule.addElements({});
+               $d.imolecule.draw({"atoms":[{"element":"C","location":[3.469446951953614e-17,-1.4000000000000001,-6.052365043031823e-17]},{"element":"H","location":[-1.0699999332427976,-1.4000000000000004,1.1209768944766366e-16]},{"element":"H","location":[0.35700008273124695,-2.169000053405762,0.6530000269412993]},{"element":"H","location":[0.35700008273124695,-1.5810000836849214,-0.9929999709129335]},{"element":"G","location":[-1.3752108843983449e-17,-0.7000000000000001,-6.1235578036170505e-18]},{"element":"G","location":[8.977068845072343e-20,-0.9000000000000001,-2.1666441411245963e-17]},{"element":"G","location":[0.19999999999999993,-0.6000000000000001,-3.0617789018085254e-17]},{"element":"G","location":[-3.0268726753551984e-17,-0.5,0.10000000000000002]},{"element":"G","location":[-1.3752108843983449e-17,-0.7000000000000001,-6.1235578036170505e-18]},{"element":"G","location":[-3.1010523934705644e-18,-0.5,9.419325804011856e-18]},{"element":"G","location":[-0.19999999999999996,-0.8000000000000002,1.837067341085116e-17]},{"element":"G","location":[-2.7077903671630696e-17,-0.9000000000000001,0.09999999999999998]},{"element":"C","location":[0.0,0.0,0.0]},{"element":"H","location":[1.0699999332427979,0.0,0.0]},{"element":"H","location":[-0.35700008273124695,0.7690000534057617,0.6530000269412994]},{"element":"H","location":[-0.35700008273124695,0.18100008368492126,-0.9929999709129333]},{"element":"G","location":[0.0,-0.7000000000000001,0.0]},{"element":"G","location":[0.0,-0.5,0.0]},{"element":"G","location":[-0.2,-0.8,0.0]},{"element":"G","location":[0.0,-0.9000000000000001,0.1]},{"element":"G","location":[0.0,-0.7000000000000001,0.0]},{"element":"G","location":[-2.4492935982947065e-17,-0.9000000000000001,0.0]},{"element":"G","location":[0.2,-0.6000000000000001,0.0]},{"element":"G","location":[2.4492935982947065e-17,-0.5,0.1]}],"bonds":[{"atoms":[13,12],"order":1},{"atoms":[14,12],"order":1},{"atoms":[2,0],"order":1},{"atoms":[0,1],"order":1},{"atoms":[0,3],"order":1},{"atoms":[0,12],"order":1},{"atoms":[15,12],"order":1}],"name":"Ethane"});
 
                $d.resizable({
                    aspectRatio: 400 / 300,
@@ -554,7 +558,7 @@ connected, the port that places the anchor atoms the farthest away from each oth
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Above, the <code>equivalence_transform()</code> function takes a <code>Compound</code> and then rotates and translates it such that two other <code>Compounds</code> overlap. Typically, as in
-this case, those two other <code>Compounds</code> are <code>Ports</code> - in our case, <code>methyl1.up</code> and <code>methyl2.up</code>.</p>
+this case, those two other <code>Compounds</code> are <code>Ports</code> - in our case, <code>methyl1['up']</code> and <code>methyl2['up']</code>.</p>
 
 </div>
 </div>
@@ -564,7 +568,7 @@ this case, those two other <code>Compounds</code> are <code>Ports</code> - in ou
 <div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre> 
+<div class=" highlight hl-ipython3"><pre> 
 </pre></div>
 
 </div>
@@ -584,7 +588,7 @@ this case, those two other <code>Compounds</code> are <code>Ports</code> - in ou
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="tutorial_monolayer.html" class="btn btn-neutral float-right" title="Monolayer: Complex hierarchies, masks, tiling and writing to files">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="tutorial_monolayer.html" class="btn btn-neutral float-right" title="Monolayer: Complex hierarchies, patterns, tiling and writing to files">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="tutorial_methane.html" class="btn btn-neutral" title="Methane: Atoms, Bonds and Compounds"><span class="fa fa-arrow-circle-left"></span> Previous</a>
