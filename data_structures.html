@@ -407,6 +407,28 @@ prefix will be parsed and will control the format.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="mbuild.compound.Compound.to_intermol">
+<code class="descname">to_intermol</code><span class="sig-paren">(</span><em>molecule_types=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.to_intermol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.to_intermol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an InterMol system from a Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>molecule_types</strong> : list or tuple of subclasses of Compound</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>intermol_system</strong> : intermol.system.System</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.to_parmed">
+<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.to_parmed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.to_parmed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a ParmEd Structure from a Compound.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="mbuild.compound.Compound.to_trajectory">
 <code class="descname">to_trajectory</code><span class="sig-paren">(</span><em>show_ports=False</em>, <em>chain_types=None</em>, <em>residue_types=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.to_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.to_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert to an md.Trajectory and flatten the compound.</p>

@@ -712,7 +712,7 @@
         <span class="n">top_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">basename</span> <span class="o">+</span> <span class="s">&#39;.top&#39;</span><span class="p">)</span>
         <span class="n">gro_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">basename</span> <span class="o">+</span> <span class="s">&#39;.gro&#39;</span><span class="p">)</span>
 
-        <span class="n">intermol_system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_intermol</span><span class="p">()</span>
+        <span class="n">intermol_system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_intermol</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">forcefield</span><span class="p">:</span>
             <span class="n">apply_forcefield</span><span class="p">(</span><span class="n">intermol_system</span><span class="p">,</span> <span class="n">forcefield</span><span class="o">=</span><span class="n">forcefield</span><span class="p">)</span>
         <span class="n">gmx</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">top_filename</span><span class="p">,</span> <span class="n">gro_filename</span><span class="p">,</span> <span class="n">intermol_system</span><span class="p">)</span>
@@ -727,7 +727,7 @@
         <span class="n">basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">inp_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">basename</span> <span class="o">+</span> <span class="s">&#39;.input&#39;</span><span class="p">)</span>
 
-        <span class="n">intermol_system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_intermol</span><span class="p">()</span>
+        <span class="n">intermol_system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_intermol</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">forcefield</span><span class="p">:</span>
             <span class="n">apply_forcefield</span><span class="p">(</span><span class="n">intermol_system</span><span class="p">,</span> <span class="n">forcefield</span><span class="o">=</span><span class="n">forcefield</span><span class="p">)</span>
         <span class="n">lmp</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">inp_filename</span><span class="p">,</span> <span class="n">intermol_system</span><span class="p">)</span>
@@ -909,9 +909,30 @@
                 <span class="n">top</span><span class="o">.</span><span class="n">add_bond</span><span class="p">(</span><span class="n">atom_mapping</span><span class="p">[</span><span class="n">atom1</span><span class="p">],</span> <span class="n">atom_mapping</span><span class="p">[</span><span class="n">atom2</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">top</span>
 
-    <span class="c"># Interface to InterMol for writing fully parameterized systems.</span>
+        <span class="c"># Interface to InterMol for writing fully parameterized systems.</span>
     <span class="c"># --------------------------------------------------------------</span>
-    <span class="k">def</span> <span class="nf">_to_intermol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">molecule_types</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.to_parmed"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.to_parmed">[docs]</a>    <span class="k">def</span> <span class="nf">to_parmed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a ParmEd Structure from a Compound. &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">parmed</span> <span class="kn">as</span> <span class="nn">pmd</span>
+        <span class="kn">from</span> <span class="nn">parmed.periodic_table</span> <span class="kn">import</span> <span class="n">AtomicNum</span><span class="p">,</span> <span class="n">element_by_name</span>
+
+        <span class="n">structure</span> <span class="o">=</span> <span class="n">pmd</span><span class="o">.</span><span class="n">Structure</span><span class="p">()</span>
+        <span class="n">structure</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span> <span class="k">if</span> <span class="n">title</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">atom_mapping</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c"># For creating bonds below</span>
+        <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">():</span>
+            <span class="n">atomic_number</span> <span class="o">=</span> <span class="n">AtomicNum</span><span class="p">[</span><span class="n">element_by_name</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">name</span><span class="p">)]</span>
+            <span class="n">pmd_atom</span> <span class="o">=</span> <span class="n">pmd</span><span class="o">.</span><span class="n">Atom</span><span class="p">(</span><span class="n">atomic_number</span><span class="o">=</span><span class="n">atomic_number</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">atom</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">structure</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="n">pmd_atom</span><span class="p">,</span> <span class="n">resname</span><span class="o">=</span><span class="s">&#39;RES&#39;</span><span class="p">,</span> <span class="n">resnum</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">atom_mapping</span><span class="p">[</span><span class="n">atom</span><span class="p">]</span> <span class="o">=</span> <span class="n">pmd_atom</span>
+
+        <span class="k">for</span> <span class="n">atom1</span><span class="p">,</span> <span class="n">atom2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonds</span><span class="p">():</span>
+            <span class="n">bond</span> <span class="o">=</span> <span class="n">pmd</span><span class="o">.</span><span class="n">Bond</span><span class="p">(</span><span class="n">atom_mapping</span><span class="p">[</span><span class="n">atom1</span><span class="p">],</span> <span class="n">atom_mapping</span><span class="p">[</span><span class="n">atom2</span><span class="p">])</span>
+            <span class="n">structure</span><span class="o">.</span><span class="n">bonds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bond</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">structure</span>
+
+    <span class="c"># Interface to InterMol for writing fully parameterized systems.</span>
+    <span class="c"># --------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="Compound.to_intermol"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.to_intermol">[docs]</a>    <span class="k">def</span> <span class="nf">to_intermol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">molecule_types</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create an InterMol system from a Compound.</span>
 
 <span class="sd">        Parameters</span>
@@ -958,7 +979,7 @@
             <span class="n">intermol_atom</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">nanometers</span>
             <span class="n">last_molecule</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="n">intermol_atom</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">intermol_system</span>
-
+</div>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_add_intermol_molecule_type</span><span class="p">(</span><span class="n">intermol_system</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create a molecule type for the parent and add bonds. &quot;&quot;&quot;</span>
