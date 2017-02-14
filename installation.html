@@ -151,12 +151,16 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="install-with-conda">
 <h2>Install with <a class="reference external" href="http://continuum.io/downloads">conda</a><a class="headerlink" href="#install-with-conda" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ conda install -c mosdef mbuild
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ conda install -c omnia -c janschulz -c bioconda -c glotzer -c mosdef mbuild
 </pre></div>
 </div>
 <p>Alternatively you can add all the required channels to your <code class="docutils literal"><span class="pre">.condarc</span></code>
-after which you no longer need to specify the channel:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ conda config --add channels mosdef
+after which you can simply install without specifying the channels:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ conda config --add channels omnia
+$ conda config --add channels janschulz
+$ conda config --add channels bioconda
+$ conda config --add channels glotzer
+$ conda config --add channels mosdef
 $ conda install mbuild
 </pre></div>
 </div>
