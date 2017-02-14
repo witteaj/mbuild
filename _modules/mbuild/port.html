@@ -5,16 +5,16 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mbuild.port &mdash; mbuild 0.6.0.dev0 documentation</title>
+  <title>mbuild.port &mdash; mbuild 0.6.0 documentation</title>
   
 
   
   
 
   
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
 
   
   
@@ -30,11 +30,14 @@
   
 
   
-    <link rel="top" title="mbuild 0.6.0.dev0 documentation" href="../../index.html"/>
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="mbuild 0.6.0 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  <script src="../../_static/js/modernizr.min.js"></script>
 
 </head>
 
@@ -44,11 +47,27 @@
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-nav-search">
-        
-          <a href="../../index.html" class="fa fa-home"> mbuild</a>
-        
-        
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> mbuild
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.6.0
+              </div>
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -56,54 +75,34 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-      </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-        
           
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../installation.html#install-with-conda">Install with conda</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../installation.html#install-from-source">Install from source</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../installation.html#get-the-latest-development-package">Get the latest development package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../installation.html#dependencies">Dependencies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../installation.html#testing-your-installation">Testing your installation</a></li>
-</ul>
-</li>
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials/tutorials.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tutorial_methane.html">Methane: Atoms, Bonds and Compounds</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tutorial_ethane.html">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tutorial_monolayer.html">Monolayer: Complex hierarchies, patterns, tiling and writing to files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tutorial_simple_LJ.html">Point Particles: Basic system initialization</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/tutorials.html">Tutorials</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../data_structures.html">Data Structure</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../data_structures.html#compound">Compound</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../data_structures.html#port">Port</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="../../data_structures.html">Data Structure</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../coordinate_transforms.html">Coordinate transformations</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../recipes.html">Recipes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../recipes.html#monolayer">Monolayer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../recipes.html#polymer">Polymer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../recipes.html#tiled-compound">Tiled Compound</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes.html">Recipes</a></li>
 </ul>
 
+            
           
-        
+        </div>
       </div>
-      &nbsp;
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
@@ -118,7 +117,13 @@
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href="../../index.html">Docs</a> &raquo;</li>
       
@@ -127,18 +132,21 @@
     <li>mbuild.port</li>
       <li class="wy-breadcrumbs-aside">
         
+          
+        
       </li>
   </ul>
   <hr/>
 </div>
-          <div role="main" class="document">
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <h1>Source code for mbuild.port</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span><span class="p">,</span> <span class="n">Particle</span>
-<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">rotate_around_z</span>
-<span class="kn">from</span> <span class="nn">mbuild</span> <span class="kn">import</span> <span class="n">clone</span>
+<span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="k">import</span> <span class="n">Compound</span><span class="p">,</span> <span class="n">Particle</span>
+<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="k">import</span> <span class="n">rotate_around_z</span><span class="p">,</span> <span class="n">translate_to</span>
+<span class="kn">from</span> <span class="nn">mbuild</span> <span class="k">import</span> <span class="n">clone</span>
 
 
 <div class="viewcode-block" id="Port"><a class="viewcode-back" href="../../data_structures.html#mbuild.port.Port">[docs]</a><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
@@ -159,28 +167,35 @@
 <span class="sd">    down : mb.Compound</span>
 <span class="sd">        Collection of 4 ghost particles used to perform equivalence transforms.</span>
 <span class="sd">        Faces the opposite direction as self[&#39;up&#39;].</span>
+<span class="sd">    used : bool</span>
+<span class="sd">        Status of whether a port has been occupied following an equivalence</span>
+<span class="sd">        transform.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Port</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;Port&#39;</span><span class="p">,</span> <span class="n">port_particle</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Port</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Port&#39;</span><span class="p">,</span> <span class="n">port_particle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">anchor</span> <span class="o">=</span> <span class="n">anchor</span>
 
-        <span class="n">up</span> <span class="o">=</span> <span class="n">Compound</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;subport&#39;</span><span class="p">,</span> <span class="n">port_particle</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="n">up</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;G&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">port_particle</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="s">&#39;middle&#39;</span><span class="p">)</span>
-        <span class="n">up</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;G&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">port_particle</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="s">&#39;top&#39;</span><span class="p">)</span>
-        <span class="n">up</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;G&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">port_particle</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="s">&#39;left&#39;</span><span class="p">)</span>
-        <span class="n">up</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;G&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">],</span> <span class="n">port_particle</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="s">&#39;right&#39;</span><span class="p">)</span>
+        <span class="n">up</span> <span class="o">=</span> <span class="n">Compound</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;subport&#39;</span><span class="p">,</span> <span class="n">port_particle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">up</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">port_particle</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="s1">&#39;middle&#39;</span><span class="p">)</span>
+        <span class="n">up</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">port_particle</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="s1">&#39;top&#39;</span><span class="p">)</span>
+        <span class="n">up</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">port_particle</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="s1">&#39;left&#39;</span><span class="p">)</span>
+        <span class="n">up</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">],</span> <span class="n">port_particle</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="s1">&#39;right&#39;</span><span class="p">)</span>
 
         <span class="n">down</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">up</span><span class="p">)</span>
-
         <span class="n">rotate_around_z</span><span class="p">(</span><span class="n">down</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">up</span><span class="p">,</span> <span class="s">&#39;up&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">down</span><span class="p">,</span> <span class="s">&#39;down&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">up</span><span class="p">,</span> <span class="s1">&#39;up&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">down</span><span class="p">,</span> <span class="s1">&#39;down&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">used</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">_clone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clone_of</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">root_container</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">anchor</span><span class="p">:</span>
+            <span class="n">translate_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_clone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clone_of</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">root_container</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">newone</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Port</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_clone</span><span class="p">(</span><span class="n">clone_of</span><span class="p">,</span> <span class="n">root_container</span><span class="p">)</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">anchor</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anchor</span><span class="p">,</span> <span class="n">clone_of</span><span class="p">,</span> <span class="n">root_container</span><span class="p">)</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">used</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">used</span>
         <span class="k">return</span> <span class="n">newone</span>
 
     <span class="nd">@property</span>
@@ -189,6 +204,7 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xyz_with_ports</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 </pre></div>
 
+           </div>
           </div>
           <footer>
   
@@ -197,13 +213,14 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2014-2015, Vanderbilt University.
+        &copy; Copyright 2014-2017, Vanderbilt University.
+
     </p>
   </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
-  
 </footer>
+
         </div>
       </div>
 
@@ -218,7 +235,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.6.0.dev0',
+            VERSION:'0.6.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -227,6 +244,7 @@
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
