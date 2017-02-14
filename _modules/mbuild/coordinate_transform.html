@@ -162,12 +162,15 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    compound : mb.Compound</span>
-<span class="sd">        The Compound to be transformed.</span>
+<span class="sd">    move_this : mb.Compound</span>
+<span class="sd">        The Compound to be moved.</span>
 <span class="sd">    from_positions : np.ndarray, shape=(n, 3), dtype=float</span>
 <span class="sd">        Original positions.</span>
 <span class="sd">    to_positions : np.ndarray, shape=(n, 3), dtype=float</span>
 <span class="sd">        New positions.</span>
+<span class="sd">    add_bond : bool, optional, default=True</span>
+<span class="sd">        If `from_positions` and `to_positions` are `Ports`, create a bond</span>
+<span class="sd">        between the two anchor atoms.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">mbuild.port</span> <span class="k">import</span> <span class="n">Port</span>
@@ -183,9 +186,9 @@
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">T</span><span class="p">:</span>
         <span class="n">T</span> <span class="o">=</span> <span class="n">_create_equivalence_transform</span><span class="p">(</span><span class="n">equivalence_pairs</span><span class="p">)</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">move_this</span><span class="o">.</span><span class="n">xyz_with_ports</span>
     <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
-    <span class="n">_set_particle_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_set_particle_positions</span><span class="p">(</span><span class="n">move_this</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">add_bond</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">from_positions</span><span class="p">,</span> <span class="n">Port</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">to_positions</span><span class="p">,</span> <span class="n">Port</span><span class="p">):</span>
@@ -755,27 +758,6 @@
                      <span class="n">point_on_x_axis</span><span class="o">=</span><span class="n">point_on_z_axis</span><span class="p">,</span>
                      <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">point_on_zx_plane</span><span class="p">)</span>
     <span class="n">rotate_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">pi</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span></div>
-
-
-<span class="k">def</span> <span class="nf">force_overlap</span><span class="p">(</span><span class="n">move_this</span><span class="p">,</span> <span class="n">from_positions</span><span class="p">,</span> <span class="n">to_positions</span><span class="p">,</span> <span class="n">add_bond</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Computes an affine transformation that maps the from_positions to the</span>
-<span class="sd">    respective to_positions, and applies this transformation to the compound.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    move_this : mb.Compound</span>
-<span class="sd">        The Compound to be moved.</span>
-<span class="sd">    from_positions : mb.Compound or np.ndarray, shape=(n, 3), dtype=float</span>
-<span class="sd">        Original positions.</span>
-<span class="sd">    to_positions : mb.Compound or np.ndarray, shape=(n, 3), dtype=float</span>
-<span class="sd">        New positions.</span>
-<span class="sd">    add_bond : bool, optional, default=True</span>
-<span class="sd">        If `from_positions` and `to_positions` are `Ports`, create a bond</span>
-<span class="sd">        between the two anchor atoms.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">equivalence_transform</span><span class="p">(</span><span class="n">compound</span><span class="o">=</span><span class="n">move_this</span><span class="p">,</span> <span class="n">from_positions</span><span class="o">=</span><span class="n">from_positions</span><span class="p">,</span>
-                          <span class="n">to_positions</span><span class="o">=</span><span class="n">to_positions</span><span class="p">,</span> <span class="n">add_bond</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
            </div>
