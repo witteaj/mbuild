@@ -87,7 +87,7 @@
                 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#install-with-conda">Install with conda</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#install-from-source">Install from source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-an-editable-version-from-source">Install an editable version from source</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing-your-installation">Testing your installation</a></li>
 </ul>
 </li>
@@ -151,13 +151,12 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="install-with-conda">
 <h2>Install with <a class="reference external" href="http://continuum.io/downloads">conda</a><a class="headerlink" href="#install-with-conda" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ conda install -c omnia -c bioconda -c mosdef mbuild
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ conda install -c omnia -c mosdef mbuild
 </pre></div>
 </div>
 <p>Alternatively you can add all the required channels to your <code class="docutils literal"><span class="pre">.condarc</span></code>
 after which you can simply install without specifying the channels:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ conda config --add channels omnia
-$ conda config --add channels bioconda
 $ conda config --add channels mosdef
 $ conda install mbuild
 </pre></div>
@@ -170,8 +169,8 @@ nice case for using Python and in particular the
 to manage your numerical and scientific Python packages.</p>
 </div>
 </div>
-<div class="section" id="install-from-source">
-<h2>Install from source<a class="headerlink" href="#install-from-source" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="install-an-editable-version-from-source">
+<h2>Install an editable version from source<a class="headerlink" href="#install-an-editable-version-from-source" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone https://github.com/mosdef-hub/mbuild
 $ cd mbuild
 $ pip install -e .
