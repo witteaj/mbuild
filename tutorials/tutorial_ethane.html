@@ -162,8 +162,7 @@
 <div class="jupyter text_cell_render border-box-sizing rendered_html">
 <h2 id="Ethane:-Reading-from-files,-Ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms<a class="anchor-link" href="#Ethane:-Reading-from-files,-Ports-and-coordinate-transforms">&#182;</a></h2><p><strong>Note</strong>: mBuild expects all distance units to be in nanometers.</p>
 <p>In this example, we'll cover reading molecular components from files, introduce the concept of <code>Ports</code> and start using some coordinate transforms.</p>
-<p>As you probably noticed while creating your methane molecule in the last tutorial, manually adding <code>Particles</code> and <code>Bonds</code> to a <code>Compound</code> is a bit cumbersome. The easiest way to create small, reusable components, such as methyls, amines or monomers, is to hand draw them using software like <a href="http://avogadro.cc/wiki/Main_Page">Avogadro</a> and export them as either a .pdb or .mol2 file (the file should contain connectivity information).</p>
-<p>Let's start by reading a methyl group from a <code>.pdb</code> file:</p>
+<p>First, we need to import the mbuild package:</p>
 
 </div>
 </div>
@@ -174,12 +173,33 @@
 <div class="jupyter inner_cell">
     <div class="jupyter input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+</pre></div>
 
-<span class="k">class</span> <span class="nc">CH3</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">CH3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+</div>
+</div>
+</div>
 
-        <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;ch3.pdb&#39;</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<p>As you probably noticed while creating your methane molecule in the last tutorial, manually adding <code>Particles</code> and <code>Bonds</code> to a <code>Compound</code> is a bit cumbersome. The easiest way to create small, reusable components, such as methyls, amines or monomers, is to hand draw them using software like <a href="http://avogadro.cc/wiki/Main_Page">Avogadro</a> and export them as either a .pdb or .mol2 file (the file should contain connectivity information).</p>
+<p>Let's start by reading a methyl group from a <code>.pdb</code> file:</p>
+
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[2]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+
+<span class="n">ch3</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;ch3.pdb&#39;</span><span class="p">)</span>
+<span class="n">ch3</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
 </pre></div>
 
 </div>
@@ -199,17 +219,13 @@
 </div>
 <div class="jupyter cell border-box-sizing code_cell rendered">
 <div class=" jupyter input">
-<div class="jupyter prompt input_prompt">In&nbsp;[2]:</div>
+<div class="jupyter prompt input_prompt">In&nbsp;[3]:</div>
 <div class="jupyter inner_cell">
     <div class="jupyter input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
 
-<span class="k">class</span> <span class="nc">CH3</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">CH3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-
-        <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;ch3.pdb&#39;</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
-        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>  <span class="c1"># Move carbon to origin.</span>
+<span class="n">ch3</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;ch3.pdb&#39;</span><span class="p">)</span>
+<span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">ch3</span><span class="p">,</span> <span class="o">-</span><span class="n">ch3</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>  <span class="c1"># Move carbon to origin.</span>
 </pre></div>
 
 </div>
@@ -222,7 +238,7 @@
 </div>
 <div class="jupyter inner_cell">
 <div class="jupyter text_cell_render border-box-sizing rendered_html">
-<p>Now we have a methyl group loaded up and centered. In order to connect <code>Compounds</code> in mBuild, we make use of a special type of <code>Compound</code>: the <code>Port</code>. A <code>Port</code> is a <code>Compound</code> with two sets of four "ghost" <code>Particles</code>. In addition <code>Ports</code> have an <code>anchor</code> attribute which typically points to a <code>Compound</code> that the <code>Port</code> should be associated with. In our methyl group, the <code>Port</code> should be anchored to the carbon atom so that we
+<p>Now we have a methyl group loaded up and centered. In order to connect <code>Compounds</code> in mBuild, we make use of a special type of <code>Compound</code>: the <code>Port</code>. A <code>Port</code> is a <code>Compound</code> with two sets of four "ghost" <code>Particles</code>. In addition <code>Ports</code> have an <code>anchor</code> attribute which typically points to a particle that the <code>Port</code> should be associated with. In our methyl group, the <code>Port</code> should be anchored to the carbon atom so that we
 can now form bonds to this carbon:</p>
 
 </div>
@@ -230,22 +246,19 @@ can now form bonds to this carbon:</p>
 </div>
 <div class="jupyter cell border-box-sizing code_cell rendered">
 <div class=" jupyter input">
-<div class="jupyter prompt input_prompt">In&nbsp;[3]:</div>
+<div class="jupyter prompt input_prompt">In&nbsp;[4]:</div>
 <div class="jupyter inner_cell">
     <div class="jupyter input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
 
-<span class="k">class</span> <span class="nc">CH3</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">CH3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+<span class="n">ch3</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;ch3.pdb&#39;</span><span class="p">)</span>
+<span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">ch3</span><span class="p">,</span> <span class="o">-</span><span class="n">ch3</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>  <span class="c1"># Move carbon to origin.</span>
 
-        <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;ch3.pdb&#39;</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
-        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>  <span class="c1"># Move carbon to origin.</span>
+<span class="n">port</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="n">ch3</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">ch3</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;up&#39;</span><span class="p">)</span>
 
-        <span class="n">port</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;up&#39;</span><span class="p">)</span>
-        <span class="c1"># Place the port at approximately half a C-C bond length.</span>
-        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>  
+<span class="c1"># Place the port at approximately half a C-C bond length.</span>
+<span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">ch3</span><span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>  
 </pre></div>
 
 </div>
@@ -265,10 +278,45 @@ can now form bonds to this carbon:</p>
 </div>
 <div class="jupyter cell border-box-sizing code_cell rendered">
 <div class=" jupyter input">
-<div class="jupyter prompt input_prompt">In&nbsp;[4]:</div>
+<div class="jupyter prompt input_prompt">In&nbsp;[5]:</div>
 <div class="jupyter inner_cell">
     <div class="jupyter input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">CH3</span><span class="p">()</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ch3</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<p>Now we wrap the methyl group into a python class, so that we can reuse it as a component to build more complex molecules later.</p>
+
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[6]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+
+<span class="k">class</span> <span class="nc">CH3</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CH3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;ch3.pdb&#39;</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>  <span class="c1"># Move carbon to origin.</span>
+
+        <span class="n">port</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;up&#39;</span><span class="p">)</span>
+        <span class="c1"># Place the port at approximately half a C-C bond length.</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> 
 </pre></div>
 
 </div>
@@ -292,7 +340,73 @@ can now form bonds to this carbon:</p>
 </div>
 <div class="jupyter cell border-box-sizing code_cell rendered">
 <div class=" jupyter input">
-<div class="jupyter prompt input_prompt">In&nbsp;[5]:</div>
+<div class="jupyter prompt input_prompt">In&nbsp;[7]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ethane</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">()</span>
+
+<span class="n">ethane</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CH3</span><span class="p">(),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;methyl_1&quot;</span><span class="p">)</span>
+<span class="n">ethane</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CH3</span><span class="p">(),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;methyl_2&quot;</span><span class="p">)</span>
+<span class="n">mb</span><span class="o">.</span><span class="n">force_overlap</span><span class="p">(</span><span class="n">move_this</span><span class="o">=</span><span class="n">ethane</span><span class="p">[</span><span class="s1">&#39;methyl_1&#39;</span><span class="p">],</span>
+                         <span class="n">from_positions</span><span class="o">=</span><span class="n">ethane</span><span class="p">[</span><span class="s1">&#39;methyl_1&#39;</span><span class="p">][</span><span class="s1">&#39;up&#39;</span><span class="p">],</span>
+                         <span class="n">to_positions</span><span class="o">=</span><span class="n">ethane</span><span class="p">[</span><span class="s1">&#39;methyl_2&#39;</span><span class="p">][</span><span class="s1">&#39;up&#39;</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<p>Above, the <code>force_overlap()</code> function takes a <code>Compound</code> and then rotates and translates it such that two other <code>Compounds</code> overlap. Typically, as in
+this case, those two other <code>Compounds</code> are <code>Ports</code> - in our case, <code>methyl1['up']</code> and <code>methyl2['up']</code>.</p>
+
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[8]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ethane</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[9]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ethane</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<p>Similarly, if we want to make ethane a reusable component, we need to wrap it into a python class.</p>
+
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[10]:</div>
 <div class="jupyter inner_cell">
     <div class="jupyter input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
@@ -315,7 +429,7 @@ can now form bonds to this carbon:</p>
 </div>
 <div class="jupyter cell border-box-sizing code_cell rendered">
 <div class=" jupyter input">
-<div class="jupyter prompt input_prompt">In&nbsp;[6]:</div>
+<div class="jupyter prompt input_prompt">In&nbsp;[11]:</div>
 <div class="jupyter inner_cell">
     <div class="jupyter input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">ethane</span> <span class="o">=</span> <span class="n">Ethane</span><span class="p">()</span>
@@ -329,44 +443,7 @@ can now form bonds to this carbon:</p>
 </div>
 <div class="jupyter cell border-box-sizing code_cell rendered">
 <div class=" jupyter input">
-<div class="jupyter prompt input_prompt">In&nbsp;[7]:</div>
-<div class="jupyter inner_cell">
-    <div class="jupyter input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ethane</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="jupyter cell border-box-sizing text_cell rendered">
-<div class="jupyter prompt input_prompt">
-</div>
-<div class="jupyter inner_cell">
-<div class="jupyter text_cell_render border-box-sizing rendered_html">
-<p>Above, the <code>force_overlap()</code> function takes a <code>Compound</code> and then rotates and translates it such that two other <code>Compounds</code> overlap. Typically, as in
-this case, those two other <code>Compounds</code> are <code>Ports</code> - in our case, <code>methyl1['up']</code> and <code>methyl2['up']</code>.</p>
-
-</div>
-</div>
-</div>
-<div class="jupyter cell border-box-sizing code_cell rendered">
-<div class=" jupyter input">
-<div class="jupyter prompt input_prompt">In&nbsp;[&nbsp;]:</div>
-<div class="jupyter inner_cell">
-    <div class="jupyter input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="jupyter cell border-box-sizing code_cell rendered">
-<div class=" jupyter input">
-<div class="jupyter prompt input_prompt">In&nbsp;[8]:</div>
+<div class="jupyter prompt input_prompt">In&nbsp;[12]:</div>
 <div class="jupyter inner_cell">
     <div class="jupyter input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Save to .mol2</span>

@@ -8,39 +8,63 @@
 # 
 # In this example, we'll cover reading molecular components from files, introduce the concept of `Ports` and start using some coordinate transforms.
 # 
-# As you probably noticed while creating your methane molecule in the last tutorial, manually adding `Particles` and `Bonds` to a `Compound` is a bit cumbersome. The easiest way to create small, reusable components, such as methyls, amines or monomers, is to hand draw them using software like [Avogadro](http://avogadro.cc/wiki/Main_Page) and export them as either a .pdb or .mol2 file (the file should contain connectivity information).
+# First, we need to import the mbuild package:
 # 
-# Let's start by reading a methyl group from a `.pdb` file:
 
 # In[1]:
 
 import mbuild as mb
 
-class CH3(mb.Compound):
-    def __init__(self):
-        super(CH3, self).__init__()
 
-        mb.load('ch3.pdb', compound=self)
-
-
-# Now let's use our first coordinate transform to center the methyl at its carbon atom:
+# As you probably noticed while creating your methane molecule in the last tutorial, manually adding `Particles` and `Bonds` to a `Compound` is a bit cumbersome. The easiest way to create small, reusable components, such as methyls, amines or monomers, is to hand draw them using software like [Avogadro](http://avogadro.cc/wiki/Main_Page) and export them as either a .pdb or .mol2 file (the file should contain connectivity information).
+# 
+# Let's start by reading a methyl group from a `.pdb` file:
 
 # In[2]:
 
 import mbuild as mb
 
-class CH3(mb.Compound):
-    def __init__(self):
-        super(CH3, self).__init__()
-
-        mb.load('ch3.pdb', compound=self)
-        mb.translate(self, -self[0].pos)  # Move carbon to origin.
+ch3 = mb.load('ch3.pdb')
+ch3.visualize()
 
 
-# Now we have a methyl group loaded up and centered. In order to connect `Compounds` in mBuild, we make use of a special type of `Compound`: the `Port`. A `Port` is a `Compound` with two sets of four "ghost" `Particles`. In addition ``Ports`` have an `anchor` attribute which typically points to a `Compound` that the `Port` should be associated with. In our methyl group, the `Port` should be anchored to the carbon atom so that we
-# can now form bonds to this carbon:
+# Now let's use our first coordinate transform to center the methyl at its carbon atom:
 
 # In[3]:
+
+import mbuild as mb
+
+ch3 = mb.load('ch3.pdb')
+mb.translate(ch3, -ch3[0].pos)  # Move carbon to origin.
+
+
+# Now we have a methyl group loaded up and centered. In order to connect `Compounds` in mBuild, we make use of a special type of `Compound`: the `Port`. A `Port` is a `Compound` with two sets of four "ghost" `Particles`. In addition ``Ports`` have an `anchor` attribute which typically points to a particle that the `Port` should be associated with. In our methyl group, the `Port` should be anchored to the carbon atom so that we
+# can now form bonds to this carbon:
+
+# In[4]:
+
+import mbuild as mb
+
+ch3 = mb.load('ch3.pdb')
+mb.translate(ch3, -ch3[0].pos)  # Move carbon to origin.
+
+port = mb.Port(anchor=ch3[0])
+ch3.add(port, label='up')
+
+# Place the port at approximately half a C-C bond length.
+mb.translate(ch3['up'], [0, -0.07, 0])  
+
+
+# By default, `Ports` are never output from the mBuild structure. However, it can be useful to look at a molecule with the `Ports` to check your work as you go:
+
+# In[5]:
+
+ch3.visualize(show_ports=True)
+
+
+# Now we wrap the methyl group into a python class, so that we can reuse it as a component to build more complex molecules later.
+
+# In[6]:
 
 import mbuild as mb
 
@@ -54,14 +78,7 @@ class CH3(mb.Compound):
         port = mb.Port(anchor=self[0])
         self.add(port, label='up')
         # Place the port at approximately half a C-C bond length.
-        mb.translate(self['up'], [0, -0.07, 0])  
-
-
-# By default, `Ports` are never output from the mBuild structure. However, it can be useful to look at a molecule with the `Ports` to check your work as you go:
-
-# In[4]:
-
-CH3().visualize(show_ports=True)
+        mb.translate(self['up'], [0, -0.07, 0]) 
 
 
 # When two `Ports` are connected, they are forced to overlap in space and their parent `Compounds` are rotated and translated by the same amount. 
@@ -74,7 +91,33 @@ CH3().visualize(show_ports=True)
 # 
 # Now the fun part: stick 'em together to create an ethane:
 
-# In[5]:
+# In[7]:
+
+ethane = mb.Compound()
+
+ethane.add(CH3(), label="methyl_1")
+ethane.add(CH3(), label="methyl_2")
+mb.force_overlap(move_this=ethane['methyl_1'],
+                         from_positions=ethane['methyl_1']['up'],
+                         to_positions=ethane['methyl_2']['up'])
+
+
+# Above, the `force_overlap()` function takes a `Compound` and then rotates and translates it such that two other `Compounds` overlap. Typically, as in
+# this case, those two other `Compounds` are `Ports` - in our case, `methyl1['up']` and `methyl2['up']`.
+
+# In[8]:
+
+ethane.visualize()
+
+
+# In[9]:
+
+ethane.visualize(show_ports=True)
+
+
+# Similarly, if we want to make ethane a reusable component, we need to wrap it into a python class.
+
+# In[10]:
 
 import mbuild as mb
 
@@ -89,26 +132,13 @@ class Ethane(mb.Compound):
                          to_positions=self['methyl_2']['up'])
 
 
-# In[6]:
+# In[11]:
 
 ethane = Ethane()
 ethane.visualize()
 
 
-# In[7]:
-
-ethane.visualize(show_ports=True)
-
-
-# Above, the `force_overlap()` function takes a `Compound` and then rotates and translates it such that two other `Compounds` overlap. Typically, as in
-# this case, those two other `Compounds` are `Ports` - in our case, `methyl1['up']` and `methyl2['up']`.
-
-# In[ ]:
-
-
-
-
-# In[8]:
+# In[12]:
 
 # Save to .mol2
 ethane.save('ethane.mol2', overwrite=True)
