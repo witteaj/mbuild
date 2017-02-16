@@ -1,0 +1,704 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mbuild.lattice &mdash; mbuild 0.7.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="mbuild 0.7.0 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> mbuild
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.7.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/tutorials.html">Tutorials</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../data_structures.html">Data Structure</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../coordinate_transforms.html">Coordinate transformations</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes.html">Recipes</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">mbuild</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>mbuild.lattice</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for mbuild.lattice</h1><div class="highlight"><pre>
+<span></span><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Lattice&#39;</span><span class="p">]</span>
+
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">six</span> <span class="k">import</span> <span class="n">string_types</span>
+<span class="kn">import</span> <span class="nn">itertools</span> <span class="k">as</span> <span class="nn">it</span>
+<span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+
+
+<div class="viewcode-block" id="Lattice"><a class="viewcode-back" href="../../recipes.html#mbuild.lattice.Lattice">[docs]</a><span class="k">class</span> <span class="nc">Lattice</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Develop crystal structure from user defined inputs.</span>
+
+<span class="sd">    Lattice, the abstract building block of a crystal cell.</span>
+<span class="sd">    Once defined by the user, the crystal is returned as</span>
+<span class="sd">    a single Compound that can be either replicated through its class</span>
+<span class="sd">    methods or through a similar replicate Compound method.</span>
+
+<span class="sd">    Lattice is defined through the standard bravais lattices, which have been</span>
+<span class="sd">    accepted by the International Union of Crystallography.</span>
+<span class="sd">    A Lattice can be fully described with its lattice vectors and lattice</span>
+<span class="sd">    spacings. Also, the Lattice can be fully defined by its lattice parameters:</span>
+<span class="sd">    the lattice spacings and its set of coordinate angles will then</span>
+<span class="sd">    generate the lattice vectors. Lattice expects a right handed lattice and</span>
+<span class="sd">    cell edges defined by vectors all originating from the origin in</span>
+<span class="sd">    Cartesian space.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dimension : int, optional, default=3</span>
+<span class="sd">        Dimension of the system of interest.</span>
+<span class="sd">    lattice_vectors : numpy array, shape=(dimension, dimension), optional</span>
+<span class="sd">                      default=([1,0,0], [0,1,0], [0,0,1])</span>
+<span class="sd">        Vectors that define edges of unit cell corresponding to dimension.</span>
+<span class="sd">    lattice_spacings : list-like, shape=(dimension,), optional, default=None</span>
+<span class="sd">        Length of unit cell edges.</span>
+<span class="sd">    basis_vectors : dictionary-like, shape=([&#39;id&#39;,[dimension,]], ...) optional</span>
+<span class="sd">                    default={(&#39;default&#39;, ([0,0,0]))}</span>
+<span class="sd">        Location of all basis Compounds in unit cell.</span>
+<span class="sd">    angles : list-like,  shape=(dimension,), optional, default=None</span>
+<span class="sd">        Interplanar angles describing unit cell.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dimension : int, optional, default=3</span>
+<span class="sd">        Dimension of system of interest</span>
+<span class="sd">    lattice_vectors : numpy array, shape=(dimension, dimension), optional</span>
+<span class="sd">                      default=([1,0,0], [0,1,0], [0,0,1])</span>
+<span class="sd">        Vectors that define edges of unit cell corresponding to dimension.</span>
+<span class="sd">    lattice_spacings : list-like, shape=(dimension,), required, default=None</span>
+<span class="sd">        Length of unit cell edges.</span>
+<span class="sd">    basis_vectors : list-like, shape=([&#39;id&#39;,[dimension,]], ... ,) optional</span>
+<span class="sd">                    default={(&#39;default&#39;,([0,0,0]))}</span>
+<span class="sd">        Location of all basis Compounds in unit cell.</span>
+<span class="sd">    angles : list-like, optional, default=None</span>
+<span class="sd">        Lattice angles to define Bravais Lattice.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Generating a triclinc lattice for cholesterol.</span>
+
+<span class="sd">    &gt;&gt;&gt; import mbuild as mb</span>
+<span class="sd">    &gt;&gt;&gt; from mbuild.utils.io import get_fn</span>
+<span class="sd">    &gt;&gt;&gt; # reading in the lattice parameters for crystalline cholesterol</span>
+<span class="sd">    &gt;&gt;&gt; angle_values = [94.64, 90.67, 96.32]</span>
+<span class="sd">    &gt;&gt;&gt; spacings = [1.4172, 3.4209, 1.0481]</span>
+<span class="sd">    &gt;&gt;&gt; basis_vector = ( (&#39;cholesterol&#39;, [0,0,0]), )</span>
+<span class="sd">    &gt;&gt;&gt; cholesterol_lattice = mb.Lattice(spacings,</span>
+<span class="sd">    ...                                  angles=angle_values,</span>
+<span class="sd">    ...                                  basis_vectors=basis_vector,</span>
+<span class="sd">    ...                                  dimension=3)</span>
+
+<span class="sd">    The lattice based on the bravais lattice parameters of crystalline</span>
+<span class="sd">    cholesterol was generated.</span>
+
+<span class="sd">    Replicating the triclinic unit cell out 3 in x,y,z directions.</span>
+<span class="sd">    &gt;&gt;&gt; cholesterol_unit = mb.Compound()</span>
+<span class="sd">    &gt;&gt;&gt; cholesterol_unit = mb.load(get_fn(&#39;cholesterol.pdb&#39;))</span>
+<span class="sd">    &gt;&gt;&gt; # associate basis vector with id &#39;cholesterol&#39; to cholesterol Compound</span>
+<span class="sd">    &gt;&gt;&gt; basis_dictionary = {&#39;cholesterol&#39; : cholesterol_unit}</span>
+<span class="sd">    &gt;&gt;&gt; expanded_cell = cholesterol_lattice.populate(x=3, y=3, z=3,</span>
+<span class="sd">    ...                              compound_dict=basis_dictionary)</span>
+
+<span class="sd">    The unit cell of cholesterol was associated with a Compound that contains</span>
+<span class="sd">    the connectivity data and spatial arrangements of a cholesterol molecule.</span>
+<span class="sd">    The unit cell was then expanded out in x,y,z directions and cholesterol</span>
+<span class="sd">    Compounds were populated.</span>
+
+
+<span class="sd">    Generating BCC CsCl crystal structure</span>
+<span class="sd">    &gt;&gt;&gt; import mbuild as mb</span>
+<span class="sd">    &gt;&gt;&gt; chlorine = mb.Compound(name=&#39;Cl&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; # angles not needed, when not provided, defaults to 90,90,90</span>
+<span class="sd">    &gt;&gt;&gt; cesium = mb.Compound(name=&#39;Cs&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; spacings = [.4123, .4123, .4123]</span>
+<span class="sd">    &gt;&gt;&gt; basis_vector = ( (&#39;Cl&#39;, [0,0,0]), (&#39;Cs&#39;, [.5, .5, .5]), )</span>
+<span class="sd">    &gt;&gt;&gt; cscl_lattice = mb.Lattice(spacings, basis_vectors=basis_vector,</span>
+<span class="sd">    ...                           dimension=3)</span>
+
+<span class="sd">    Now associate id with Compounds for basis atoms and replicate 3x3x3</span>
+<span class="sd">    &gt;&gt;&gt; cscl_dict = {&#39;Cl&#39; : chlorine, &#39;Cs&#39; : cesium}</span>
+<span class="sd">    &gt;&gt;&gt; cscl_compound = cscl_lattice.populate(x=3, y=3, z=3,</span>
+<span class="sd">    ...                                       compound_dict=cscl_dict)</span>
+
+<span class="sd">    A multi-Compound basis was created and replicated. For each unique basis</span>
+<span class="sd">    atom position, a separate entry must be completed for the basis_vector</span>
+<span class="sd">    input.</span>
+
+<span class="sd">    Generating FCC Copper cell with lattice_vectors instead of angles</span>
+<span class="sd">    &gt;&gt;&gt; import mbuild as mb</span>
+<span class="sd">    &gt;&gt;&gt; copper = mb.Compound(name=&#39;Cu&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; lattice_vector = ( [1, 0, 0], [0, 1, 0], [0, 0, 1])</span>
+<span class="sd">    &gt;&gt;&gt; spacings = [.36149, .36149, .36149]</span>
+<span class="sd">    &gt;&gt;&gt; basis_vector = ( (&#39;Cu&#39;, [0, 0, 0]), (&#39;Cu&#39;, [.5, .5, 0]),</span>
+<span class="sd">    ...                 (&#39;Cu&#39;, [.5, 0, .5] ), (&#39;Cu&#39;, [0, .5, .5]), )</span>
+<span class="sd">    &gt;&gt;&gt; copper_lattice = mb.Lattice(spacings, dimension=3,</span>
+<span class="sd">    ...                           lattice_vectors=lattice_vector,</span>
+<span class="sd">    ...                           basis_vectors=basis_vector)</span>
+<span class="sd">    &gt;&gt;&gt; copper_dict = {&#39;Cu&#39; : copper}</span>
+<span class="sd">    &gt;&gt;&gt; copper_cell = copper_lattice.populate(x=3, y=3, z=20,</span>
+<span class="sd">    ...                                       compound_dict=copper_dict)</span>
+
+<span class="sd">    TODO(Justin Gilmer) : migrate data cleaning to separate functions</span>
+<span class="sd">    TODO(Justin Gilmer) : Print function to display info about Lattice (repr)</span>
+<span class="sd">    TODO(Justin Gilmer) : inheritance(Cubic, orthorhombic, hexangonal)</span>
+<span class="sd">    TODO(Justin Gilmer) : nested for loop cleaning up</span>
+<span class="sd">    TODO(Justin Gilmer) : orientation functionality</span>
+<span class="sd">    TODO(Justin Gilmer) : conversion to idiomatic python</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lattice_spacings</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">lattice_vectors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">basis_vectors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">angles</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Lattice</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_inputs</span><span class="p">(</span><span class="n">lattice_vectors</span><span class="o">=</span><span class="n">lattice_vectors</span><span class="p">,</span>
+                              <span class="n">dimension</span><span class="o">=</span><span class="n">dimension</span><span class="p">,</span>
+                              <span class="n">lattice_spacings</span><span class="o">=</span><span class="n">lattice_spacings</span><span class="p">,</span>
+                              <span class="n">basis_vectors</span><span class="o">=</span><span class="n">basis_vectors</span><span class="p">,</span>
+                              <span class="n">angles</span><span class="o">=</span><span class="n">angles</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_validate_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lattice_vectors</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span>
+                         <span class="n">lattice_spacings</span><span class="p">,</span> <span class="n">basis_vectors</span><span class="p">,</span> <span class="n">angles</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check for proper inputs and set instance attributes.</span>
+
+<span class="sd">        validate_inputs takes the data passed to the constructor by the user</span>
+<span class="sd">        and will ensure that the data is correctly formatted and will then</span>
+<span class="sd">        set its instance attributes.</span>
+
+<span class="sd">        validate_inputs checks that dimensionality is maintained,</span>
+<span class="sd">        the unit cell is right handed, the area or volume of the unit cell</span>
+<span class="sd">        is positive and non-zero for 2D and 3D respectively, lattice spacings</span>
+<span class="sd">        are provided, basis vectors do not overlap when the unit cell is</span>
+<span class="sd">        expanded.</span>
+
+<span class="sd">        Exceptions Raised</span>
+<span class="sd">        -----------------</span>
+<span class="sd">        TypeError : incorrect typing of the input parameters.</span>
+
+<span class="sd">        ValueError : values are not within restrictions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dimension</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dimension</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dimension</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dimension</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dimension</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">dimension</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Incorrect dimensions: </span><span class="si">{}</span><span class="s1"> is not a proper &#39;</span>
+                             <span class="s1">&#39;dimension. 1, 2, or 3 are acceptable.&#39;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dimension</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">lattice_spacings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lattice_spacings</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lattice_spacings</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">lattice_spacings</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">dimension</span><span class="p">,</span> <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Lattice spacings should be a vector of &#39;</span>
+                                 <span class="s1">&#39;size:(</span><span class="si">{}</span><span class="s1">,). Please include lattice spacings &#39;</span>
+                                 <span class="s1">&#39;for each available dimension.&#39;</span>
+                                 <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dimension</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Lattice Spacing Issue: None provided, &#39;</span>
+                             <span class="s1">&#39;must provide lattice spacings matching &#39;</span>
+                             <span class="s1">&#39;the dimension (</span><span class="si">{}</span><span class="s1">) of the system.&#39;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dimension</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">lattice_spacings</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Negative or zero lattice spacing value. One of &#39;</span>
+                             <span class="s1">&#39;the spacings </span><span class="si">{}</span><span class="s1"> is negative or 0.&#39;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lattice_spacings</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">angles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">angles</span><span class="p">),</span> <span class="n">dimension</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">theAngle</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">theAngle</span> <span class="ow">in</span> <span class="n">angles</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">360.0</span> <span class="ow">or</span> <span class="nb">sum</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mf">360.0</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">theAngle</span> <span class="ow">in</span> <span class="n">angles</span><span class="p">:</span>
+                            <span class="k">if</span><span class="p">(</span><span class="n">theAngle</span> <span class="o">!=</span> <span class="mf">180.0</span> <span class="ow">and</span> <span class="n">theAngle</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">):</span>
+                                <span class="k">pass</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Angles cannot be 180.0 or &#39;</span>
+                                                 <span class="s1">&#39;0.0.&#39;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Angles sum to a value greater than &#39;</span>
+                                         <span class="s1">&#39;360.0 or less than -360.0.&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Angles are not type float.&#39;</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="n">it</span><span class="o">.</span><span class="n">permutations</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">subset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="nb">sum</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span> <span class="o">-</span> <span class="n">subset</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Each angle provided must be less &#39;</span>
+                                         <span class="s1">&#39;than the sum of the other two &#39;</span>
+                                         <span class="s1">&#39;angles. </span><span class="si">{}</span><span class="s1"> is greater.&#39;</span>
+                                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">subset</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">theAngle</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">theAngle</span> <span class="ow">in</span> <span class="n">angles</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">theAngle</span> <span class="ow">in</span> <span class="n">angles</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">theAngle</span> <span class="o">!=</span> <span class="mf">180.0</span> <span class="ow">and</span> <span class="n">theAngle</span> <span class="o">!=</span> <span class="mf">0.0</span> <span class="ow">and</span>
+                                <span class="n">theAngle</span> <span class="o">&lt;</span> <span class="mf">180.0</span> <span class="ow">and</span> <span class="n">theAngle</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mf">180.0</span><span class="p">):</span>
+                            <span class="k">pass</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Angle incorrectly defined. </span><span class="si">{}</span><span class="s1"> &#39;</span>
+                                             <span class="s1">&#39;does not follow the proper &#39;</span>
+                                             <span class="s1">&#39;guidelines for a bravais angle. &#39;</span>
+                                             <span class="s1">&#39;Refer to documentation.&#39;</span>
+                                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">theAngle</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Incorrect amount of angles provided for &#39;</span>
+                                 <span class="s1">&#39;dimension </span><span class="si">{}</span><span class="s1">. Recieved </span><span class="si">{}</span><span class="s1"> angles.&#39;</span>
+                                 <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dimension</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">angles</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="n">angles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lattice_vectors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Over defined system. Lattice vectors and &#39;</span>
+                              <span class="s1">&#39;angles passed to constructor. Only one of &#39;</span>
+                              <span class="s1">&#39;these sets are required.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">angles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">dimension</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">lattice_vectors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lattice_vectors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_from_lattice_parameters</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">lattice_vectors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dimension</span> <span class="ow">is</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">lattice_vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+                                              <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+                                              <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]))</span>
+            <span class="k">elif</span> <span class="n">dimension</span> <span class="ow">is</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">lattice_vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lattice_vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(([</span><span class="mf">1.0</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lattice_vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lattice_vectors</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">lattice_vectors</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">dimension</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span> <span class="o">!=</span> <span class="n">shape</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Dimensionality of lattice_vectors is &#39;</span>
+                                     <span class="s1">&#39; of shape </span><span class="si">{}</span><span class="s1"> not </span><span class="si">{}</span><span class="s1">.&#39;</span>
+                                     <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="p">(</span><span class="n">dimension</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">)</span> <span class="o">!=</span> <span class="n">shape</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Dimensionality of lattice_vectors is&#39;</span>
+                                     <span class="s1">&#39; of </span><span class="si">{}</span><span class="s1">, not (1, ).&#39;</span> <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">shape</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">dimension</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">det</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">lattice_vectors</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">det</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Co-linear vectors: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                                     <span class="s1">&#39;have a determinant of 0.0. Does not &#39;</span>
+                                     <span class="s1">&#39;define a unit cell.&#39;</span>
+                                     <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lattice_vectors</span><span class="p">))</span>
+
+                <span class="k">if</span> <span class="n">det</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Negative Determinant: the determinant &#39;</span>
+                                     <span class="s1">&#39;of </span><span class="si">{}</span><span class="s1"> is negative, indicating a left-&#39;</span>
+                                     <span class="s1">&#39;handed system.&#39;</span> <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">det</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">basis_vectors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">basis_vectors</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+            <span class="n">basis_vectors</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mi">0</span><span class="p">,)</span> <span class="o">*</span> <span class="n">dimension</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">basis_vectors</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">lst</span> <span class="ow">in</span> <span class="n">basis_vectors</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Too many arguments per basis vector. &#39;</span>
+                                     <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> was provided, but the format should &#39;</span>
+                                     <span class="s1">&#39;be: vector = ( (</span><span class="se">\&#39;</span><span class="s1">ID1</span><span class="se">\&#39;</span><span class="s1"> , [x1,y1,z1]), &#39;</span>
+                                     <span class="s1">&#39;( </span><span class="se">\&#39;</span><span class="s1">ID2</span><span class="se">\&#39;</span><span class="s1"> , [x2,y2,z2]) )&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lst</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">string_types</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;ID Error, not a string. </span><span class="si">{}</span><span class="s1"> is not of &#39;</span>
+                                    <span class="s1">&#39;type string_types. Please correct in the &#39;</span>
+                                    <span class="s1">&#39;basis_vectors input </span><span class="si">{}</span><span class="s1">.&#39;</span>
+                                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">basis_vectors</span><span class="p">))</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="n">dimension</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimension</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">):</span>
+                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Incorrect basis fractions. &#39;</span>
+                                                 <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> is supposed be 0 &gt;= and &#39;</span>
+                                                 <span class="s1">&#39;&lt; 1.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Incorrect Format: expected &lt;list&gt; &#39;</span>
+                                        <span class="s1">&#39;or &lt;tuple&gt;. </span><span class="si">{}</span><span class="s1"> was passed in as &#39;</span>
+                                        <span class="s1">&#39; type: </span><span class="si">{}</span><span class="s1"> from basis_vectors.&#39;</span>
+                                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">type</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Basis Vector does not match dimension. &#39;</span>
+                                     <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> does not have vector components &#39;</span>
+                                     <span class="s1">&#39;equal to the dimension specified: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                                     <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dimension</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Incorrect Type: &quot;basis_vectors&quot; is of type </span><span class="si">{}</span><span class="s1">, &#39;</span>
+                            <span class="s1">&#39;not &lt;tuple&gt;. Please review &#39;</span>
+                            <span class="s1">&#39;the documentation and examples for proper format.&#39;</span>
+                            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">basis_vectors</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">basis_vectors</span><span class="p">,</span> <span class="n">defaultdict</span><span class="p">):</span>
+            <span class="n">overlap_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">the_id</span><span class="p">,</span> <span class="n">vector</span> <span class="ow">in</span> <span class="n">basis_vectors</span><span class="p">:</span>
+                <span class="n">num_iter</span> <span class="o">=</span> <span class="mi">3</span>
+                <span class="k">for</span> <span class="n">offsets</span> <span class="ow">in</span> <span class="n">it</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_iter</span><span class="p">),</span> <span class="n">repeat</span><span class="o">=</span><span class="n">dimension</span><span class="p">):</span>
+                    <span class="n">offset_vector</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">v</span> <span class="o">+</span> <span class="n">offset</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">offset</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)))</span>
+                    <span class="n">overlap_dict</span><span class="p">[</span><span class="n">offset_vector</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">the_id</span><span class="p">,</span> <span class="n">vector</span><span class="p">))</span>
+
+            <span class="c1"># now review for overlap</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">overlap_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Overlapping Basis Vectors: Basis &#39;</span>
+                                     <span class="s1">&#39;vectors overlap when the unit cell is &#39;</span>
+                                     <span class="s1">&#39;expanded to </span><span class="si">{}</span><span class="s1">. This is an incorrect &#39;</span>
+                                     <span class="s1">&#39;perfect lattice. The offending &#39;</span>
+                                     <span class="s1">&#39;vectors are: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                                     <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
+        <span class="n">basis_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">basis_vectors</span><span class="p">,</span> <span class="n">defaultdict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">basis_vectors</span><span class="p">:</span>
+                <span class="n">basis_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">basis_dict</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">basis_vectors</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span> <span class="o">=</span> <span class="n">dimension</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lattice_vectors</span> <span class="o">=</span> <span class="n">lattice_vectors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lattice_spacings</span> <span class="o">=</span> <span class="n">lattice_spacings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basis_vectors</span> <span class="o">=</span> <span class="n">basis_dict</span>
+
+    <span class="k">def</span> <span class="nf">_from_lattice_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angles</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert Bravais lattice parameters to lattice vectors.</span>
+
+<span class="sd">        _from_lattice_parameters will generate the lattice vectors based on</span>
+<span class="sd">        the parameters necessary to build a Bravais Lattice.</span>
+
+<span class="sd">        This was adapted from the ASE triclinic.py lattice parameter code.</span>
+
+<span class="sd">        S. R. Bahn and K. W. Jacobsen</span>
+<span class="sd">        An object-oriented scripting interface to a</span>
+<span class="sd">        legacy electronic structure code Comput. Sci. Eng., Vol. 4, 56-66, 2002</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        angles : list-like, required</span>
+<span class="sd">            Angles of bravais lattice.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dimension</span> <span class="ow">is</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">=</span> <span class="n">angles</span>
+
+            <span class="n">degree</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span>
+            <span class="n">cosa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="o">*</span><span class="n">degree</span><span class="p">)</span>
+            <span class="n">cosb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">beta</span><span class="o">*</span><span class="n">degree</span><span class="p">)</span>
+            <span class="n">sinb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">beta</span><span class="o">*</span><span class="n">degree</span><span class="p">)</span>
+            <span class="n">cosg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">gamma</span><span class="o">*</span><span class="n">degree</span><span class="p">)</span>
+            <span class="n">sing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">gamma</span><span class="o">*</span><span class="n">degree</span><span class="p">)</span>
+            <span class="n">lattice_vec</span> <span class="o">=</span> <span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="n">cosg</span><span class="p">,</span> <span class="n">sing</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="n">cosb</span><span class="p">,</span> <span class="p">(</span><span class="n">cosa</span><span class="o">-</span><span class="n">cosb</span><span class="o">*</span><span class="n">cosg</span><span class="p">)</span><span class="o">/</span><span class="n">sing</span><span class="p">,</span>
+                            <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sinb</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="p">((</span><span class="n">cosa</span> <span class="o">-</span> <span class="n">cosb</span><span class="o">*</span><span class="n">cosg</span><span class="p">)</span><span class="o">/</span><span class="n">sing</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">angles</span>
+            <span class="n">degree</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span>
+            <span class="n">cosa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="o">*</span><span class="n">degree</span><span class="p">)</span>
+            <span class="n">sina</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="o">*</span><span class="n">degree</span><span class="p">)</span>
+            <span class="n">lattice_vec</span> <span class="o">=</span> <span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="n">cosa</span><span class="p">,</span> <span class="n">sina</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">lattice_vec</span>
+
+<div class="viewcode-block" id="Lattice.populate"><a class="viewcode-back" href="../../recipes.html#mbuild.lattice.Lattice.populate">[docs]</a>    <span class="k">def</span> <span class="nf">populate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compound_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Expand lattice and create compound from lattice.</span>
+
+<span class="sd">        populate will expand lattice based on user input. The user must also</span>
+<span class="sd">        pass in a dictionary that contains the keys that exist in the</span>
+<span class="sd">        basis_dict. The corresponding Compound will be the full lattice</span>
+<span class="sd">        returned to the user.</span>
+
+<span class="sd">        If no dictionary is passed to the user, Dummy Compounds will be used.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : int, optional, default=None</span>
+<span class="sd">            How many iterations in the x direction.</span>
+<span class="sd">        y : int, optional, default=None</span>
+<span class="sd">            How many iterations in the y direction.</span>
+<span class="sd">        z : int, optional, default=None</span>
+<span class="sd">            How many iterations in the z direction.</span>
+<span class="sd">        compound_dict : dictionary, optional, default=None</span>
+<span class="sd">            Link between basis_dict and Compounds.</span>
+
+<span class="sd">        Exceptions Raised</span>
+<span class="sd">        -----------------</span>
+<span class="sd">        ValueError : incorrect x,y, or z values.</span>
+<span class="sd">        TypeError : incorrect type for basis vector</span>
+
+<span class="sd">        Call Restrictions</span>
+<span class="sd">        -----------------</span>
+<span class="sd">        Called after constructor by user.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice_spacings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice_spacings</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice_spacings</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">z</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">z</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Incorrect populate value: X, Y, or Z is &lt; 1.&#39;</span>
+                                 <span class="s1">&#39; Cannot replicate unit cell less than 1&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice_spacings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice_spacings</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">z</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Z is defined although dimension is 2D&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Incorrect populate value: X or Y is &lt; 1. &#39;</span>
+                                 <span class="s1">&#39; Cannot replicate unit cell less than 1&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice_spacings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Y is defined although dimension is 1D&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">z</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">if</span> <span class="n">z</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Z is defined although dimension is 2D&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Incorrect populate value: X &lt; 1. &#39;</span>
+                                 <span class="s1">&#39; Cannot replicate unit cell less than 1&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Dimension not defined.&#39;</span><span class="p">)</span>
+
+        <span class="n">cell</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_vectors</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">val_item</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+                            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+                                <span class="n">tmpx</span> <span class="o">=</span> <span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">val_item</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">a</span>
+                                <span class="n">tmpy</span> <span class="o">=</span> <span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">val_item</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">j</span><span class="p">)</span> <span class="o">*</span> <span class="n">b</span>
+                                <span class="n">tmpz</span> <span class="o">=</span> <span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">val_item</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="n">c</span>
+                                <span class="n">tmp_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">tmpx</span><span class="p">,</span> <span class="n">tmpy</span><span class="p">,</span> <span class="n">tmpz</span><span class="p">))</span>
+                                <span class="n">cell</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(((</span><span class="n">tmp_tuple</span><span class="p">)))</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+                            <span class="n">tmpx</span> <span class="o">=</span> <span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">val_item</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">a</span>
+                            <span class="n">tmpy</span> <span class="o">=</span> <span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">val_item</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">j</span><span class="p">)</span> <span class="o">*</span> <span class="n">b</span>
+                            <span class="n">tmp_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">tmpx</span><span class="p">,</span> <span class="n">tmpy</span><span class="p">))</span>
+                            <span class="n">cell</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(((</span><span class="n">tmp_tuple</span><span class="p">)))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+                        <span class="n">tmpx</span> <span class="o">=</span> <span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">val_item</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">a</span>
+                        <span class="n">tmp_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">tmpx</span><span class="p">))</span>
+                        <span class="n">cell</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(((</span><span class="n">tmp_tuple</span><span class="p">)))</span>
+
+        <span class="n">ret_lattice</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">compound_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key_id</span><span class="p">,</span> <span class="n">all_pos</span> <span class="ow">in</span> <span class="n">cell</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">particle</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">key_id</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">all_pos</span><span class="p">:</span>
+                    <span class="n">particle_to_add</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">particle</span><span class="p">)</span>
+                    <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">particle_to_add</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">pos</span><span class="p">))</span>
+                    <span class="n">ret_lattice</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">particle_to_add</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key_id</span><span class="p">,</span> <span class="n">all_pos</span> <span class="ow">in</span> <span class="n">cell</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">compound_dict</span><span class="p">[</span><span class="n">key_id</span><span class="p">],</span> <span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+                    <span class="n">compound_to_move</span> <span class="o">=</span> <span class="n">compound_dict</span><span class="p">[</span><span class="n">key_id</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">all_pos</span><span class="p">:</span>
+                        <span class="n">tmp_comp</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">compound_to_move</span><span class="p">)</span>
+                        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">tmp_comp</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">pos</span><span class="p">))</span>
+                        <span class="n">ret_lattice</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tmp_comp</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">err_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">compound_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key_id</span><span class="p">))</span>
+                    <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Invalid type in provided Compound Dictionary. &#39;</span>
+                              <span class="s1">&#39;For key </span><span class="si">{}</span><span class="s1">, type: </span><span class="si">{}</span><span class="s1"> was provided, &#39;</span>
+                              <span class="s1">&#39;not Compound.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key_id</span><span class="p">,</span> <span class="n">err_type</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">ret_lattice</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014-2017, Vanderbilt University.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.7.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

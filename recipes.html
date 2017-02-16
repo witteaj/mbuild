@@ -100,6 +100,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#monolayer">Monolayer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#polymer">Polymer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tiled-compound">Tiled Compound</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#silica-interface">Silica Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lattice">Lattice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.packing">Packing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.pattern">Pattern</a></li>
 </ul>
 </li>
 </ul>
@@ -1177,6 +1181,677 @@ a specific forcefield.xml file.</p>
 <dt id="mbuild.recipes.tiled_compound.TiledCompound.xyz_with_ports">
 <code class="descname">xyz_with_ports</code><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.xyz_with_ports" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all particle coordinates in this compound including ports.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="silica-interface">
+<h2>Silica Interface<a class="headerlink" href="#silica-interface" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface">
+<em class="property">class </em><code class="descclassname">mbuild.recipes.silica_interface.</code><code class="descname">SilicaInterface</code><span class="sig-paren">(</span><em>bulk_silica</em>, <em>tile_x=1</em>, <em>tile_y=1</em>, <em>thickness=1.0</em>, <em>seed=12345</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/recipes/silica_interface.html#SilicaInterface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface" title="Permalink to this definition">¶</a></dt>
+<dd><p>A recipe for creating an interface from bulk silica.</p>
+<p>Carves silica interface from bulk, adjusts to a reactive
+surface site density of 5.0 sites/nm^2 (agreeing with experimental
+results, see Zhuravlev 2000) by creating Si-O-Si bridges, and
+yields a 2:1 Si:O ratio (excluding the reactive surface sites).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>bulk_silica</strong> : mb.Compound</p>
+<blockquote>
+<div><p>Bulk silica from which to cleave an interface</p>
+</div></blockquote>
+<p><strong>tile_x</strong> : int, optional, default=1</p>
+<blockquote>
+<div><p>Number of times to replicate bulk silica in x-direction</p>
+</div></blockquote>
+<p><strong>tile_y</strong> : int, optional, default=1</p>
+<blockquote>
+<div><p>Number of times to replicate bulk silica in y-direction</p>
+</div></blockquote>
+<p><strong>thickness</strong> : float, optional, default=1.0</p>
+<blockquote class="last">
+<div><p>Desired thickness of the interface (in nm; not including
+reactive surface sites)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<table class="docutils citation" frame="void" id="r1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[R1]</a></td><td>Hartkamp, R., Siboulet, B., Dufreche, J.-F., Boasne, B.
+&#8220;Ion-specific adsorption and electroosmosis in charged
+amorphous porous silica.&#8221; (2015) Phys. Chem. Chem. Phys.
+17, 24683-24695</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="r2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[R2]</a></td><td>L.T. Zhuravlev, &#8220;The surface chemistry of amorphous silica.
+Zhuravlev model.&#8221; (2000) Colloids Surf., A. 10, 1-38</td></tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>new_child</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a part to the Compound.</p>
+<dl class="docutils">
+<dt>Note:</dt>
+<dd>This does not necessarily add the part to self.children but may
+instead be used to add a reference to the part to self.labels. See
+&#8216;containment&#8217; argument.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>new_child</strong> : mb.Compound or list-like of mb.Compound</p>
+<blockquote>
+<div><p>The object(s) to be added to this Compound.</p>
+</div></blockquote>
+<p><strong>label</strong> : str, optional</p>
+<blockquote>
+<div><p>A descriptive string for the part.</p>
+</div></blockquote>
+<p><strong>containment</strong> : bool, optional, default=True</p>
+<blockquote>
+<div><p>Add the part to self.children.</p>
+</div></blockquote>
+<p><strong>replace</strong> : bool, optional, default=True</p>
+<blockquote class="last">
+<div><p>Replace the label if it already exists.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.ancestors">
+<code class="descname">ancestors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.ancestors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all ancestors of the Compound recursively.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.available_ports">
+<code class="descname">available_ports</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.available_ports" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all unoccupied Ports referenced by this Compound.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.bonds">
+<code class="descname">bonds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.bonds" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of all Bonds in the Compound and sub-Compounds.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.boundingbox">
+<code class="descname">boundingbox</code><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.boundingbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the bounding box of the compound.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.center">
+<code class="descname">center</code><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.center" title="Permalink to this definition">¶</a></dt>
+<dd><p>The cartesian center of the Compound based on its Atoms.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.from_parmed">
+<code class="descname">from_parmed</code><span class="sig-paren">(</span><em>structure</em>, <em>coords_only=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.from_parmed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract atoms and bonds from a pmd.Structure.</p>
+<p>Will create sub-compounds for every chain if there is more than one
+and sub-sub-compounds for every residue.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>structure</strong> : pmd.Structure</p>
+<blockquote>
+<div><p>The structure to load.</p>
+</div></blockquote>
+<p><strong>coords_only</strong> : bool</p>
+<blockquote class="last">
+<div><p>Set preexisting atoms in compound to coordinates given by structure.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.from_trajectory">
+<code class="descname">from_trajectory</code><span class="sig-paren">(</span><em>traj</em>, <em>frame=-1</em>, <em>coords_only=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.from_trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract atoms and bonds from a md.Trajectory.</p>
+<p>Will create sub-compounds for every chain if there is more than one
+and sub-sub-compounds for every residue.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>traj</strong> : md.Trajectory</p>
+<blockquote>
+<div><p>The trajectory to load.</p>
+</div></blockquote>
+<p><strong>frame</strong> : int</p>
+<blockquote class="last">
+<div><p>The frame to take coordinates from.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.generate_bonds">
+<code class="descname">generate_bonds</code><span class="sig-paren">(</span><em>name_a</em>, <em>name_b</em>, <em>dmin</em>, <em>dmax</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.generate_bonds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Bonds between all pairs of types a/b within [dmin, dmax].</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.min_periodic_distance">
+<code class="descname">min_periodic_distance</code><span class="sig-paren">(</span><em>xyz0</em>, <em>xyz1</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Vectorized distance calculation considering minimum image.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.n_bonds">
+<code class="descname">n_bonds</code><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.n_bonds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of Bonds in the Compound.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.particles">
+<code class="descname">particles</code><span class="sig-paren">(</span><em>include_ports=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.particles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.particles_in_range">
+<code class="descname">particles_in_range</code><span class="sig-paren">(</span><em>compound</em>, <em>dmax</em>, <em>max_particles=20</em>, <em>particle_kdtree=None</em>, <em>particle_array=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.particles_in_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find particles within a specified range of another particle.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.referenced_ports">
+<code class="descname">referenced_ports</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.referenced_ports" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all Ports referenced by this Compound.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.remove">
+<code class="descname">remove</code><span class="sig-paren">(</span><em>objs_to_remove</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove children from the Compound.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>show_ports=False</em>, <em>forcefield_name=None</em>, <em>forcefield_files=None</em>, <em>box=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the Compound to a file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename</strong> : str</p>
+<blockquote>
+<div><p>Filesystem path in which to save the trajectory. The extension or
+prefix will be parsed and will control the format.</p>
+</div></blockquote>
+<p><strong>show_ports</strong> : bool, default=False</p>
+<blockquote>
+<div><p>Save ports contained within the compound.</p>
+</div></blockquote>
+<p><strong>forcefield_name</strong> : str, default=None</p>
+<blockquote>
+<div><p>Apply a forcefield to the output file using a forcefield provided
+by the <cite>foyer</cite> package.</p>
+</div></blockquote>
+<p><strong>forcefield_name</strong> : str, default=None</p>
+<blockquote>
+<div><p>Apply a forcefield to the output file using the <cite>foyer</cite> package and
+a specific forcefield.xml file.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Other Parameters:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last"><strong>force_overwrite</strong> : bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.save_gromacs">
+<code class="descname">save_gromacs</code><span class="sig-paren">(</span><em>filename</em>, <em>structure</em>, <em>forcefield_name</em>, <em>forcefield_files</em>, <em>box</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.save_gromacs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.save_gsd">
+<code class="descname">save_gsd</code><span class="sig-paren">(</span><em>filename</em>, <em>structure</em>, <em>forcefield_name</em>, <em>forcefield_files</em>, <em>box=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.save_gsd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.save_hoomdxml">
+<code class="descname">save_hoomdxml</code><span class="sig-paren">(</span><em>filename</em>, <em>structure</em>, <em>forcefield_name</em>, <em>forcefield_files</em>, <em>box</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.save_hoomdxml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.save_lammpsdata">
+<code class="descname">save_lammpsdata</code><span class="sig-paren">(</span><em>filename</em>, <em>structure</em>, <em>forcefield_name</em>, <em>forcefield_files</em>, <em>box</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.save_lammpsdata" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.successors">
+<code class="descname">successors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.successors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield Compounds below self in the hierarchy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.to_intermol">
+<code class="descname">to_intermol</code><span class="sig-paren">(</span><em>molecule_types=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.to_intermol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an InterMol system from a Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>molecule_types</strong> : list or tuple of subclasses of Compound</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>intermol_system</strong> : intermol.system.System</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.to_parmed">
+<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.to_parmed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a ParmEd Structure from a Compound.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.to_trajectory">
+<code class="descname">to_trajectory</code><span class="sig-paren">(</span><em>show_ports=False</em>, <em>chain_types=None</em>, <em>residue_types=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert to an md.Trajectory and flatten the compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>show_ports</strong> : bool, optional, default=False</p>
+<blockquote>
+<div><p>Include all port atoms when converting to trajectory.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>trajectory</strong> : md.Trajectory</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-obj docutils literal"><span class="pre">_to_topology</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.update_coordinates">
+<code class="descname">update_coordinates</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.update_coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the coordinates of this Compound from a file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.view_hierarchy">
+<code class="descname">view_hierarchy</code><span class="sig-paren">(</span><em>show_ports=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.view_hierarchy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize a compound hierarchy as a tree.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.visualize">
+<code class="descname">visualize</code><span class="sig-paren">(</span><em>show_ports=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.visualize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize the Compound using nglview.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.xyz">
+<code class="descname">xyz</code><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all particle coordinates in this compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>pos</strong> : np.ndarray, shape=(n, 3)</p>
+<blockquote class="last">
+<div><p>Array with the positions of all particles.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.xyz_with_ports">
+<code class="descname">xyz_with_ports</code><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.xyz_with_ports" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all particle coordinates in this compound including ports.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="lattice">
+<h2>Lattice<a class="headerlink" href="#lattice" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.lattice.Lattice">
+<em class="property">class </em><code class="descclassname">mbuild.lattice.</code><code class="descname">Lattice</code><span class="sig-paren">(</span><em>lattice_spacings</em>, <em>dimension=None</em>, <em>lattice_vectors=None</em>, <em>basis_vectors=None</em>, <em>angles=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/lattice.html#Lattice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.lattice.Lattice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Develop crystal structure from user defined inputs.</p>
+<p>Lattice, the abstract building block of a crystal cell.
+Once defined by the user, the crystal is returned as
+a single Compound that can be either replicated through its class
+methods or through a similar replicate Compound method.</p>
+<p>Lattice is defined through the standard bravais lattices, which have been
+accepted by the International Union of Crystallography.
+A Lattice can be fully described with its lattice vectors and lattice
+spacings. Also, the Lattice can be fully defined by its lattice parameters:
+the lattice spacings and its set of coordinate angles will then
+generate the lattice vectors. Lattice expects a right handed lattice and
+cell edges defined by vectors all originating from the origin in
+Cartesian space.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dimension</strong> : int, optional, default=3</p>
+<blockquote>
+<div><p>Dimension of the system of interest.</p>
+</div></blockquote>
+<p><strong>lattice_vectors</strong> : numpy array, shape=(dimension, dimension), optional</p>
+<blockquote>
+<div><blockquote>
+<div><p>default=([1,0,0], [0,1,0], [0,0,1])</p>
+</div></blockquote>
+<p>Vectors that define edges of unit cell corresponding to dimension.</p>
+</div></blockquote>
+<p><strong>lattice_spacings</strong> : list-like, shape=(dimension,), optional, default=None</p>
+<blockquote>
+<div><p>Length of unit cell edges.</p>
+</div></blockquote>
+<p><strong>basis_vectors</strong> : dictionary-like, shape=([&#8216;id&#8217;,[dimension,]], ...) optional</p>
+<blockquote>
+<div><blockquote>
+<div><p>default={(&#8216;default&#8217;, ([0,0,0]))}</p>
+</div></blockquote>
+<p>Location of all basis Compounds in unit cell.</p>
+</div></blockquote>
+<p><strong>angles</strong> : list-like,  shape=(dimension,), optional, default=None</p>
+<blockquote class="last">
+<div><p>Interplanar angles describing unit cell.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>Generating a triclinc lattice for cholesterol.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># reading in the lattice parameters for crystalline cholesterol</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">angle_values</span> <span class="o">=</span> <span class="p">[</span><span class="mf">94.64</span><span class="p">,</span> <span class="mf">90.67</span><span class="p">,</span> <span class="mf">96.32</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spacings</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.4172</span><span class="p">,</span> <span class="mf">3.4209</span><span class="p">,</span> <span class="mf">1.0481</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">basis_vector</span> <span class="o">=</span> <span class="p">(</span> <span class="p">(</span><span class="s1">&#39;cholesterol&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cholesterol_lattice</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Lattice</span><span class="p">(</span><span class="n">spacings</span><span class="p">,</span>
+<span class="gp">... </span>                                 <span class="n">angles</span><span class="o">=</span><span class="n">angle_values</span><span class="p">,</span>
+<span class="gp">... </span>                                 <span class="n">basis_vectors</span><span class="o">=</span><span class="n">basis_vector</span><span class="p">,</span>
+<span class="gp">... </span>                                 <span class="n">dimension</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The lattice based on the bravais lattice parameters of crystalline
+cholesterol was generated.</p>
+<p>Replicating the triclinic unit cell out 3 in x,y,z directions.
+&gt;&gt;&gt; cholesterol_unit = mb.Compound()
+&gt;&gt;&gt; cholesterol_unit = mb.load(get_fn(&#8216;cholesterol.pdb&#8217;))
+&gt;&gt;&gt; # associate basis vector with id &#8216;cholesterol&#8217; to cholesterol Compound
+&gt;&gt;&gt; basis_dictionary = {&#8216;cholesterol&#8217; : cholesterol_unit}
+&gt;&gt;&gt; expanded_cell = cholesterol_lattice.populate(x=3, y=3, z=3,
+...                              compound_dict=basis_dictionary)</p>
+<p>The unit cell of cholesterol was associated with a Compound that contains
+the connectivity data and spatial arrangements of a cholesterol molecule.
+The unit cell was then expanded out in x,y,z directions and cholesterol
+Compounds were populated.</p>
+<p>Generating BCC CsCl crystal structure
+&gt;&gt;&gt; import mbuild as mb
+&gt;&gt;&gt; chlorine = mb.Compound(name=&#8217;Cl&#8217;)
+&gt;&gt;&gt; # angles not needed, when not provided, defaults to 90,90,90
+&gt;&gt;&gt; cesium = mb.Compound(name=&#8217;Cs&#8217;)
+&gt;&gt;&gt; spacings = [.4123, .4123, .4123]
+&gt;&gt;&gt; basis_vector = ( (&#8216;Cl&#8217;, [0,0,0]), (&#8216;Cs&#8217;, [.5, .5, .5]), )
+&gt;&gt;&gt; cscl_lattice = mb.Lattice(spacings, basis_vectors=basis_vector,
+...                           dimension=3)</p>
+<p>Now associate id with Compounds for basis atoms and replicate 3x3x3
+&gt;&gt;&gt; cscl_dict = {&#8216;Cl&#8217; : chlorine, &#8216;Cs&#8217; : cesium}
+&gt;&gt;&gt; cscl_compound = cscl_lattice.populate(x=3, y=3, z=3,
+...                                       compound_dict=cscl_dict)</p>
+<p>A multi-Compound basis was created and replicated. For each unique basis
+atom position, a separate entry must be completed for the basis_vector
+input.</p>
+<p>Generating FCC Copper cell with lattice_vectors instead of angles
+&gt;&gt;&gt; import mbuild as mb
+&gt;&gt;&gt; copper = mb.Compound(name=&#8217;Cu&#8217;)
+&gt;&gt;&gt; lattice_vector = ( [1, 0, 0], [0, 1, 0], [0, 0, 1])
+&gt;&gt;&gt; spacings = [.36149, .36149, .36149]
+&gt;&gt;&gt; basis_vector = ( (&#8216;Cu&#8217;, [0, 0, 0]), (&#8216;Cu&#8217;, [.5, .5, 0]),
+...                 (&#8216;Cu&#8217;, [.5, 0, .5] ), (&#8216;Cu&#8217;, [0, .5, .5]), )
+&gt;&gt;&gt; copper_lattice = mb.Lattice(spacings, dimension=3,
+...                           lattice_vectors=lattice_vector,
+...                           basis_vectors=basis_vector)
+&gt;&gt;&gt; copper_dict = {&#8216;Cu&#8217; : copper}
+&gt;&gt;&gt; copper_cell = copper_lattice.populate(x=3, y=3, z=20,
+...                                       compound_dict=copper_dict)</p>
+<p>TODO(Justin Gilmer) : migrate data cleaning to separate functions
+TODO(Justin Gilmer) : Print function to display info about Lattice (repr)
+TODO(Justin Gilmer) : inheritance(Cubic, orthorhombic, hexangonal)
+TODO(Justin Gilmer) : nested for loop cleaning up
+TODO(Justin Gilmer) : orientation functionality
+TODO(Justin Gilmer) : conversion to idiomatic python</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="91%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>dimension</td>
+<td>(int, optional, default=3) Dimension of system of interest</td>
+</tr>
+<tr class="row-even"><td>lattice_vectors</td>
+<td>(numpy array, shape=(dimension, dimension), optional) default=([1,0,0], [0,1,0], [0,0,1]) Vectors that define edges of unit cell corresponding to dimension.</td>
+</tr>
+<tr class="row-odd"><td>lattice_spacings</td>
+<td>(list-like, shape=(dimension,), required, default=None) Length of unit cell edges.</td>
+</tr>
+<tr class="row-even"><td>basis_vectors</td>
+<td>(list-like, shape=([&#8216;id&#8217;,[dimension,]], ... ,) optional) default={(&#8216;default&#8217;,([0,0,0]))} Location of all basis Compounds in unit cell.</td>
+</tr>
+<tr class="row-odd"><td>angles</td>
+<td>(list-like, optional, default=None) Lattice angles to define Bravais Lattice.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="mbuild.lattice.Lattice.populate">
+<code class="descname">populate</code><span class="sig-paren">(</span><em>compound_dict=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/lattice.html#Lattice.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.lattice.Lattice.populate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expand lattice and create compound from lattice.</p>
+<p>populate will expand lattice based on user input. The user must also
+pass in a dictionary that contains the keys that exist in the
+basis_dict. The corresponding Compound will be the full lattice
+returned to the user.</p>
+<p>If no dictionary is passed to the user, Dummy Compounds will be used.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : int, optional, default=None</p>
+<blockquote>
+<div><p>How many iterations in the x direction.</p>
+</div></blockquote>
+<p><strong>y</strong> : int, optional, default=None</p>
+<blockquote>
+<div><p>How many iterations in the y direction.</p>
+</div></blockquote>
+<p><strong>z</strong> : int, optional, default=None</p>
+<blockquote>
+<div><p>How many iterations in the z direction.</p>
+</div></blockquote>
+<p><strong>compound_dict</strong> : dictionary, optional, default=None</p>
+<blockquote class="last">
+<div><p>Link between basis_dict and Compounds.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.packing">
+<span id="packing"></span><h2>Packing<a class="headerlink" href="#module-mbuild.packing" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mbuild.packing.fill_box">
+<code class="descclassname">mbuild.packing.</code><code class="descname">fill_box</code><span class="sig-paren">(</span><em>compound</em>, <em>n_compounds</em>, <em>box</em>, <em>overlap=0.2</em>, <em>seed=12345</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/packing.html#fill_box"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.packing.fill_box" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fill a box with a compound using packmol.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>compound</strong> : mb.Compound</p>
+<p><strong>n_compounds</strong> : int</p>
+<p><strong>box</strong> : mb.Box</p>
+<p><strong>overlap</strong> : float</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>filled</strong> : mb.Compound</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mbuild.packing.solvate">
+<code class="descclassname">mbuild.packing.</code><code class="descname">solvate</code><span class="sig-paren">(</span><em>solute</em>, <em>solvent</em>, <em>n_solvent</em>, <em>box</em>, <em>overlap=0.2</em>, <em>seed=12345</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/packing.html#solvate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.packing.solvate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solvate a compound in a box of solvent using packmol.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>solute</strong> : mb.Compound</p>
+<p><strong>solvent</strong> : mb.Compound</p>
+<p><strong>n_solvent</strong> : int</p>
+<p><strong>box</strong> : mb.Box</p>
+<p><strong>overlap</strong> : float</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>solvated</strong> : mb.Compound</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.pattern">
+<span id="pattern"></span><h2>Pattern<a class="headerlink" href="#module-mbuild.pattern" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.pattern.DiskPattern">
+<em class="property">class </em><code class="descclassname">mbuild.pattern.</code><code class="descname">DiskPattern</code><span class="sig-paren">(</span><em>n</em>, <em>orientations=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/pattern.html#DiskPattern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.pattern.DiskPattern" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="mbuild.pattern.DiskPattern.apply">
+<code class="descname">apply</code><span class="sig-paren">(</span><em>compound</em>, <em>orientation=''</em>, <em>compound_port=''</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.pattern.DiskPattern.apply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Arrange copies of a Compound as specified by the Pattern.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>compound</strong></p>
+<p class="last"><strong>orientation</strong></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.pattern.DiskPattern.apply_to_compound">
+<code class="descname">apply_to_compound</code><span class="sig-paren">(</span><em>guest</em>, <em>guest_port_name='down'</em>, <em>host=None</em>, <em>backfill=None</em>, <em>backfill_port_name='up'</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.pattern.DiskPattern.apply_to_compound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attach copies of a guest Compound to Ports on a host Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>guest</strong></p>
+<p><strong>guest_port_name</strong></p>
+<p><strong>host</strong></p>
+<p><strong>backfill</strong></p>
+<p class="last"><strong>backfill_port_name</strong></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mbuild.pattern.SpherePattern">
+<em class="property">class </em><code class="descclassname">mbuild.pattern.</code><code class="descname">SpherePattern</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/pattern.html#SpherePattern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.pattern.SpherePattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate N evenly distributed points on the unit sphere.</p>
+<p>Sphere is centered at the origin. Alrgorithm based on the &#8216;Golden Spiral&#8217;.</p>
+<p>Code by Chris Colbert from the numpy-discussion list:
+<a class="reference external" href="http://mail.scipy.org/pipermail/numpy-discussion/2009-July/043811.html">http://mail.scipy.org/pipermail/numpy-discussion/2009-July/043811.html</a></p>
+<dl class="method">
+<dt id="mbuild.pattern.SpherePattern.apply">
+<code class="descname">apply</code><span class="sig-paren">(</span><em>compound</em>, <em>orientation=''</em>, <em>compound_port=''</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.pattern.SpherePattern.apply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Arrange copies of a Compound as specified by the Pattern.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>compound</strong></p>
+<p class="last"><strong>orientation</strong></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.pattern.SpherePattern.apply_to_compound">
+<code class="descname">apply_to_compound</code><span class="sig-paren">(</span><em>guest</em>, <em>guest_port_name='down'</em>, <em>host=None</em>, <em>backfill=None</em>, <em>backfill_port_name='up'</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.pattern.SpherePattern.apply_to_compound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attach copies of a guest Compound to Ports on a host Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>guest</strong></p>
+<p><strong>guest_port_name</strong></p>
+<p><strong>host</strong></p>
+<p><strong>backfill</strong></p>
+<p class="last"><strong>backfill_port_name</strong></p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
