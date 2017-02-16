@@ -145,6 +145,38 @@
   <div class="section" id="coordinate-transformations">
 <h1>Coordinate transformations<a class="headerlink" href="#coordinate-transformations" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
+<dt id="mbuild.coordinate_transform.force_overlap">
+<code class="descclassname">mbuild.coordinate_transform.</code><code class="descname">force_overlap</code><span class="sig-paren">(</span><em>move_this</em>, <em>from_positions</em>, <em>to_positions</em>, <em>add_bond=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#force_overlap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.force_overlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes an affine transformation that maps the from_positions to the
+respective to_positions, and applies this transformation to the compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>move_this</strong> : mb.Compound</p>
+<blockquote>
+<div><p>The Compound to be moved.</p>
+</div></blockquote>
+<p><strong>from_positions</strong> : np.ndarray, shape=(n, 3), dtype=float</p>
+<blockquote>
+<div><p>Original positions.</p>
+</div></blockquote>
+<p><strong>to_positions</strong> : np.ndarray, shape=(n, 3), dtype=float</p>
+<blockquote>
+<div><p>New positions.</p>
+</div></blockquote>
+<p><strong>add_bond</strong> : bool, optional, default=True</p>
+<blockquote class="last">
+<div><p>If <cite>from_positions</cite> and <cite>to_positions</cite> are <cite>Ports</cite>, create a bond
+between the two anchor atoms.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="mbuild.coordinate_transform.translate">
 <code class="descclassname">mbuild.coordinate_transform.</code><code class="descname">translate</code><span class="sig-paren">(</span><em>compound</em>, <em>pos</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#translate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.translate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Translate a compound by a vector.</p>
