@@ -142,12 +142,12 @@
            <div itemprop="articleBody">
             
   <h1>Source code for mbuild.recipes.monolayer</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
 
-<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
-
+<span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Monolayer&#39;</span><span class="p">]</span>
 
@@ -204,11 +204,11 @@
 
                 <span class="c1"># Create sub-pattern for this chain type</span>
                 <span class="n">subpattern</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
-                <span class="n">n_points</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">fraction</span> <span class="o">*</span> <span class="n">n_chains</span><span class="p">)</span>
-                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Adding </span><span class="si">{}</span><span class="s2"> of chain </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">n_points</span><span class="p">),</span> <span class="n">chain</span><span class="p">))</span>
-                <span class="n">points</span> <span class="o">=</span> <span class="n">subpattern</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">subpattern</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                                            <span class="n">n_points</span><span class="p">,</span>
-                                                            <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)]</span>
+                <span class="n">n_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">fraction</span> <span class="o">*</span> <span class="n">n_chains</span><span class="p">))</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Adding </span><span class="si">{}</span><span class="s2"> of chain </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_points</span><span class="p">,</span> <span class="n">chain</span><span class="p">))</span>
+                <span class="n">pick</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">subpattern</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n_points</span><span class="p">,</span>
+                                        <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">points</span> <span class="o">=</span> <span class="n">subpattern</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">pick</span><span class="p">]</span>
                 <span class="n">subpattern</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="n">points</span>
 
                 <span class="c1"># Remove now-occupied points from overall pattern</span>
@@ -216,15 +216,15 @@
                                            <span class="k">if</span> <span class="n">point</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">subpattern</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">tolist</span><span class="p">()])</span>
 
                 <span class="c1"># Attach chains to the surface</span>
-                <span class="n">attached_chains</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">subpattern</span><span class="o">.</span><span class="n">apply_to_compound</span><span class="p">(</span><span class="n">guest</span><span class="o">=</span><span class="n">chain</span><span class="p">,</span>
-                                     <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;tiled_surface&#39;</span><span class="p">],</span> <span class="n">backfill</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">attached_chains</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">subpattern</span><span class="o">.</span><span class="n">apply_to_compound</span><span class="p">(</span>
+                    <span class="n">guest</span><span class="o">=</span><span class="n">chain</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;tiled_surface&#39;</span><span class="p">],</span> <span class="n">backfill</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">attached_chains</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> No fractions provided.  Assuming a single chain type.&quot;</span><span class="p">)</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> No fractions provided. Assuming a single chain type.&quot;</span><span class="p">)</span>
 
         <span class="c1"># Attach final chain type. Remaining sites get a backfill.</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Adding </span><span class="si">{}</span><span class="s2"> of chain </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pattern</span><span class="p">),</span> <span class="n">chains</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Adding </span><span class="si">{}</span><span class="s2"> of chain </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pattern</span><span class="p">),</span> <span class="n">chains</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
         <span class="n">attached_chains</span><span class="p">,</span> <span class="n">backfills</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">apply_to_compound</span><span class="p">(</span><span class="n">guest</span><span class="o">=</span><span class="n">chains</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
                          <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;tiled_surface&#39;</span><span class="p">],</span> <span class="n">backfill</span><span class="o">=</span><span class="n">backfill</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">attached_chains</span><span class="p">)</span>
