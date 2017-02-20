@@ -213,7 +213,8 @@
     <span class="k">if</span> <span class="n">clone_of</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">clone_of</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-    <span class="n">newone</span> <span class="o">=</span> <span class="n">existing_compound</span><span class="o">.</span><span class="n">_clone</span><span class="p">(</span><span class="n">clone_of</span><span class="o">=</span><span class="n">clone_of</span><span class="p">,</span> <span class="n">root_container</span><span class="o">=</span><span class="n">root_container</span><span class="p">)</span>
+    <span class="n">newone</span> <span class="o">=</span> <span class="n">existing_compound</span><span class="o">.</span><span class="n">_clone</span><span class="p">(</span><span class="n">clone_of</span><span class="o">=</span><span class="n">clone_of</span><span class="p">,</span>
+                                      <span class="n">root_container</span><span class="o">=</span><span class="n">root_container</span><span class="p">)</span>
     <span class="n">existing_compound</span><span class="o">.</span><span class="n">_clone_bonds</span><span class="p">(</span><span class="n">clone_of</span><span class="o">=</span><span class="n">clone_of</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">newone</span>
 
@@ -230,9 +231,9 @@
 <span class="sd">    the composite, and Particle playing the role of the primitive (leaf) part,</span>
 <span class="sd">    where Particle is in fact simply an alias to the Compound class.</span>
 
-<span class="sd">    Compound maintains a list of children (other Compounds contained within), and</span>
-<span class="sd">    provides a means to tag the children with labels, so that the compounds can</span>
-<span class="sd">    be easily looked up later. Labels may also point to objects outside the</span>
+<span class="sd">    Compound maintains a list of children (other Compounds contained within),</span>
+<span class="sd">    and provides a means to tag the children with labels, so that the compounds</span>
+<span class="sd">    can be easily looked up later. Labels may also point to objects outside the</span>
 <span class="sd">    Compound&#39;s containment hierarchy. Compound has built-in support for copying</span>
 <span class="sd">    and deepcopying Compound hierarchies, enumerating particles or bonds in the</span>
 <span class="sd">    hierarchy, proximity based searches, visualization, I/O operations, and a</span>
@@ -547,7 +548,8 @@
                 <span class="n">bond_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span> <span class="k">if</span> <span class="nb">id</span><span class="p">(</span><span class="n">p1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">id</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">p2</span><span class="p">,</span> <span class="n">p1</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">bond_tuple</span> <span class="ow">in</span> <span class="n">added_bonds</span><span class="p">:</span>
                     <span class="k">continue</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">p2</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name_b</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">dmin</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_periodic_distance</span><span class="p">(</span><span class="n">p2</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">p1</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">dmax</span><span class="p">):</span>
+                <span class="n">min_dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_periodic_distance</span><span class="p">(</span><span class="n">p2</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">p1</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">p2</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name_b</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">dmin</span> <span class="o">&lt;=</span> <span class="n">min_dist</span> <span class="o">&lt;=</span> <span class="n">dmax</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">add_bond</span><span class="p">((</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">))</span>
                     <span class="n">added_bonds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bond_tuple</span><span class="p">)</span></div>
 
@@ -626,7 +628,8 @@
         <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">-</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">d</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Compound.particles_in_range"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.particles_in_range">[docs]</a>    <span class="k">def</span> <span class="nf">particles_in_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compound</span><span class="p">,</span> <span class="n">dmax</span><span class="p">,</span> <span class="n">max_particles</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">particle_kdtree</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">particle_array</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.particles_in_range"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.particles_in_range">[docs]</a>    <span class="k">def</span> <span class="nf">particles_in_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compound</span><span class="p">,</span> <span class="n">dmax</span><span class="p">,</span> <span class="n">max_particles</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">particle_kdtree</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">particle_array</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find particles within a specified range of another particle. &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">particle_kdtree</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">particle_kdtree</span> <span class="o">=</span> <span class="n">PeriodicCKDTree</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">xyz</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">)</span>
@@ -697,7 +700,7 @@
         <span class="n">structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_parmed</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">saver</span><span class="p">:</span>  <span class="c1"># mBuild/InterMol supported saver.</span>
             <span class="n">saver</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">forcefield_name</span><span class="p">,</span>
-                         <span class="n">forcefield_files</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                  <span class="n">forcefield_files</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">extension</span> <span class="o">==</span> <span class="s1">&#39;.xyz&#39;</span><span class="p">:</span>
             <span class="n">traj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="n">show_ports</span><span class="p">)</span>
             <span class="n">traj</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
@@ -737,7 +740,7 @@
         <span class="n">write_hoomdxml</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">forcefield</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Compound.save_gsd"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.save_gsd">[docs]</a>    <span class="k">def</span> <span class="nf">save_gsd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">forcefield_name</span><span class="p">,</span>
-                      <span class="n">forcefield_files</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                 <span class="n">forcefield_files</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">mbuild.formats.gsdwriter</span> <span class="k">import</span> <span class="n">write_gsd</span>
         <span class="n">forcefield</span> <span class="o">=</span> <span class="kc">False</span>
@@ -751,17 +754,16 @@
         <span class="n">write_gsd</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">forcefield</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Compound.save_gromacs"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.save_gromacs">[docs]</a>    <span class="k">def</span> <span class="nf">save_gromacs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">forcefield_name</span><span class="p">,</span>
-                      <span class="n">forcefield_files</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                     <span class="n">forcefield_files</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
         <span class="c1"># Create separate file paths for .gro and .top</span>
         <span class="n">filepath</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">top_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">basename</span> <span class="o">+</span> <span class="s1">&#39;.top&#39;</span><span class="p">)</span>
         <span class="n">gro_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">basename</span> <span class="o">+</span> <span class="s1">&#39;.gro&#39;</span><span class="p">)</span>
+        <span class="c1">#  TODO: I think  the forcefield varable can be deleted here</span>
 
-        <span class="n">forcefield</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">forcefield_name</span> <span class="ow">or</span> <span class="n">forcefield_files</span><span class="p">:</span>
-            <span class="n">forcefield</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="n">structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_forcefield</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">forcefield_files</span><span class="p">,</span>
                                                <span class="n">forcefield_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">box</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -770,7 +772,7 @@
         <span class="n">structure</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">gro_filename</span><span class="p">,</span> <span class="s1">&#39;gro&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Compound.save_lammpsdata"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.save_lammpsdata">[docs]</a>    <span class="k">def</span> <span class="nf">save_lammpsdata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">forcefield_name</span><span class="p">,</span>
-                      <span class="n">forcefield_files</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                        <span class="n">forcefield_files</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
         <span class="n">forcefield</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">forcefield_name</span> <span class="ow">or</span> <span class="n">forcefield_files</span><span class="p">:</span>
@@ -1100,8 +1102,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Should never happen if molecule_types only contains type(self)</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Found an atom </span><span class="si">{}</span><span class="s1"> that is not part of any of &#39;</span>
-                                 <span class="s1">&#39;the specified molecule types </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">atom</span><span class="p">,</span> <span class="n">molecule_types</span><span class="p">))</span>
+                                 <span class="s1">&#39;the specified molecule types </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="n">molecule_types</span><span class="p">))</span>
 
             <span class="c1"># Add the actual intermol atoms.</span>
             <span class="n">intermol_atom</span> <span class="o">=</span> <span class="n">InterMolAtom</span><span class="p">(</span><span class="n">atom_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">atom</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
@@ -1143,7 +1144,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">descr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;non-periodic, &#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">descr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;pos=(</span><span class="si">{: .4f}</span><span class="s1">,</span><span class="si">{: .4f}</span><span class="s1">,</span><span class="si">{: .4f}</span><span class="s1">), &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+            <span class="n">descr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;pos=(</span><span class="si">{: .4f}</span><span class="s1">,</span><span class="si">{: .4f}</span><span class="s1">,</span><span class="si">{: .4f}</span><span class="s1">), &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">))</span>
 
         <span class="n">descr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:d}</span><span class="s1"> bonds, &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bonds</span><span class="p">))</span>
 
@@ -1218,6 +1219,7 @@
         <span class="n">newone</span> <span class="o">=</span> <span class="n">clone_of</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonds</span><span class="p">():</span>
             <span class="n">newone</span><span class="o">.</span><span class="n">add_bond</span><span class="p">((</span><span class="n">clone_of</span><span class="p">[</span><span class="n">c1</span><span class="p">],</span> <span class="n">clone_of</span><span class="p">[</span><span class="n">c2</span><span class="p">]))</span></div>
+
 
 <span class="n">Particle</span> <span class="o">=</span> <span class="n">Compound</span>
 </pre></div>
