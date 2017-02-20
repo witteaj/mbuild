@@ -143,15 +143,13 @@
             
   <h1>Source code for mbuild.pattern</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
-<span class="kn">import</span> <span class="nn">operator</span>
 
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">product</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="k">import</span> <span class="p">(</span><span class="n">force_overlap</span><span class="p">,</span> <span class="n">translate</span><span class="p">,</span>
-                                         <span class="n">rotate_around_x</span><span class="p">,</span> <span class="n">rotate_around_y</span><span class="p">,</span>
-                                         <span class="n">rotate_around_z</span><span class="p">,</span> <span class="n">spin_y</span><span class="p">,</span> <span class="n">spin_z</span><span class="p">)</span>
+                                         <span class="n">spin_y</span><span class="p">,</span> <span class="n">spin_z</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">mbuild.utils.validation</span> <span class="k">import</span> <span class="n">assert_port_exists</span>
 <span class="kn">from</span> <span class="nn">mbuild</span> <span class="k">import</span> <span class="n">clone</span>
 
@@ -315,14 +313,14 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-        <span class="n">phi</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>  <span class="c1"># the golden ratio</span>
-        <span class="n">long_incr</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">phi</span>   <span class="c1"># how much to increment the longitude</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>   <span class="c1"># the golden ratio</span>
+        <span class="n">long_incr</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">phi</span>    <span class="c1"># how much to increment the longitude</span>
 
-        <span class="n">dz</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>         <span class="c1"># a unit sphere has diameter 2</span>
-        <span class="n">bands</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>        <span class="c1"># each band will have one point placed on it</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">bands</span> <span class="o">*</span> <span class="n">dz</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">dz</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># the height z of each band/point</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">z</span><span class="o">*</span><span class="n">z</span><span class="p">)</span>        <span class="c1"># project onto xy-plane</span>
-        <span class="n">az</span> <span class="o">=</span> <span class="n">bands</span> <span class="o">*</span> <span class="n">long_incr</span>      <span class="c1"># azimuthal angle of point modulo 2 pi</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>          <span class="c1"># a unit sphere has diameter 2</span>
+        <span class="n">bands</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>         <span class="c1"># each band will have one point placed on it</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">bands</span> <span class="o">*</span> <span class="n">dz</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">dz</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># the height z of each band/point</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">z</span><span class="o">*</span><span class="n">z</span><span class="p">)</span>         <span class="c1"># project onto xy-plane</span>
+        <span class="n">az</span> <span class="o">=</span> <span class="n">bands</span> <span class="o">*</span> <span class="n">long_incr</span>       <span class="c1"># azimuthal angle of point modulo 2 pi</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">az</span><span class="p">)</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">az</span><span class="p">)</span>
         <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span>
@@ -339,7 +337,7 @@
             <span class="c1"># Rotate the Port along the z axis.</span>
             <span class="n">spin_z</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
             <span class="c1"># Move the Port a bit away from the surface of the Sphere.</span>
-            <span class="c1">#translate(port, point + 0.07)</span>
+            <span class="c1"># translate(port, point + 0.07)</span>
 
         <span class="nb">super</span><span class="p">(</span><span class="n">SpherePattern</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="n">points</span><span class="p">,</span>
                                             <span class="n">orientations</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;normal&#39;</span><span class="p">:</span> <span class="n">ports</span><span class="p">})</span></div>
