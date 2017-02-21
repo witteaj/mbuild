@@ -142,14 +142,16 @@
            <div itemprop="articleBody">
             
   <h1>Source code for mbuild.coordinate_transform</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+<span></span><span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span><span class="p">,</span> <span class="n">simplefilter</span>
+<span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;always&#39;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="k">import</span> <span class="n">norm</span><span class="p">,</span> <span class="n">svd</span><span class="p">,</span> <span class="n">inv</span>
+<span class="kn">from</span> <span class="nn">mbuild.utils.decorators</span> <span class="k">import</span> <span class="n">deprecated</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rotate_around_x&#39;</span><span class="p">,</span> <span class="s1">&#39;rotate_around_y&#39;</span><span class="p">,</span> <span class="s1">&#39;rotate_around_z&#39;</span><span class="p">,</span>
-           <span class="s1">&#39;spin_x&#39;</span><span class="p">,</span> <span class="s1">&#39;spin_y&#39;</span><span class="p">,</span> <span class="s1">&#39;spin_z&#39;</span><span class="p">,</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rotate&#39;</span><span class="p">,</span> <span class="s1">&#39;rotate_around_x&#39;</span><span class="p">,</span> <span class="s1">&#39;rotate_around_y&#39;</span><span class="p">,</span> <span class="s1">&#39;rotate_around_z&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;spin&#39;</span><span class="p">,</span> <span class="s1">&#39;spin_x&#39;</span><span class="p">,</span> <span class="s1">&#39;spin_y&#39;</span><span class="p">,</span> <span class="s1">&#39;spin_z&#39;</span><span class="p">,</span>
            <span class="s1">&#39;force_overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;translate&#39;</span><span class="p">,</span> <span class="s1">&#39;translate_to&#39;</span><span class="p">,</span>
            <span class="s1">&#39;x_axis_transform&#39;</span><span class="p">,</span> <span class="s1">&#39;y_axis_transform&#39;</span><span class="p">,</span> <span class="s1">&#39;z_axis_transform&#39;</span><span class="p">,</span>
 
@@ -394,8 +396,11 @@
     <span class="k">return</span> <span class="n">v</span> <span class="o">/</span> <span class="n">norm</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">angle</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">angle</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Returns the angle in radians between two vectors. &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">w</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">u</span> <span class="o">-</span> <span class="n">v</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">w</span> <span class="o">-</span> <span class="n">v</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">/</span> <span class="n">norm</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">/</span> <span class="n">norm</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
@@ -578,7 +583,29 @@
     <span class="n">_set_particle_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="rotate_around_x"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.rotate_around_x">[docs]</a><span class="k">def</span> <span class="nf">rotate_around_x</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">rotate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rotate a compound around an arbitrary vector.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    compound : mb.Compound</span>
+<span class="sd">        The compound being rotated.</span>
+<span class="sd">    theta : float</span>
+<span class="sd">        The angle by which to rotate the compound, in radians.</span>
+<span class="sd">    around : np.ndarray, shape=(3,), dtype=float</span>
+<span class="sd">        The vector about which to rotate the compound.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">around</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">16</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot rotate around a zero vector&#39;</span><span class="p">)</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_set_particle_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
+
+
+<span class="n">warning_message</span> <span class="o">=</span> <span class="s1">&#39;Please use rotate(compound, theta, around=np.asarray([1, 0, 0]))&#39;</span>
+<span class="nd">@deprecated</span><span class="p">(</span><span class="n">warning_message</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">rotate_around_x</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Rotate a compound around the x axis.</span>
 
 <span class="sd">    Parameters</span>
@@ -589,12 +616,12 @@
 <span class="sd">        The angle by which to rotate the compound.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">RotationAroundX</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
-    <span class="n">_set_particle_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span></div>
+    <span class="n">rotate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
 
 
-<div class="viewcode-block" id="rotate_around_y"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.rotate_around_y">[docs]</a><span class="k">def</span> <span class="nf">rotate_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<span class="n">warning_message</span> <span class="o">=</span> <span class="s1">&#39;Please use rotate(compound, theta, around=np.asarray([0, 1, 0]))&#39;</span>
+<span class="nd">@deprecated</span><span class="p">(</span><span class="n">warning_message</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">rotate_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Rotate a compound around the y axis.</span>
 
 <span class="sd">    Parameters</span>
@@ -605,12 +632,12 @@
 <span class="sd">        The angle by which to rotate the compound.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">RotationAroundY</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
-    <span class="n">_set_particle_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span></div>
+    <span class="n">rotate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
 
 
-<div class="viewcode-block" id="rotate_around_z"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.rotate_around_z">[docs]</a><span class="k">def</span> <span class="nf">rotate_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<span class="n">warning_message</span> <span class="o">=</span> <span class="s1">&#39;Please use rotate(compound, theta, around=np.asarray([0, 0, 1]))&#39;</span>
+<span class="nd">@deprecated</span><span class="p">(</span><span class="n">warning_message</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">rotate_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Rotate a compound around the z axis.</span>
 
 <span class="sd">    Parameters</span>
@@ -621,12 +648,33 @@
 <span class="sd">        The angle by which to rotate the compound.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">RotationAroundZ</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
-    <span class="n">_set_particle_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span></div>
+    <span class="n">rotate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
 
 
-<div class="viewcode-block" id="spin_x"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.spin_x">[docs]</a><span class="k">def</span> <span class="nf">spin_x</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">spin</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rotate a compound in place around an arbitrary vector.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    compound : mb.Compound</span>
+<span class="sd">        The compound being rotated.</span>
+<span class="sd">    theta : float</span>
+<span class="sd">        The angle by which to rotate the compound, in radians.</span>
+<span class="sd">    around : np.ndarray, shape=(3,), dtype=float</span>
+<span class="sd">        The axis about which to spin the compound.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">around</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">16</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot spin around a zero vector&#39;</span><span class="p">)</span>
+    <span class="n">center_pos</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="o">-</span><span class="n">center_pos</span><span class="p">)</span>
+    <span class="n">rotate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="p">)</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">center_pos</span><span class="p">)</span>
+
+
+<span class="n">warning_message</span> <span class="o">=</span> <span class="s1">&#39;Please use spin(compound, theta, around=np.asarray([1, 0, 0]))&#39;</span>
+<span class="nd">@deprecated</span><span class="p">(</span><span class="n">warning_message</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">spin_x</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Rotate a compound in place around the x axis.</span>
 
 <span class="sd">    Parameters</span>
@@ -637,13 +685,12 @@
 <span class="sd">        The angle by which to rotate the compound.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">center_pos</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
-    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="o">-</span><span class="n">center_pos</span><span class="p">)</span>
-    <span class="n">rotate_around_x</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
-    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">center_pos</span><span class="p">)</span></div>
+    <span class="n">spin</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span>
 
 
-<div class="viewcode-block" id="spin_y"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.spin_y">[docs]</a><span class="k">def</span> <span class="nf">spin_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<span class="n">warning_message</span> <span class="o">=</span> <span class="s1">&#39;Please use spin(compound, theta, around=np.asarray([0, 1, 0]))&#39;</span>
+<span class="nd">@deprecated</span><span class="p">(</span><span class="n">warning_message</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">spin_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Rotate a compound in place around the y axis.</span>
 
 <span class="sd">    Parameters</span>
@@ -654,13 +701,12 @@
 <span class="sd">        The angle by which to rotate the compound.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">center_pos</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
-    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="o">-</span><span class="n">center_pos</span><span class="p">)</span>
-    <span class="n">rotate_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
-    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">center_pos</span><span class="p">)</span></div>
+    <span class="n">spin</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span>
 
 
-<div class="viewcode-block" id="spin_z"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.spin_z">[docs]</a><span class="k">def</span> <span class="nf">spin_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<span class="n">warning_message</span> <span class="o">=</span> <span class="s1">&#39;Please use spin(compound, theta, around=np.asarray([0, 0, 1]))&#39;</span>
+<span class="nd">@deprecated</span><span class="p">(</span><span class="n">warning_message</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">spin_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Rotate a compound in place around the z axis.</span>
 
 <span class="sd">    Parameters</span>
@@ -671,10 +717,7 @@
 <span class="sd">        The angle by which to rotate the compound.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">center_pos</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
-    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="o">-</span><span class="n">center_pos</span><span class="p">)</span>
-    <span class="n">rotate_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
-    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">center_pos</span><span class="p">)</span></div>
+    <span class="n">spin</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]))</span>
 
 
 <div class="viewcode-block" id="x_axis_transform"><a class="viewcode-back" href="../../coordinate_transforms.html#mbuild.coordinate_transform.x_axis_transform">[docs]</a><span class="k">def</span> <span class="nf">x_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
