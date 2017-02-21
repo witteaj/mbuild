@@ -183,7 +183,7 @@
 <span class="k">class</span> <span class="nc">AlkylSilane</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A silane functionalized alkane chain with one Port. &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chain_length</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">AlkylSilane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AlkylSilane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="n">alkane</span> <span class="o">=</span> <span class="n">Alkane</span><span class="p">(</span><span class="n">chain_length</span><span class="p">,</span> <span class="n">cap_end</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">alkane</span><span class="p">,</span> <span class="s1">&#39;alkane&#39;</span><span class="p">)</span>

@@ -183,7 +183,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bulk_silica</span><span class="p">,</span> <span class="n">tile_x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tile_y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">12345</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">SilicaInterface</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SilicaInterface</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_oh_density</span> <span class="o">=</span> <span class="mf">5.0</span>
@@ -295,7 +295,7 @@
             <span class="n">bottom_Os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">O1</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">O1</span><span class="p">)</span></div>
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">mbuild.lib.bulk_materials</span> <span class="k">import</span> <span class="n">AmorphousSilica</span>
     <span class="n">silica_interface</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">SilicaInterface</span><span class="p">(</span><span class="n">bulk_silica</span><span class="o">=</span><span class="n">AmorphousSilica</span><span class="p">(),</span> <span class="n">thickness</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
     <span class="n">silica_interface</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;silica_interface.mol2&#39;</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>

@@ -309,7 +309,7 @@ can now form bonds to this carbon:</p>
 
 <span class="k">class</span> <span class="nc">CH3</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">CH3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CH3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;ch3.pdb&#39;</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>  <span class="c1"># Move carbon to origin.</span>
@@ -414,7 +414,7 @@ this case, those two other <code>Compounds</code> are <code>Ports</code> - in ou
 
 <span class="k">class</span> <span class="nc">Ethane</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Ethane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Ethane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CH3</span><span class="p">(),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;methyl_1&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CH3</span><span class="p">(),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;methyl_2&quot;</span><span class="p">)</span>

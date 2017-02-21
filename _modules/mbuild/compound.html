@@ -191,7 +191,7 @@
     <span class="c1"># in its own folder. E.g., you build a system from ~/foo.py and it imports</span>
     <span class="c1"># from ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.</span>
     <span class="k">if</span> <span class="n">relative_to_module</span><span class="p">:</span>
-        <span class="n">script_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">relative_to_module</span><span class="p">]</span><span class="o">.</span><span class="n">__file__</span><span class="p">)</span>
+        <span class="n">script_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">relative_to_module</span><span class="p">]</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
         <span class="n">file_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">script_path</span><span class="p">)</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
 
@@ -270,7 +270,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subcompounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">charge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">periodicity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">port_particle</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Compound</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Compound</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">string_types</span><span class="p">):</span>
@@ -278,7 +278,7 @@
                                  <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
 
         <span class="c1"># A periodocity of zero in any direction is treated as non-periodic.</span>
         <span class="k">if</span> <span class="n">periodicity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -425,7 +425,7 @@
 
         <span class="c1"># Add new_part to labels. Does not currently support batch add.</span>
         <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">[$]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">new_child</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">[$]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">new_child</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">label</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;[$]&#39;</span><span class="p">):</span>
             <span class="n">label</span> <span class="o">=</span> <span class="n">label</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
@@ -851,8 +851,6 @@
 <span class="sd">        _to_topology</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">mdtraj</span> <span class="k">as</span> <span class="nn">md</span>
-
         <span class="n">atom_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">particle</span> <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">(</span><span class="n">show_ports</span><span class="p">)]</span>
 
         <span class="n">top</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_topology</span><span class="p">(</span><span class="n">atom_list</span><span class="p">,</span> <span class="n">chain_types</span><span class="p">,</span> <span class="n">residue_types</span><span class="p">)</span>
@@ -930,7 +928,7 @@
                 <span class="k">if</span> <span class="n">residue_types</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">residue_types</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">parent</span> <span class="o">!=</span> <span class="n">last_residue_compound</span><span class="p">:</span>
                         <span class="n">last_residue_compound</span> <span class="o">=</span> <span class="n">parent</span>
-                        <span class="n">last_residue</span> <span class="o">=</span> <span class="n">top</span><span class="o">.</span><span class="n">add_residue</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">last_chain</span><span class="p">)</span>
+                        <span class="n">last_residue</span> <span class="o">=</span> <span class="n">top</span><span class="o">.</span><span class="n">add_residue</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">last_chain</span><span class="p">)</span>
                         <span class="n">last_residue</span><span class="o">.</span><span class="n">compound</span> <span class="o">=</span> <span class="n">last_residue_compound</span>
                     <span class="k">break</span>
             <span class="k">else</span><span class="p">:</span>
@@ -1168,8 +1166,8 @@
             <span class="k">return</span> <span class="n">clone_of</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span>
 
         <span class="c1"># Otherwise we make a new clone.</span>
-        <span class="n">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span>
-        <span class="n">newone</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span>
+        <span class="n">newone</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
 
         <span class="c1"># Remember that we&#39;re cloning the new one of self.</span>
         <span class="n">clone_of</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span> <span class="o">=</span> <span class="n">newone</span>
