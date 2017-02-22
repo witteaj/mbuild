@@ -145,7 +145,7 @@
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="k">import</span> <span class="n">Compound</span><span class="p">,</span> <span class="n">Particle</span>
-<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="k">import</span> <span class="n">rotate_around_z</span><span class="p">,</span> <span class="n">translate_to</span>
+<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="k">import</span> <span class="n">rotate</span><span class="p">,</span> <span class="n">translate_to</span>
 <span class="kn">from</span> <span class="nn">mbuild</span> <span class="k">import</span> <span class="n">clone</span>
 
 
@@ -183,7 +183,7 @@
         <span class="n">up</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">],</span> <span class="n">port_particle</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="s1">&#39;right&#39;</span><span class="p">)</span>
 
         <span class="n">down</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">up</span><span class="p">)</span>
-        <span class="n">rotate_around_z</span><span class="p">(</span><span class="n">down</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="n">rotate</span><span class="p">(</span><span class="n">down</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">up</span><span class="p">,</span> <span class="s1">&#39;up&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">down</span><span class="p">,</span> <span class="s1">&#39;down&#39;</span><span class="p">)</span>

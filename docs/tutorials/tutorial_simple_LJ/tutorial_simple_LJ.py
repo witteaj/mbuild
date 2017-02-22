@@ -278,9 +278,9 @@ class MonoLJ(mb.Compound):
             #shift the particle so the center of mass
             #of the system is at the origin
             mb.translate(lj_cube, [-5,-5,-5])
-            mb.spin_x(lj_cube, rnd.uniform(0, 2 * pi))
-            mb.spin_y(lj_cube, rnd.uniform(0, 2 * pi))
-            mb.spin_z(lj_cube, rnd.uniform(0, 2 * pi))
+            mb.spin(lj_cube, rnd.uniform(0, 2 * pi), [1, 0, 0])
+            mb.spin(lj_cube, rnd.uniform(0, 2 * pi), [0, 1, 0])
+            mb.spin(lj_cube, rnd.uniform(0, 2 * pi), [0, 0, 1])
 
             self.add(lj_cube)
 

@@ -148,8 +148,7 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="k">import</span> <span class="p">(</span><span class="n">force_overlap</span><span class="p">,</span> <span class="n">translate</span><span class="p">,</span>
-                                         <span class="n">spin_y</span><span class="p">,</span> <span class="n">spin_z</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="k">import</span> <span class="p">(</span><span class="n">force_overlap</span><span class="p">,</span> <span class="n">translate</span><span class="p">,</span> <span class="n">spin</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">mbuild.utils.validation</span> <span class="k">import</span> <span class="n">assert_port_exists</span>
 <span class="kn">from</span> <span class="nn">mbuild</span> <span class="k">import</span> <span class="n">clone</span>
 
@@ -331,11 +330,11 @@
             <span class="n">port</span> <span class="o">=</span> <span class="n">Port</span><span class="p">()</span>
             <span class="n">ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
             <span class="c1"># Make the top of the port point toward the positive x axis.</span>
-            <span class="n">spin_z</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">spin</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
             <span class="c1"># Raise up (or down) the top of the port in the z direction.</span>
-            <span class="n">spin_y</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+            <span class="n">spin</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
             <span class="c1"># Rotate the Port along the z axis.</span>
-            <span class="n">spin_z</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="n">spin</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
             <span class="c1"># Move the Port a bit away from the surface of the Sphere.</span>
             <span class="c1"># translate(port, point + 0.07)</span>
 

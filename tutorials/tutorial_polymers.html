@@ -94,14 +94,7 @@
 <li class="toctree-l2"><a class="reference internal" href="tutorial_ethane.html">Ethane: Reading from files, Ports and coordinate transforms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_monolayer.html">Monolayer: Complex hierarchies, patterns, tiling and writing to files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_simple_LJ.html">Point Particles: Basic system initialization</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Building a Simple Alkane</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#setting-up-the-monomer">Setting up the monomer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#defining-the-polymerization-class">Defining the polymerization class</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#using-mbuild-s-polymer-class">Using mBuild&#8217;s Polymer Class</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#building-a-system-of-alkanes">Building a System of Alkanes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#variations">Variations</a></li>
-</ul>
-</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Building a Simple Alkane</a></li>
 </ul>
 </li>
 </ul>
@@ -161,79 +154,449 @@
             
   <div class="section" id="building-a-simple-alkane">
 <h1>Building a Simple Alkane<a class="headerlink" href="#building-a-simple-alkane" title="Permalink to this headline">¶</a></h1>
-<p>The purpose of this tutorial is to demonstrate the construction of an
-alkane polymer and provide familiarity with many of the underlying
-functions in mBuild. Note that a robust polymer construction recipe
-already exists in mBuild, which will also be demonstrated at the end of
-the tutorial.</p>
-<div class="section" id="setting-up-the-monomer">
-<h2>Setting up the monomer<a class="headerlink" href="#setting-up-the-monomer" title="Permalink to this headline">¶</a></h2>
-<p>The first step is to construct the basic repeat unit for the alkane,
-i.e., a <span class="math">\(CH_2\)</span> group, similar to the construction of the
-<span class="math">\(CH_3\)</span> monomer in the prior methane tutorial. Rather than
-importing the coordinates from a pdb file, as in the previous example,
-we will instead explicitly define them in the class. Recall, that
-distance units are nm in mBuild.</p>
-<p>the configuration of the monomer is not a particularly realistic
-conformation. One could use this monomer to construct a polymer and then
-apply an energy minimization scheme, or, as we will demonstrate here, we
-can mBuild&#8217;s rotation commands to provide a more realistic starting
-point.</p>
-<p>Below, we use the same basic script, but now apply a rotation to the
-hydrogen atoms. Since the hydrogens start 180 degrees apart and we know
-they should be ~108 degrees, each should be rotated approximately 35
-degrees closer to each other around the &#8216;y&#8217; axis, i.e., ~0.63 radians.</p>
-<p>Similarly, the ports should be rotated around the &#8216;x&#8217; axis by ~0.59
-radians to produce a ~112 degree angle in the backbone.</p>
+<p>Run this interactively by downloading the IPython Notebook file <a class="reference download internal" href="../_downloads/tutorial_polymers.ipynb" download=""><code class="xref download docutils literal"><span class="pre">tutorial_polymers.ipynb</span></code></a> and <a class="reference download internal" href="../_downloads/ch3.pdb" download=""><code class="xref download docutils literal"><span class="pre">ch3.pdb</span></code></a>.</p>
+
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
 </div>
-<div class="section" id="defining-the-polymerization-class">
-<h2>Defining the polymerization class<a class="headerlink" href="#defining-the-polymerization-class" title="Permalink to this headline">¶</a></h2>
-<p>With a basic monomer construct, we can now construct a polymer by
-connecting the ports together. Note, here, we first instantiate one
-instance of the CH2 class (as last_monomer), then use the clone
-function to make a copy. The force_overlap function is used to connect
-the &#8216;up&#8217; port from the current_monomer to the &#8216;down&#8217; port of the
-last_mononer.</p>
-<p>Visualization of this structure should demonstrate a problem; the
-polymer curls up on itself. This is a result of the fact that ports not
-only define the location in space, but orientation. This can be
-trivially fixed, by first flipping the port over (i.e., rotate around
-&#8216;y&#8217; by 180 degrees, ~3.14 radians).</p>
-<p>We can also add a variable &#8216;chain_length&#8217; both to the for loop and
-&#8216;init&#8217;, that will allow the length of the polymer to be adjusted when
-the class is instantiated.</p>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<h1 id="Building-a-Simple-Alkane">Building a Simple Alkane<a class="anchor-link" href="#Building-a-Simple-Alkane">&#182;</a></h1>
 </div>
-<div class="section" id="using-mbuild-s-polymer-class">
-<h2>Using mBuild&#8217;s Polymer Class<a class="headerlink" href="#using-mbuild-s-polymer-class" title="Permalink to this headline">¶</a></h2>
-<p>mbuild provides a prebuilt class to perform this basic functionality.
-Since it is designed to be more general, it takes as an argument not
-just the chain length, but also the monomer and the port labels (i.e.,
-&#8216;up&#8217; and &#8216;down&#8217;, since these labels are user defined).</p>
 </div>
-<div class="section" id="building-a-system-of-alkanes">
-<h2>Building a System of Alkanes<a class="headerlink" href="#building-a-system-of-alkanes" title="Permalink to this headline">¶</a></h2>
-<p>A system of alkanes can be constructed by simply cloning the polymer
-constructed above and translating the alkanes in space (and/or rotating
-them). mBuild provides many routines that can be used to create
-different patterns, to which the polymers can be shifted to.</p>
-<p>Other patterns can be used, e.g., the Grid3DPattern. We can also use the
-rotation commands to randomize the orientation.</p>
-<p>mBuild also provides an interface to Packmol, allowing the creation of a
-randomized configuration.</p>
 </div>
-<div class="section" id="variations">
-<h2>Variations<a class="headerlink" href="#variations" title="Permalink to this headline">¶</a></h2>
-<p>Rather than a linear chain, the Polymer class we wrote can be easily
-changed such that small perturbations are given to each port. To avoid
-accumulation of deviations from the equilibrium angle, we will clone an
-unperturbed monomer each time (i.e., monomer_proto) before applying a
-random variation.</p>
-<p>We also define a variable &#8216;delta&#8217; which will control the maximum amount
-of perturbation, where clearly a smaller value results in a more linear
-conformation. Note, large values may result in the chain overlapping
-itself, as mBuild does not currently include routines to exclude such
-overlaps.</p>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
 </div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<p>The purpose of this tutorial is to demonstrate the construction of an alkane polymer and provide familiarity with many of the underlying functions in mBuild. Note that a robust polymer construction recipe already exists in mBuild, which will also be demonstrated at the end of the tutorial.</p>
+
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<h2 id="Setting-up-the-monomer">Setting up the monomer<a class="anchor-link" href="#Setting-up-the-monomer">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<p>The first step is to construct the basic repeat unit for the alkane, i.e., a $CH_2$ group, similar to the construction of the $CH_3$ monomer in the prior methane tutorial.  Rather than importing the coordinates from a pdb file, as in the previous example, we will instead explicitly define them in the class. Recall that distance units are nm in mBuild.</p>
+
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[2]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+
+<span class="k">class</span> <span class="nc">CH2</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CH2</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;C[$]&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># Add hydrogens </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.109</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;HC[$]&#39;</span><span class="p">)</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.109</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;HC[$]&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># Add ports anchored to the carbon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;up&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;down&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># Move the ports approximately half a C-C bond length away from the carbon</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.154</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> 
+        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.154</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> 
+
+<span class="n">monomer</span> <span class="o">=</span> <span class="n">CH2</span><span class="p">()</span>
+<span class="n">monomer</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<p>This configuration of the monomer is not a particularly realistic conformation. One could use this monomer to construct a polymer and then apply an energy minimization scheme, or, as we will demonstrate here, we can use mBuild's rotation commands to provide a more realistic starting point.</p>
+<p>Below, we use the same basic script, but now apply a rotation to the hydrogen atoms.  Since the hydrogens start 180&deg; apart and we know they should be ~109.5&deg; apart, each should be rotated half of the difference closer to each other around the y-axis. Note that the rotation angle is given in radians. Similarly, the ports should be rotated around the x-axis by the same amount so that atoms can be added in a realistic orientation.</p>
+
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[5]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+
+<span class="k">class</span> <span class="nc">CH2</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CH2</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;C[$]&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.109</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;HC[$]&#39;</span><span class="p">)</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.109</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;HC[$]&#39;</span><span class="p">)</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">180</span> <span class="o">-</span> <span class="mf">109.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;HC&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;HC&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;up&#39;</span><span class="p">)</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.154</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> 
+        <span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">],</span> <span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;down&#39;</span><span class="p">)</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.154</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> 
+        <span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">],</span> <span class="o">-</span><span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> 
+
+<span class="n">monomer</span> <span class="o">=</span> <span class="n">CH2</span><span class="p">()</span>
+<span class="n">monomer</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<h2 id="Defining-the-polymerization-class">Defining the polymerization class<a class="anchor-link" href="#Defining-the-polymerization-class">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<p>With a basic monomer construct, we can now construct a polymer by connecting the ports together. Here, we first instantiate one instance of the CH2 class as <code>1ast_monomer</code>, then use the clone function to make a copy. The <code>force_overlap()</code> function is used to connect the <code>'up'</code> port from <code>current_monomer</code> to the <code>'down'</code> port of <code>last_mononer</code>.</p>
+
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[11]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">AlkanePolymer</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AlkanePolymer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">last_monomer</span> <span class="o">=</span> <span class="n">CH2</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">last_monomer</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+            <span class="n">current_monomer</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">last_monomer</span><span class="p">)</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">force_overlap</span><span class="p">(</span><span class="n">move_this</span><span class="o">=</span><span class="n">current_monomer</span><span class="p">,</span> 
+                             <span class="n">from_positions</span><span class="o">=</span><span class="n">current_monomer</span><span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">],</span> 
+                             <span class="n">to_positions</span><span class="o">=</span><span class="n">last_monomer</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">current_monomer</span><span class="p">)</span>
+            <span class="n">last_monomer</span> <span class="o">=</span> <span class="n">current_monomer</span>
+
+<span class="n">polymer</span> <span class="o">=</span> <span class="n">AlkanePolymer</span><span class="p">()</span>
+<span class="n">polymer</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<p>Visualization of this structure demonstrates a problem; the polymer curls up on itself.  This is a result of the fact that ports not only define the location in space, but also an orientation. This can be trivially fixed, by first rotating the port 180&deg; around the y-axis.</p>
+<p>We can also add a variable <code>chain_length</code> both to the for loop and <code>init</code>  that will allow the length of the polymer to be adjusted when the class is instantiated.</p>
+
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[13]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+
+<span class="k">class</span> <span class="nc">CH2</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CH2</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;C[$]&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.109</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;HC[$]&#39;</span><span class="p">)</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.109</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;HC[$]&#39;</span><span class="p">)</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">180</span> <span class="o">-</span> <span class="mf">109.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;HC&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;HC&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;up&#39;</span><span class="p">)</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.154</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> 
+        <span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">],</span> <span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;down&#39;</span><span class="p">)</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.154</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">],</span> <span class="o">-</span><span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> 
+
+
+<span class="k">class</span> <span class="nc">AlkanePolymer</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chain_length</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AlkanePolymer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">last_monomer</span> <span class="o">=</span> <span class="n">CH2</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">last_monomer</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span> <span class="p">(</span><span class="n">chain_length</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">current_monomer</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">last_monomer</span><span class="p">)</span>
+    
+            <span class="n">mb</span><span class="o">.</span><span class="n">force_overlap</span><span class="p">(</span><span class="n">move_this</span><span class="o">=</span><span class="n">current_monomer</span><span class="p">,</span> 
+                             <span class="n">from_positions</span><span class="o">=</span><span class="n">current_monomer</span><span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">],</span> 
+                             <span class="n">to_positions</span><span class="o">=</span><span class="n">last_monomer</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">current_monomer</span><span class="p">)</span>
+            <span class="n">last_monomer</span><span class="o">=</span><span class="n">current_monomer</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[14]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">polymer</span> <span class="o">=</span> <span class="n">AlkanePolymer</span><span class="p">(</span><span class="n">chain_length</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">polymer</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<h2 id="Using-mBuild's-Polymer-Class">Using mBuild's Polymer Class<a class="anchor-link" href="#Using-mBuild's-Polymer-Class">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<p><code>mBuild</code> provides a prebuilt class to perform this basic functionality. Since it is designed to be more general, it takes as an argument not just the chain length, but also the monomer and the port labels (e.g., 'up' and 'down', since these labels are user defined).</p>
+
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[15]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">polymer</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Polymer</span><span class="p">(</span><span class="n">CH2</span><span class="p">(),</span> <span class="mi">10</span><span class="p">,</span> <span class="n">port_labels</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;up&#39;</span><span class="p">,</span> <span class="s1">&#39;down&#39;</span><span class="p">))</span>
+<span class="n">polymer</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<h2 id="Building-a-System-of-Alkanes">Building a System of Alkanes<a class="anchor-link" href="#Building-a-System-of-Alkanes">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<p>A system of alkanes can be constructed by simply cloning the polymer constructed above and translating and/or rotating the alkanes in space. <code>mBuild</code> provides many routines that can be used to create different patterns, to which the polymers can be shifted.</p>
+
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[23]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># create the polymer</span>
+<span class="n">polymer</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Polymer</span><span class="p">(</span><span class="n">CH2</span><span class="p">(),</span> <span class="mi">10</span><span class="p">,</span> <span class="n">port_labels</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;up&#39;</span><span class="p">,</span> <span class="s1">&#39;down&#39;</span><span class="p">))</span>
+
+<span class="c1"># the pattern we generate puts points in the xy-plane, so we&#39;ll rotate the polymer</span>
+<span class="c1"># so that it is oriented normal to the xy-plane</span>
+<span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">polymer</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+<span class="c1"># define a compound to hold all the polymers</span>
+<span class="n">system</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">()</span>
+
+<span class="c1"># create a pattern of points to fill a disk</span>
+<span class="c1"># patterns are generated between 0 and 1, </span>
+<span class="c1"># and thus need to be scaled to provide appropriate spacing</span>
+<span class="n">pattern_disk</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">DiskPattern</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">pattern_disk</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> 
+
+<span class="c1"># now clone the polymer and move it to the points in the pattern</span>
+<span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pattern_disk</span><span class="p">:</span>
+    <span class="n">current_polymer</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">polymer</span><span class="p">)</span>
+    <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">current_polymer</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+    <span class="n">system</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">current_polymer</span><span class="p">)</span>
+    
+<span class="n">system</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<p>Other patterns can be used, e.g., the <code>Grid3DPattern</code>.  We can also use the rotation commands to randomize the orientation.</p>
+
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[27]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+
+<span class="n">polymer</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Polymer</span><span class="p">(</span><span class="n">CH2</span><span class="p">(),</span> <span class="mi">10</span><span class="p">,</span> <span class="n">port_labels</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;up&#39;</span><span class="p">,</span> <span class="s1">&#39;down&#39;</span><span class="p">))</span>
+<span class="n">system</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">()</span>
+<span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">polymer</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+<span class="n">pattern_disk</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Grid3DPattern</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">pattern_disk</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mf">8.0</span><span class="p">)</span>
+    
+<span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pattern_disk</span><span class="p">:</span>
+    <span class="n">current_polymer</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">polymer</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">around</span> <span class="ow">in</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]:</span>  <span class="c1"># rotate around x, y, and z</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">current_polymer</span><span class="p">,</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span> <span class="n">around</span><span class="p">)</span>
+    <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">current_polymer</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+    <span class="n">system</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">current_polymer</span><span class="p">)</span>
+
+<span class="n">system</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<p><code>mBuild</code> also provides an interface to <code>PACKMOL</code>, allowing the creation of a randomized configuration.</p>
+
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[29]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">polymer</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Polymer</span><span class="p">(</span><span class="n">CH2</span><span class="p">(),</span> <span class="mi">5</span><span class="p">,</span> <span class="n">port_labels</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;up&#39;</span><span class="p">,</span> <span class="s1">&#39;down&#39;</span><span class="p">))</span>
+<span class="n">system</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">fill_box</span><span class="p">(</span><span class="n">polymer</span><span class="p">,</span> <span class="n">n_compounds</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">overlap</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">])</span> 
+<span class="n">system</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<h2 id="Variations">Variations<a class="anchor-link" href="#Variations">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing text_cell rendered">
+<div class="jupyter prompt input_prompt">
+</div>
+<div class="jupyter inner_cell">
+<div class="jupyter text_cell_render border-box-sizing rendered_html">
+<p>Rather than a linear chain, the <code>Polymer</code> class we wrote can be easily changed such that small perturbations are given to each port. To avoid accumulation of deviations from the equilibrium angle, we will clone an unperturbed monomer each time (i.e., <code>monomer_proto</code>) before applying a random variation.</p>
+<p>We also define a variable <code>delta</code>, which will control the maximum amount of perturbation. Note that large values of <code>delta</code> may result in the chain overlapping itself, as <code>mBuild</code> does not currently include routines to exclude such overlaps.</p>
+
+</div>
+</div>
+</div>
+<div class="jupyter cell border-box-sizing code_cell rendered">
+<div class=" jupyter input">
+<div class="jupyter prompt input_prompt">In&nbsp;[33]:</div>
+<div class="jupyter inner_cell">
+    <div class="jupyter input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="k">class</span> <span class="nc">AlkanePolymer</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chain_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AlkanePolymer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">monomer_proto</span> <span class="o">=</span> <span class="n">CH2</span><span class="p">()</span>
+        <span class="n">last_monomer</span> <span class="o">=</span> <span class="n">CH2</span><span class="p">()</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">last_monomer</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">],</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="n">delta</span><span class="p">,</span><span class="n">delta</span><span class="p">),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">last_monomer</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">],</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="n">delta</span><span class="p">,</span><span class="n">delta</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">last_monomer</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">chain_length</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">current_monomer</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">monomer_proto</span><span class="p">)</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">current_monomer</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">],</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="n">delta</span><span class="p">,</span><span class="n">delta</span><span class="p">),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">current_monomer</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">],</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="n">delta</span><span class="p">,</span><span class="n">delta</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">force_overlap</span><span class="p">(</span><span class="n">move_this</span><span class="o">=</span><span class="n">current_monomer</span><span class="p">,</span> 
+                             <span class="n">from_positions</span><span class="o">=</span><span class="n">current_monomer</span><span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">],</span> 
+                             <span class="n">to_positions</span><span class="o">=</span><span class="n">last_monomer</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">current_monomer</span><span class="p">)</span>
+            <span class="n">last_monomer</span><span class="o">=</span><span class="n">current_monomer</span>
+
+<span class="n">polymer</span> <span class="o">=</span> <span class="n">AlkanePolymer</span><span class="p">(</span><span class="n">chain_length</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+<span class="n">polymer</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div><p>(<a class="reference external" href="/home/travis/build/mosdef-hub/mbuild/docs/_build/html/docs/tutorials/tutorial_polymers/tutorial_polymers.ipynb">tutorial_polymers.ipynb</a>; <a class="reference external" href="/home/travis/build/mosdef-hub/mbuild/docs/_build/html/docs/tutorials/tutorial_polymers/tutorial_polymers_eval.ipynb">tutorial_polymers_eval.ipynb</a>; <a class="reference external" href="/home/travis/build/mosdef-hub/mbuild/docs/_build/html/docs/tutorials/tutorial_polymers/tutorial_polymers.py">tutorial_polymers.py</a>)</p>
 </div>
 
 
