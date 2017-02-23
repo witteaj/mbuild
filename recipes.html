@@ -1810,6 +1810,25 @@ returned to the user.</p>
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="mbuild.pattern.DiskPattern.scale">
+<code class="descname">scale</code><span class="sig-paren">(</span><em>by</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.pattern.DiskPattern.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale the points in the Pattern.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>by</strong> : float or np.ndarray, shape=(3,)</p>
+<blockquote class="last">
+<div><p>The factor to scale by. If a scalar, scale all directions isotropically.
+If np.ndarray, scale each direction independently.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -1848,6 +1867,25 @@ returned to the user.</p>
 <p><strong>host</strong></p>
 <p><strong>backfill</strong></p>
 <p class="last"><strong>backfill_port_name</strong></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.pattern.SpherePattern.scale">
+<code class="descname">scale</code><span class="sig-paren">(</span><em>by</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.pattern.SpherePattern.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale the points in the Pattern.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>by</strong> : float or np.ndarray, shape=(3,)</p>
+<blockquote class="last">
+<div><p>The factor to scale by. If a scalar, scale all directions isotropically.
+If np.ndarray, scale each direction independently.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
