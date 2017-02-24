@@ -274,6 +274,17 @@
 
 <span class="k">class</span> <span class="nc">Random2DPattern</span><span class="p">(</span><span class="n">Pattern</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Generate n random points on a 2D grid along z = 0</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            Number of points to generate</span>
+<span class="sd">        seed : int</span>
+<span class="sd">            Seed for random number generation</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="n">seed</span><span class="p">:</span>
             <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
         <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
@@ -283,6 +294,17 @@
 
 <span class="k">class</span> <span class="nc">Random3DPattern</span><span class="p">(</span><span class="n">Pattern</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Generate n random points on a 3D grid </span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            Number of points to generate</span>
+<span class="sd">        seed : int</span>
+<span class="sd">            Seed for random number generation</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="n">seed</span><span class="p">:</span>
             <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
         <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
@@ -291,6 +313,21 @@
 
 <span class="k">class</span> <span class="nc">Grid2DPattern</span><span class="p">(</span><span class="n">Pattern</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Generate a 2D grid (n x m) of points along z = 0</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Points span [0,1) along x and y axes</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ---------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            Number of grid rows</span>
+<span class="sd">        m : int</span>
+<span class="sd">            Number of grid columns</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">m</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)):</span>
             <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">m</span> <span class="o">+</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">/</span> <span class="n">n</span>
@@ -300,6 +337,23 @@
 
 <span class="k">class</span> <span class="nc">Grid3DPattern</span><span class="p">(</span><span class="n">Pattern</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Generate a 3D grid (n x m x l) of points</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Points span [0,1) along x, y, and z axes</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ---------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            Number of grid rows</span>
+<span class="sd">        m : int</span>
+<span class="sd">            Number of grid columns</span>
+<span class="sd">        l : int</span>
+<span class="sd">            Number of grid aisles</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">m</span><span class="o">*</span><span class="n">l</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">l</span><span class="p">)):</span>
             <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">m</span><span class="o">*</span><span class="n">l</span> <span class="o">+</span> <span class="n">j</span><span class="o">*</span><span class="n">l</span> <span class="o">+</span> <span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">/</span> <span class="n">n</span>
@@ -351,7 +405,15 @@
 
 
 <div class="viewcode-block" id="DiskPattern"><a class="viewcode-back" href="../../recipes.html#mbuild.pattern.DiskPattern">[docs]</a><span class="k">class</span> <span class="nc">DiskPattern</span><span class="p">(</span><span class="n">Pattern</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Generate N evenly distributed points on the unit circle along z = 0.</span>
+
+<span class="sd">    Disk is centered at the origin. Algorithm based on Vogel&#39;s method.</span>
+
+<span class="sd">    Code by Alexandre Devert:</span>
+<span class="sd">    http://blog.marmakoide.org/?p=1</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">radius</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
         <span class="n">golden_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>

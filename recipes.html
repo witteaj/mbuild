@@ -1751,7 +1751,11 @@ returned to the user.</p>
 <dl class="class">
 <dt id="mbuild.pattern.DiskPattern">
 <em class="property">class </em><code class="descclassname">mbuild.pattern.</code><code class="descname">DiskPattern</code><span class="sig-paren">(</span><em>n</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/pattern.html#DiskPattern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.pattern.DiskPattern" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><p>Generate N evenly distributed points on the unit circle along z = 0.</p>
+<p>Disk is centered at the origin. Algorithm based on Vogel&#8217;s method.</p>
+<p>Code by Alexandre Devert:
+<a class="reference external" href="http://blog.marmakoide.org/?p=1">http://blog.marmakoide.org/?p=1</a></p>
+<dl class="method">
 <dt id="mbuild.pattern.DiskPattern.apply">
 <code class="descname">apply</code><span class="sig-paren">(</span><em>compound</em>, <em>orientation=''</em>, <em>compound_port=''</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.pattern.DiskPattern.apply" title="Permalink to this definition">¶</a></dt>
 <dd><p>Arrange copies of a Compound as specified by the Pattern.</p>
