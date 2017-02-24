@@ -1774,7 +1774,7 @@ returned to the user.</p>
 <span id="pattern"></span><h2>Pattern<a class="headerlink" href="#module-mbuild.pattern" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="mbuild.pattern.DiskPattern">
-<em class="property">class </em><code class="descclassname">mbuild.pattern.</code><code class="descname">DiskPattern</code><span class="sig-paren">(</span><em>n</em>, <em>orientations=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/pattern.html#DiskPattern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.pattern.DiskPattern" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">mbuild.pattern.</code><code class="descname">DiskPattern</code><span class="sig-paren">(</span><em>n</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/pattern.html#DiskPattern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.pattern.DiskPattern" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="mbuild.pattern.DiskPattern.apply">
 <code class="descname">apply</code><span class="sig-paren">(</span><em>compound</em>, <em>orientation=''</em>, <em>compound_port=''</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.pattern.DiskPattern.apply" title="Permalink to this definition">¶</a></dt>
@@ -1833,7 +1833,7 @@ If np.ndarray, scale each direction independently.</p>
 
 <dl class="class">
 <dt id="mbuild.pattern.SpherePattern">
-<em class="property">class </em><code class="descclassname">mbuild.pattern.</code><code class="descname">SpherePattern</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/pattern.html#SpherePattern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.pattern.SpherePattern" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">mbuild.pattern.</code><code class="descname">SpherePattern</code><span class="sig-paren">(</span><em>n</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/pattern.html#SpherePattern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.pattern.SpherePattern" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate N evenly distributed points on the unit sphere.</p>
 <p>Sphere is centered at the origin. Alrgorithm based on the &#8216;Golden Spiral&#8217;.</p>
 <p>Code by Chris Colbert from the numpy-discussion list:
@@ -1939,7 +1939,8 @@ If np.ndarray, scale each direction independently.</p>
             VERSION:'0.7.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>
