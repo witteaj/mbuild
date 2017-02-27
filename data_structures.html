@@ -400,7 +400,8 @@ and sub-sub-compounds for every residue.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename</strong> : str</p>
 <blockquote>
 <div><p>Filesystem path in which to save the trajectory. The extension or
-prefix will be parsed and will control the format.</p>
+prefix will be parsed and control the format. Supported
+extensions are: &#8216;hoomdxml&#8217;, &#8216;gsd&#8217;, &#8216;gro&#8217;, &#8216;top&#8217;, &#8216;lammps&#8217;, &#8216;lmp&#8217;</p>
 </div></blockquote>
 <p><strong>show_ports</strong> : bool, default=False</p>
 <blockquote>
@@ -416,35 +417,15 @@ by the <cite>foyer</cite> package.</p>
 <div><p>Apply a forcefield to the output file using the <cite>foyer</cite> package and
 a specific forcefield.xml file.</p>
 </div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Other Parameters:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last"><strong>force_overwrite</strong> : bool</p>
+<p><strong>overwrite</strong> : bool</p>
+<blockquote class="last">
+<div><p>Overwrite the file if it already exists.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
-
-<dl class="method">
-<dt id="mbuild.compound.Compound.save_gromacs">
-<code class="descname">save_gromacs</code><span class="sig-paren">(</span><em>filename</em>, <em>structure</em>, <em>forcefield_name</em>, <em>forcefield_files</em>, <em>box</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save_gromacs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save_gromacs" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="mbuild.compound.Compound.save_gsd">
-<code class="descname">save_gsd</code><span class="sig-paren">(</span><em>filename</em>, <em>structure</em>, <em>forcefield_name</em>, <em>forcefield_files</em>, <em>box=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save_gsd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save_gsd" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="mbuild.compound.Compound.save_hoomdxml">
-<code class="descname">save_hoomdxml</code><span class="sig-paren">(</span><em>filename</em>, <em>structure</em>, <em>forcefield_name</em>, <em>forcefield_files</em>, <em>box</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save_hoomdxml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save_hoomdxml" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="mbuild.compound.Compound.save_lammpsdata">
-<code class="descname">save_lammpsdata</code><span class="sig-paren">(</span><em>filename</em>, <em>structure</em>, <em>forcefield_name</em>, <em>forcefield_files</em>, <em>box</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save_lammpsdata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save_lammpsdata" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.successors">
@@ -743,7 +724,8 @@ and sub-sub-compounds for every residue.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename</strong> : str</p>
 <blockquote>
 <div><p>Filesystem path in which to save the trajectory. The extension or
-prefix will be parsed and will control the format.</p>
+prefix will be parsed and control the format. Supported
+extensions are: &#8216;hoomdxml&#8217;, &#8216;gsd&#8217;, &#8216;gro&#8217;, &#8216;top&#8217;, &#8216;lammps&#8217;, &#8216;lmp&#8217;</p>
 </div></blockquote>
 <p><strong>show_ports</strong> : bool, default=False</p>
 <blockquote>
@@ -759,35 +741,15 @@ by the <cite>foyer</cite> package.</p>
 <div><p>Apply a forcefield to the output file using the <cite>foyer</cite> package and
 a specific forcefield.xml file.</p>
 </div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Other Parameters:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last"><strong>force_overwrite</strong> : bool</p>
+<p><strong>overwrite</strong> : bool</p>
+<blockquote class="last">
+<div><p>Overwrite the file if it already exists.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
-
-<dl class="method">
-<dt id="mbuild.port.Port.save_gromacs">
-<code class="descname">save_gromacs</code><span class="sig-paren">(</span><em>filename</em>, <em>structure</em>, <em>forcefield_name</em>, <em>forcefield_files</em>, <em>box</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.save_gromacs" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="mbuild.port.Port.save_gsd">
-<code class="descname">save_gsd</code><span class="sig-paren">(</span><em>filename</em>, <em>structure</em>, <em>forcefield_name</em>, <em>forcefield_files</em>, <em>box=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.save_gsd" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="mbuild.port.Port.save_hoomdxml">
-<code class="descname">save_hoomdxml</code><span class="sig-paren">(</span><em>filename</em>, <em>structure</em>, <em>forcefield_name</em>, <em>forcefield_files</em>, <em>box</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.save_hoomdxml" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="mbuild.port.Port.save_lammpsdata">
-<code class="descname">save_lammpsdata</code><span class="sig-paren">(</span><em>filename</em>, <em>structure</em>, <em>forcefield_name</em>, <em>forcefield_files</em>, <em>box</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.save_lammpsdata" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="method">
 <dt id="mbuild.port.Port.successors">
