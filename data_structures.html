@@ -190,7 +190,7 @@ number of other convenience methods.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>subcompounds</strong> : Compound, optional, default=None</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>subcompounds</strong> : mb.Compound or list of mb.Compound, optional, default=None</p>
 <blockquote>
 <div><p>One or more compounds to be added to self.</p>
 </div></blockquote>
@@ -198,38 +198,76 @@ number of other convenience methods.</p>
 <blockquote>
 <div><p>The type of Compound.</p>
 </div></blockquote>
-<p><strong>periodicity</strong> : np.ndarray, shape=(3,), dtype=float, optional</p>
-<blockquote class="last">
+<p><strong>pos</strong> : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]</p>
+<blockquote>
+<div><p>The position of the Compound in Cartestian space</p>
+</div></blockquote>
+<p><strong>charge</strong> : float, optional, default=0.0</p>
+<blockquote>
+<div><p>Currently not used. Likely removed in next release.</p>
+</div></blockquote>
+<p><strong>periodicity</strong> : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]</p>
+<blockquote>
 <div><p>The periodic lengths of the Compound in the x, y and z directions.
 Defaults to zeros which is treated as non-periodic.</p>
+</div></blockquote>
+<p><strong>port_particle</strong> : bool, optional, default=False</p>
+<blockquote class="last">
+<div><p>Whether or not this Compound is part of a Port</p>
 </div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Attributes</p>
-<table border="1" class="docutils">
+<table border="1" class="longtable docutils">
 <colgroup>
-<col width="6%" />
-<col width="94%" />
+<col width="10%" />
+<col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td>name</td>
-<td>(str, optional, default=self.__class__.__name__) The type of Compound.</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">boundingbox</span></code></td>
+<td></td>
 </tr>
-<tr class="row-even"><td>periodicity</td>
-<td>(np.ndarray, shape=(3,), dtype=float, optional) The periodic lengths of the Compound in the x, y and z directions. Defaults to zeros which is treated as non-periodic.</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">center</span></code></td>
+<td></td>
 </tr>
-<tr class="row-odd"><td>children</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">n_particles</span></code></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">n_bonds</span></code></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">root</span></code></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">xyz</span></code></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">xyz_with_ports</span></code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table border="1" class="docutils">
+<colgroup>
+<col width="7%" />
+<col width="93%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>bond_graph</td>
+<td>(mb.BondGraph) Graph-like object that stores bond information for this Compound</td>
+</tr>
+<tr class="row-even"><td>children</td>
 <td>(OrderedSet) Contains all children (other Compounds).</td>
 </tr>
-<tr class="row-even"><td>labels</td>
+<tr class="row-odd"><td>labels</td>
 <td>(OrderedDict) Labels to Compound/Atom mappings. These do not necessarily need not be in self.children.</td>
 </tr>
-<tr class="row-odd"><td>parent</td>
+<tr class="row-even"><td>parent</td>
 <td>(mb.Compound) The parent Compound that contains this part. Can be None if this compound is the root of the containment hierarchy.</td>
 </tr>
-<tr class="row-even"><td>referrers</td>
+<tr class="row-odd"><td>referrers</td>
 <td>(set) Other compounds that reference this part with labels.</td>
 </tr>
 </tbody>
@@ -261,8 +299,31 @@ instead be used to add a reference to the part to self.labels. See
 <div><p>Add the part to self.children.</p>
 </div></blockquote>
 <p><strong>replace</strong> : bool, optional, default=True</p>
-<blockquote class="last">
+<blockquote>
 <div><p>Replace the label if it already exists.</p>
+</div></blockquote>
+<p><strong>inherit_periodicity</strong> : bool, optional, default=True</p>
+<blockquote class="last">
+<div><p>Replace the periodicity of self with the periodicity of the
+Compound being added</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.add_bond">
+<code class="descname">add_bond</code><span class="sig-paren">(</span><em>particle_pair</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.add_bond"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.add_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a bond between two Particles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>particle_pair</strong> : indexable object, length=2, dtype=mb.Compound</p>
+<blockquote class="last">
+<div><p>The pair of Particles to add a bond between</p>
 </div></blockquote>
 </td>
 </tr>
@@ -274,30 +335,97 @@ instead be used to add a reference to the part to self.labels. See
 <dt id="mbuild.compound.Compound.ancestors">
 <code class="descname">ancestors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.ancestors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.ancestors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all ancestors of the Compound recursively.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><p class="first">mb.Compound</p>
+<blockquote class="last">
+<div><p>The next Compound above self in the hierarchy</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.available_ports">
 <code class="descname">available_ports</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.available_ports"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.available_ports" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all unoccupied Ports referenced by this Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of mb.Compound</p>
+<blockquote class="last">
+<div><p>A list of all unoccupied ports referenced by the Compound</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.bonds">
 <code class="descname">bonds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.bonds" title="Permalink to this definition">¶</a></dt>
-<dd><p>A list of all Bonds in the Compound and sub-Compounds.</p>
+<dd><p>Return all bonds in the Compound and sub-Compounds.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><p class="first">tuple of mb.Compound</p>
+<blockquote class="last">
+<div><p>The next bond in the Compound</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">bond_graph.edges_iter</span></code></dt>
+<dd>Iterates over all edges in a BondGraph</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.boundingbox">
 <code class="descname">boundingbox</code><a class="headerlink" href="#mbuild.compound.Compound.boundingbox" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the bounding box of the compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">mb.Box</p>
+<blockquote class="last">
+<div><p>The bounding box for this Compound</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.center">
 <code class="descname">center</code><a class="headerlink" href="#mbuild.compound.Compound.center" title="Permalink to this definition">¶</a></dt>
-<dd><p>The cartesian center of the Compound based on its Atoms.</p>
+<dd><p>The cartesian center of the Compound based on its Particles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">np.ndarray, shape=(3,), dtype=float</p>
+<blockquote class="last">
+<div><p>The cartesian center of the Compound based on its Particles</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -334,13 +462,17 @@ and sub-sub-compounds for every residue.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>traj</strong> : md.Trajectory</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>traj</strong> : mdtraj.Trajectory</p>
 <blockquote>
 <div><p>The trajectory to load.</p>
 </div></blockquote>
-<p><strong>frame</strong> : int</p>
-<blockquote class="last">
+<p><strong>frame</strong> : int, optional, default=-1 (last)</p>
+<blockquote>
 <div><p>The frame to take coordinates from.</p>
+</div></blockquote>
+<p><strong>coords_only</strong> : bool, optional, default=False</p>
+<blockquote class="last">
+<div><p>Only read coordinate information</p>
 </div></blockquote>
 </td>
 </tr>
@@ -352,41 +484,266 @@ and sub-sub-compounds for every residue.</p>
 <dt id="mbuild.compound.Compound.generate_bonds">
 <code class="descname">generate_bonds</code><span class="sig-paren">(</span><em>name_a</em>, <em>name_b</em>, <em>dmin</em>, <em>dmax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.generate_bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.generate_bonds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add Bonds between all pairs of types a/b within [dmin, dmax].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name_a</strong> : str</p>
+<blockquote>
+<div><p>The name of one of the Particles to be in each bond</p>
+</div></blockquote>
+<p><strong>name_b</strong> : str</p>
+<blockquote>
+<div><p>The name of the other Particle to be in each bond</p>
+</div></blockquote>
+<p><strong>dmin</strong> : float</p>
+<blockquote>
+<div><p>The minimum distance between Particles for considering a bond</p>
+</div></blockquote>
+<p><strong>dmax</strong> : float</p>
+<blockquote class="last">
+<div><p>The maximum distance between Particles for considering a bond</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.min_periodic_distance">
 <code class="descname">min_periodic_distance</code><span class="sig-paren">(</span><em>xyz0</em>, <em>xyz1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.min_periodic_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Vectorized distance calculation considering minimum image.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>xyz0</strong> : np.ndarray, shape=(3,), dtype=float</p>
+<blockquote>
+<div><p>Coordinates of first point</p>
+</div></blockquote>
+<p><strong>xyz1</strong> : np.ndarray, shape=(3,), dtype=float</p>
+<blockquote>
+<div><p>Coordinates of second point</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">float</p>
+<blockquote class="last">
+<div><p>Vectorized distance between the two points following minimum
+image convention</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.n_bonds">
 <code class="descname">n_bonds</code><a class="headerlink" href="#mbuild.compound.Compound.n_bonds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the number of Bonds in the Compound.</p>
+<dd><p>Return the number of bonds in the Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">int</p>
+<blockquote class="last">
+<div><p>The number of bonds in the Compound</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.compound.Compound.n_particles">
+<code class="descname">n_particles</code><a class="headerlink" href="#mbuild.compound.Compound.n_particles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of Particles in the Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">int</p>
+<blockquote class="last">
+<div><p>The number of Particles in the Compound</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.particles">
 <code class="descname">particles</code><span class="sig-paren">(</span><em>include_ports=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.particles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.particles" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return all Particles of the Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>include_ports</strong> : bool, optional, default=False</p>
+<blockquote>
+<div><p>Include port particles</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first">mb.Compound</p>
+<blockquote class="last">
+<div><p>The next Particle in the Compound</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.particles_by_name">
+<code class="descname">particles_by_name</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.particles_by_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.particles_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all Particles of the Compound with a specific name</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name</strong> : str</p>
+<blockquote>
+<div><p>Only particles with this name are returned</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first">mb.Compound</p>
+<blockquote class="last">
+<div><p>The next Particle in the Compound with the user-specified name</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.particles_in_range">
 <code class="descname">particles_in_range</code><span class="sig-paren">(</span><em>compound</em>, <em>dmax</em>, <em>max_particles=20</em>, <em>particle_kdtree=None</em>, <em>particle_array=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.particles_in_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.particles_in_range" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find particles within a specified range of another particle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>compound</strong> : mb.Compound</p>
+<blockquote>
+<div><p>Reference particle to find other particles in range of</p>
+</div></blockquote>
+<p><strong>dmax</strong> : float</p>
+<blockquote>
+<div><p>Maximum distance from &#8216;compound&#8217; to look for Particles</p>
+</div></blockquote>
+<p><strong>max_particles</strong> : int, optional, default=20</p>
+<blockquote>
+<div><p>Maximum number of Particles to return</p>
+</div></blockquote>
+<p><strong>particle_kdtree</strong> : mb.PeriodicCKDTree, optional</p>
+<blockquote>
+<div><p>KD-tree for looking up nearest neighbors. If not provided, a KD-
+tree will be generated from all Particles in self</p>
+</div></blockquote>
+<p><strong>particle_array</strong> : np.ndarray, shape=(n,), dtype=mb.Compound, optional</p>
+<blockquote>
+<div><p>Array of possible particles to consider for return. If not
+provided, this defaults to all Particles in self</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">np.ndarray, shape=(n,), dtype=mb.Compound</p>
+<blockquote class="last">
+<div><p>Particles in range of compound according to user-defined limits</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">periodic_kdtree.PerioidicCKDTree</span></code></dt>
+<dd>mBuild implementation of kd-trees</dd>
+<dt><code class="xref py py-obj docutils literal"><span class="pre">scipy.spatial.ckdtree</span></code></dt>
+<dd>Further details on kd-trees</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.referenced_ports">
 <code class="descname">referenced_ports</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.referenced_ports"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.referenced_ports" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all Ports referenced by this Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of mb.Compound</p>
+<blockquote class="last">
+<div><p>A list of all ports referenced by the Compound</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.remove">
 <code class="descname">remove</code><span class="sig-paren">(</span><em>objs_to_remove</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.remove" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove children from the Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>objs_to_remove</strong> : mb.Compound or list of mb.Compound</p>
+<blockquote class="last">
+<div><p>The Compound(s) to be removed from self</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.remove_bond">
+<code class="descname">remove_bond</code><span class="sig-paren">(</span><em>particle_pair</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.remove_bond"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.remove_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes a bond between a pair of Particles</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>particle_pair</strong> : indexable object, length=2, dtype=mb.Compound</p>
+<blockquote class="last">
+<div><p>The pair of Particles to remove the bond between</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.compound.Compound.root">
+<code class="descname">root</code><a class="headerlink" href="#mbuild.compound.Compound.root" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Compound at the top of self&#8217;s hierarchy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">mb.Compound</p>
+<blockquote class="last">
+<div><p>The Compound at the top of self&#8217;s hierarchy</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -403,34 +760,81 @@ and sub-sub-compounds for every residue.</p>
 prefix will be parsed and control the format. Supported
 extensions are: &#8216;hoomdxml&#8217;, &#8216;gsd&#8217;, &#8216;gro&#8217;, &#8216;top&#8217;, &#8216;lammps&#8217;, &#8216;lmp&#8217;</p>
 </div></blockquote>
-<p><strong>show_ports</strong> : bool, default=False</p>
+<p><strong>show_ports</strong> : bool, optional, default=False</p>
 <blockquote>
 <div><p>Save ports contained within the compound.</p>
 </div></blockquote>
-<p><strong>forcefield_name</strong> : str, default=None</p>
+<p><strong>forcefield_name</strong> : str, optional, default=None</p>
 <blockquote>
 <div><p>Apply a forcefield to the output file using a forcefield provided
 by the <cite>foyer</cite> package.</p>
 </div></blockquote>
-<p><strong>forcefield_name</strong> : str, default=None</p>
+<p><strong>forcefield_name</strong> : str, optional, default=None</p>
 <blockquote>
 <div><p>Apply a forcefield to the output file using the <cite>foyer</cite> package and
 a specific forcefield.xml file.</p>
 </div></blockquote>
-<p><strong>overwrite</strong> : bool</p>
+<p><strong>box</strong> : mb.Box, optional, default=self.boundingbox (with buffer)</p>
+<blockquote>
+<div><p>Box information to be written to the output file. If &#8216;None&#8217;, a
+bounding box is used with 0.25nm buffers at each face to avoid
+overlapping atoms.</p>
+</div></blockquote>
+<p><strong>overwrite</strong> : bool, optional, default=False</p>
+<blockquote>
+<div><p>Overwrite if the filename already exists</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Other Parameters:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>ref_distance</strong> : float, optional, default=1.0</p>
+<blockquote>
+<div><p>Normalization factor used when saving to .gsd and .hoomdxml formats
+for converting distance values to reduced units.</p>
+</div></blockquote>
+<p><strong>ref_energy</strong> : float, optional, default=1.0</p>
+<blockquote>
+<div><p>Normalization factor used when saving to .gsd and .hoomdxml formats
+for converting energy values to reduced units.</p>
+</div></blockquote>
+<p><strong>ref_mass</strong> : float, optional, default=1.0</p>
 <blockquote class="last">
-<div><p>Overwrite the file if it already exists.</p>
+<div><p>Normalization factor used when saving to .gsd and .hoomdxml formats
+for converting mass values to reduced units.</p>
 </div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">formats.gsdwrite.write_gsd</span></code></dt>
+<dd>Write to GSD format</dd>
+<dt><code class="xref py py-obj docutils literal"><span class="pre">formats.hoomdxml.write_hoomdxml</span></code></dt>
+<dd>Write to Hoomd XML format</dd>
+<dt><code class="xref py py-obj docutils literal"><span class="pre">formats.lammpsdata.write_lammpsdata</span></code></dt>
+<dd>Write to LAMMPS data format</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.successors">
 <code class="descname">successors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.successors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.successors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Yield Compounds below self in the hierarchy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><p class="first">mb.Compound</p>
+<blockquote class="last">
+<div><p>The next Particle below self in the hierarchy</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -453,6 +857,31 @@ a specific forcefield.xml file.</p>
 <dt id="mbuild.compound.Compound.to_parmed">
 <code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.to_parmed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.to_parmed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a ParmEd Structure from a Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>title</strong> : str, optional, default=self.name</p>
+<blockquote>
+<div><p>Title/name of the ParmEd Structure</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">parmed.structure.Structure</p>
+<blockquote class="last">
+<div><p>ParmEd Structure object converted from self</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">parmed.structure.Structure</span></code></dt>
+<dd>Details on the ParmEd Structure object</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -466,6 +895,14 @@ a specific forcefield.xml file.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>show_ports</strong> : bool, optional, default=False</p>
 <blockquote>
 <div><p>Include all port atoms when converting to trajectory.</p>
+</div></blockquote>
+<p><strong>chain_types</strong> : mb.Compound or list of mb.Compound</p>
+<blockquote>
+<div><p>Chain types to add to the topology</p>
+</div></blockquote>
+<p><strong>residue_types</strong> : mb.Compound or list of mb.Compound</p>
+<blockquote>
+<div><p>Residue types to add to the topology</p>
 </div></blockquote>
 </td>
 </tr>
@@ -484,12 +921,45 @@ a specific forcefield.xml file.</p>
 <dt id="mbuild.compound.Compound.update_coordinates">
 <code class="descname">update_coordinates</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.update_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.update_coordinates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the coordinates of this Compound from a file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename</strong> : str</p>
+<blockquote class="last">
+<div><p>Name of file from which to load coordinates. Supported file types
+are the same as those supported by load()</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">load</span></code></dt>
+<dd>Load coordinates from a file</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.visualize">
 <code class="descname">visualize</code><span class="sig-paren">(</span><em>show_ports=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.visualize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.visualize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualize the Compound using nglview.</p>
+<p>Allows for visualization of a Compound within a Jupyter Notebook.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>show_ports</strong> : bool, optional, default=False</p>
+<blockquote class="last">
+<div><p>Visualize Ports in addition to Particles</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -500,7 +970,7 @@ a specific forcefield.xml file.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>pos</strong> : np.ndarray, shape=(n, 3)</p>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>pos</strong> : np.ndarray, shape=(n, 3), dtype=float</p>
 <blockquote class="last">
 <div><p>Array with the positions of all particles.</p>
 </div></blockquote>
@@ -514,6 +984,18 @@ a specific forcefield.xml file.</p>
 <dt id="mbuild.compound.Compound.xyz_with_ports">
 <code class="descname">xyz_with_ports</code><a class="headerlink" href="#mbuild.compound.Compound.xyz_with_ports" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all particle coordinates in this compound including ports.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>pos</strong> : np.ndarray, shape=(n, 3), dtype=float</p>
+<blockquote class="last">
+<div><p>Array with the positions of all particles and ports.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -585,8 +1067,31 @@ instead be used to add a reference to the part to self.labels. See
 <div><p>Add the part to self.children.</p>
 </div></blockquote>
 <p><strong>replace</strong> : bool, optional, default=True</p>
-<blockquote class="last">
+<blockquote>
 <div><p>Replace the label if it already exists.</p>
+</div></blockquote>
+<p><strong>inherit_periodicity</strong> : bool, optional, default=True</p>
+<blockquote class="last">
+<div><p>Replace the periodicity of self with the periodicity of the
+Compound being added</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.port.Port.add_bond">
+<code class="descname">add_bond</code><span class="sig-paren">(</span><em>particle_pair</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.add_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a bond between two Particles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>particle_pair</strong> : indexable object, length=2, dtype=mb.Compound</p>
+<blockquote class="last">
+<div><p>The pair of Particles to add a bond between</p>
 </div></blockquote>
 </td>
 </tr>
@@ -598,24 +1103,79 @@ instead be used to add a reference to the part to self.labels. See
 <dt id="mbuild.port.Port.ancestors">
 <code class="descname">ancestors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.ancestors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all ancestors of the Compound recursively.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><p class="first">mb.Compound</p>
+<blockquote class="last">
+<div><p>The next Compound above self in the hierarchy</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.port.Port.available_ports">
 <code class="descname">available_ports</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.available_ports" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all unoccupied Ports referenced by this Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of mb.Compound</p>
+<blockquote class="last">
+<div><p>A list of all unoccupied ports referenced by the Compound</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.port.Port.bonds">
 <code class="descname">bonds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.bonds" title="Permalink to this definition">¶</a></dt>
-<dd><p>A list of all Bonds in the Compound and sub-Compounds.</p>
+<dd><p>Return all bonds in the Compound and sub-Compounds.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><p class="first">tuple of mb.Compound</p>
+<blockquote class="last">
+<div><p>The next bond in the Compound</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">bond_graph.edges_iter</span></code></dt>
+<dd>Iterates over all edges in a BondGraph</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.port.Port.boundingbox">
 <code class="descname">boundingbox</code><a class="headerlink" href="#mbuild.port.Port.boundingbox" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the bounding box of the compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">mb.Box</p>
+<blockquote class="last">
+<div><p>The bounding box for this Compound</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -658,13 +1218,17 @@ and sub-sub-compounds for every residue.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>traj</strong> : md.Trajectory</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>traj</strong> : mdtraj.Trajectory</p>
 <blockquote>
 <div><p>The trajectory to load.</p>
 </div></blockquote>
-<p><strong>frame</strong> : int</p>
-<blockquote class="last">
+<p><strong>frame</strong> : int, optional, default=-1 (last)</p>
+<blockquote>
 <div><p>The frame to take coordinates from.</p>
+</div></blockquote>
+<p><strong>coords_only</strong> : bool, optional, default=False</p>
+<blockquote class="last">
+<div><p>Only read coordinate information</p>
 </div></blockquote>
 </td>
 </tr>
@@ -676,41 +1240,266 @@ and sub-sub-compounds for every residue.</p>
 <dt id="mbuild.port.Port.generate_bonds">
 <code class="descname">generate_bonds</code><span class="sig-paren">(</span><em>name_a</em>, <em>name_b</em>, <em>dmin</em>, <em>dmax</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.generate_bonds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add Bonds between all pairs of types a/b within [dmin, dmax].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name_a</strong> : str</p>
+<blockquote>
+<div><p>The name of one of the Particles to be in each bond</p>
+</div></blockquote>
+<p><strong>name_b</strong> : str</p>
+<blockquote>
+<div><p>The name of the other Particle to be in each bond</p>
+</div></blockquote>
+<p><strong>dmin</strong> : float</p>
+<blockquote>
+<div><p>The minimum distance between Particles for considering a bond</p>
+</div></blockquote>
+<p><strong>dmax</strong> : float</p>
+<blockquote class="last">
+<div><p>The maximum distance between Particles for considering a bond</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.port.Port.min_periodic_distance">
 <code class="descname">min_periodic_distance</code><span class="sig-paren">(</span><em>xyz0</em>, <em>xyz1</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Vectorized distance calculation considering minimum image.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>xyz0</strong> : np.ndarray, shape=(3,), dtype=float</p>
+<blockquote>
+<div><p>Coordinates of first point</p>
+</div></blockquote>
+<p><strong>xyz1</strong> : np.ndarray, shape=(3,), dtype=float</p>
+<blockquote>
+<div><p>Coordinates of second point</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">float</p>
+<blockquote class="last">
+<div><p>Vectorized distance between the two points following minimum
+image convention</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.port.Port.n_bonds">
 <code class="descname">n_bonds</code><a class="headerlink" href="#mbuild.port.Port.n_bonds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the number of Bonds in the Compound.</p>
+<dd><p>Return the number of bonds in the Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">int</p>
+<blockquote class="last">
+<div><p>The number of bonds in the Compound</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.port.Port.n_particles">
+<code class="descname">n_particles</code><a class="headerlink" href="#mbuild.port.Port.n_particles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of Particles in the Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">int</p>
+<blockquote class="last">
+<div><p>The number of Particles in the Compound</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.port.Port.particles">
 <code class="descname">particles</code><span class="sig-paren">(</span><em>include_ports=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.particles" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return all Particles of the Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>include_ports</strong> : bool, optional, default=False</p>
+<blockquote>
+<div><p>Include port particles</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first">mb.Compound</p>
+<blockquote class="last">
+<div><p>The next Particle in the Compound</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.port.Port.particles_by_name">
+<code class="descname">particles_by_name</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.particles_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all Particles of the Compound with a specific name</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name</strong> : str</p>
+<blockquote>
+<div><p>Only particles with this name are returned</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first">mb.Compound</p>
+<blockquote class="last">
+<div><p>The next Particle in the Compound with the user-specified name</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.port.Port.particles_in_range">
 <code class="descname">particles_in_range</code><span class="sig-paren">(</span><em>compound</em>, <em>dmax</em>, <em>max_particles=20</em>, <em>particle_kdtree=None</em>, <em>particle_array=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.particles_in_range" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find particles within a specified range of another particle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>compound</strong> : mb.Compound</p>
+<blockquote>
+<div><p>Reference particle to find other particles in range of</p>
+</div></blockquote>
+<p><strong>dmax</strong> : float</p>
+<blockquote>
+<div><p>Maximum distance from &#8216;compound&#8217; to look for Particles</p>
+</div></blockquote>
+<p><strong>max_particles</strong> : int, optional, default=20</p>
+<blockquote>
+<div><p>Maximum number of Particles to return</p>
+</div></blockquote>
+<p><strong>particle_kdtree</strong> : mb.PeriodicCKDTree, optional</p>
+<blockquote>
+<div><p>KD-tree for looking up nearest neighbors. If not provided, a KD-
+tree will be generated from all Particles in self</p>
+</div></blockquote>
+<p><strong>particle_array</strong> : np.ndarray, shape=(n,), dtype=mb.Compound, optional</p>
+<blockquote>
+<div><p>Array of possible particles to consider for return. If not
+provided, this defaults to all Particles in self</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">np.ndarray, shape=(n,), dtype=mb.Compound</p>
+<blockquote class="last">
+<div><p>Particles in range of compound according to user-defined limits</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">periodic_kdtree.PerioidicCKDTree</span></code></dt>
+<dd>mBuild implementation of kd-trees</dd>
+<dt><code class="xref py py-obj docutils literal"><span class="pre">scipy.spatial.ckdtree</span></code></dt>
+<dd>Further details on kd-trees</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.port.Port.referenced_ports">
 <code class="descname">referenced_ports</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.referenced_ports" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all Ports referenced by this Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of mb.Compound</p>
+<blockquote class="last">
+<div><p>A list of all ports referenced by the Compound</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.port.Port.remove">
 <code class="descname">remove</code><span class="sig-paren">(</span><em>objs_to_remove</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.remove" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove children from the Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>objs_to_remove</strong> : mb.Compound or list of mb.Compound</p>
+<blockquote class="last">
+<div><p>The Compound(s) to be removed from self</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.port.Port.remove_bond">
+<code class="descname">remove_bond</code><span class="sig-paren">(</span><em>particle_pair</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.remove_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes a bond between a pair of Particles</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>particle_pair</strong> : indexable object, length=2, dtype=mb.Compound</p>
+<blockquote class="last">
+<div><p>The pair of Particles to remove the bond between</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.port.Port.root">
+<code class="descname">root</code><a class="headerlink" href="#mbuild.port.Port.root" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Compound at the top of self&#8217;s hierarchy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">mb.Compound</p>
+<blockquote class="last">
+<div><p>The Compound at the top of self&#8217;s hierarchy</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -727,34 +1516,81 @@ and sub-sub-compounds for every residue.</p>
 prefix will be parsed and control the format. Supported
 extensions are: &#8216;hoomdxml&#8217;, &#8216;gsd&#8217;, &#8216;gro&#8217;, &#8216;top&#8217;, &#8216;lammps&#8217;, &#8216;lmp&#8217;</p>
 </div></blockquote>
-<p><strong>show_ports</strong> : bool, default=False</p>
+<p><strong>show_ports</strong> : bool, optional, default=False</p>
 <blockquote>
 <div><p>Save ports contained within the compound.</p>
 </div></blockquote>
-<p><strong>forcefield_name</strong> : str, default=None</p>
+<p><strong>forcefield_name</strong> : str, optional, default=None</p>
 <blockquote>
 <div><p>Apply a forcefield to the output file using a forcefield provided
 by the <cite>foyer</cite> package.</p>
 </div></blockquote>
-<p><strong>forcefield_name</strong> : str, default=None</p>
+<p><strong>forcefield_name</strong> : str, optional, default=None</p>
 <blockquote>
 <div><p>Apply a forcefield to the output file using the <cite>foyer</cite> package and
 a specific forcefield.xml file.</p>
 </div></blockquote>
-<p><strong>overwrite</strong> : bool</p>
+<p><strong>box</strong> : mb.Box, optional, default=self.boundingbox (with buffer)</p>
+<blockquote>
+<div><p>Box information to be written to the output file. If &#8216;None&#8217;, a
+bounding box is used with 0.25nm buffers at each face to avoid
+overlapping atoms.</p>
+</div></blockquote>
+<p><strong>overwrite</strong> : bool, optional, default=False</p>
+<blockquote>
+<div><p>Overwrite if the filename already exists</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Other Parameters:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>ref_distance</strong> : float, optional, default=1.0</p>
+<blockquote>
+<div><p>Normalization factor used when saving to .gsd and .hoomdxml formats
+for converting distance values to reduced units.</p>
+</div></blockquote>
+<p><strong>ref_energy</strong> : float, optional, default=1.0</p>
+<blockquote>
+<div><p>Normalization factor used when saving to .gsd and .hoomdxml formats
+for converting energy values to reduced units.</p>
+</div></blockquote>
+<p><strong>ref_mass</strong> : float, optional, default=1.0</p>
 <blockquote class="last">
-<div><p>Overwrite the file if it already exists.</p>
+<div><p>Normalization factor used when saving to .gsd and .hoomdxml formats
+for converting mass values to reduced units.</p>
 </div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">formats.gsdwrite.write_gsd</span></code></dt>
+<dd>Write to GSD format</dd>
+<dt><code class="xref py py-obj docutils literal"><span class="pre">formats.hoomdxml.write_hoomdxml</span></code></dt>
+<dd>Write to Hoomd XML format</dd>
+<dt><code class="xref py py-obj docutils literal"><span class="pre">formats.lammpsdata.write_lammpsdata</span></code></dt>
+<dd>Write to LAMMPS data format</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.port.Port.successors">
 <code class="descname">successors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.successors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Yield Compounds below self in the hierarchy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><p class="first">mb.Compound</p>
+<blockquote class="last">
+<div><p>The next Particle below self in the hierarchy</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -777,6 +1613,31 @@ a specific forcefield.xml file.</p>
 <dt id="mbuild.port.Port.to_parmed">
 <code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.to_parmed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a ParmEd Structure from a Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>title</strong> : str, optional, default=self.name</p>
+<blockquote>
+<div><p>Title/name of the ParmEd Structure</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">parmed.structure.Structure</p>
+<blockquote class="last">
+<div><p>ParmEd Structure object converted from self</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">parmed.structure.Structure</span></code></dt>
+<dd>Details on the ParmEd Structure object</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -790,6 +1651,14 @@ a specific forcefield.xml file.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>show_ports</strong> : bool, optional, default=False</p>
 <blockquote>
 <div><p>Include all port atoms when converting to trajectory.</p>
+</div></blockquote>
+<p><strong>chain_types</strong> : mb.Compound or list of mb.Compound</p>
+<blockquote>
+<div><p>Chain types to add to the topology</p>
+</div></blockquote>
+<p><strong>residue_types</strong> : mb.Compound or list of mb.Compound</p>
+<blockquote>
+<div><p>Residue types to add to the topology</p>
 </div></blockquote>
 </td>
 </tr>
@@ -808,12 +1677,45 @@ a specific forcefield.xml file.</p>
 <dt id="mbuild.port.Port.update_coordinates">
 <code class="descname">update_coordinates</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.update_coordinates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the coordinates of this Compound from a file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename</strong> : str</p>
+<blockquote class="last">
+<div><p>Name of file from which to load coordinates. Supported file types
+are the same as those supported by load()</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">load</span></code></dt>
+<dd>Load coordinates from a file</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.port.Port.visualize">
 <code class="descname">visualize</code><span class="sig-paren">(</span><em>show_ports=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.visualize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualize the Compound using nglview.</p>
+<p>Allows for visualization of a Compound within a Jupyter Notebook.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>show_ports</strong> : bool, optional, default=False</p>
+<blockquote class="last">
+<div><p>Visualize Ports in addition to Particles</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -824,7 +1726,7 @@ a specific forcefield.xml file.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>pos</strong> : np.ndarray, shape=(n, 3)</p>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>pos</strong> : np.ndarray, shape=(n, 3), dtype=float</p>
 <blockquote class="last">
 <div><p>Array with the positions of all particles.</p>
 </div></blockquote>
@@ -838,6 +1740,18 @@ a specific forcefield.xml file.</p>
 <dt id="mbuild.port.Port.xyz_with_ports">
 <code class="descname">xyz_with_ports</code><a class="headerlink" href="#mbuild.port.Port.xyz_with_ports" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all particle coordinates in this compound including ports.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>pos</strong> : np.ndarray, shape=(n, 3), dtype=float</p>
+<blockquote class="last">
+<div><p>Array with the positions of all particles and ports.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>

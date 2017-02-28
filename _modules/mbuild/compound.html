@@ -176,12 +176,21 @@
          <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Load a file into an mbuild compound.</span>
 
+<span class="sd">    Files are read using the mdtraj package. Please refer to http://mdtraj.org/</span>
+<span class="sd">    1.8.0/load_functions.html for supported formats.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    filename : str</span>
-<span class="sd">    relative_to_module :</span>
-<span class="sd">    compound : mb.Compound, optional</span>
-<span class="sd">    coords_only : bool, optional</span>
+<span class="sd">        Name of the file from which to load atom and bond information.</span>
+<span class="sd">    relative_to_module : str, optional, default=None</span>
+<span class="sd">        Instead of looking in the current working directory, look for the file</span>
+<span class="sd">        where this module is defined. This is typically used in Compound classes</span>
+<span class="sd">        that will be instantiated from a different directory (such as the</span>
+<span class="sd">        Compounds located in mbuild.lib). </span>
+<span class="sd">    compound : mb.Compound, optional, default=None</span>
+<span class="sd">        Existing compound to load atom and bond information into.</span>
+<span class="sd">    coords_only : bool, optional, default=False</span>
 <span class="sd">        Only load the coordinates into an existing compoint.</span>
 
 <span class="sd">    Returns</span>
@@ -211,6 +220,17 @@
 <span class="sd">    Does not resolve circular dependencies. This should be safe provided</span>
 <span class="sd">    you never try to add the top of a Compound hierarchy to a</span>
 <span class="sd">    sub-Compound.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    existing_compound : mb.Compound</span>
+<span class="sd">        Existing Compound that will be copied</span>
+
+<span class="sd">    Other Parameters</span>
+<span class="sd">    ----------------</span>
+<span class="sd">    clone_of : dict, optional</span>
+<span class="sd">    root_container : mb.Compound, optional</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">clone_of</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">clone_of</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -243,21 +263,24 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    subcompounds : Compound, optional, default=None</span>
+<span class="sd">    subcompounds : mb.Compound or list of mb.Compound, optional, default=None</span>
 <span class="sd">        One or more compounds to be added to self.</span>
 <span class="sd">    name : str, optional, default=self.__class__.__name__</span>
 <span class="sd">        The type of Compound.</span>
-<span class="sd">    periodicity : np.ndarray, shape=(3,), dtype=float, optional</span>
+<span class="sd">    pos : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]</span>
+<span class="sd">        The position of the Compound in Cartestian space</span>
+<span class="sd">    charge : float, optional, default=0.0</span>
+<span class="sd">        Currently not used. Likely removed in next release.</span>
+<span class="sd">    periodicity : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]</span>
 <span class="sd">        The periodic lengths of the Compound in the x, y and z directions.</span>
 <span class="sd">        Defaults to zeros which is treated as non-periodic.</span>
+<span class="sd">    port_particle : bool, optional, default=False</span>
+<span class="sd">        Whether or not this Compound is part of a Port</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
-<span class="sd">    name : str, optional, default=self.__class__.__name__</span>
-<span class="sd">        The type of Compound.</span>
-<span class="sd">    periodicity : np.ndarray, shape=(3,), dtype=float, optional</span>
-<span class="sd">        The periodic lengths of the Compound in the x, y and z directions.</span>
-<span class="sd">        Defaults to zeros which is treated as non-periodic.</span>
+<span class="sd">    bond_graph : mb.BondGraph</span>
+<span class="sd">        Graph-like object that stores bond information for this Compound</span>
 <span class="sd">    children : OrderedSet</span>
 <span class="sd">        Contains all children (other Compounds).</span>
 <span class="sd">    labels : OrderedDict</span>
@@ -268,6 +291,13 @@
 <span class="sd">        compound is the root of the containment hierarchy.</span>
 <span class="sd">    referrers : set</span>
 <span class="sd">        Other compounds that reference this part with labels.</span>
+<span class="sd">    boundingbox</span>
+<span class="sd">    center</span>
+<span class="sd">    n_particles</span>
+<span class="sd">    n_bonds</span>
+<span class="sd">    root</span>
+<span class="sd">    xyz</span>
+<span class="sd">    xyz_with_ports</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subcompounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">charge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
@@ -282,7 +312,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
 
-        <span class="c1"># A periodocity of zero in any direction is treated as non-periodic.</span>
+        <span class="c1"># A periodicity of zero in any direction is treated as non-periodic.</span>
         <span class="k">if</span> <span class="n">periodicity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_periodicity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
@@ -308,7 +338,19 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">subcompounds</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Compound.particles"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.particles">[docs]</a>    <span class="k">def</span> <span class="nf">particles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_ports</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return all Particles of the Compound.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        include_ports : bool, optional, default=False</span>
+<span class="sd">            Include port particles</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        -------</span>
+<span class="sd">        mb.Compound</span>
+<span class="sd">            The next Particle in the Compound</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
             <span class="k">yield</span> <span class="bp">self</span>
         <span class="k">else</span><span class="p">:</span>
@@ -323,7 +365,14 @@
                     <span class="k">yield</span> <span class="n">child</span>
 
 <div class="viewcode-block" id="Compound.successors"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.successors">[docs]</a>    <span class="k">def</span> <span class="nf">successors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Yield Compounds below self in the hierarchy. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Yield Compounds below self in the hierarchy. </span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        -------</span>
+<span class="sd">        mb.Compound</span>
+<span class="sd">            The next Particle below self in the hierarchy</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
@@ -335,6 +384,14 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n_particles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the number of Particles in the Compound.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The number of Particles in the Compound</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
             <span class="k">return</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
@@ -351,7 +408,14 @@
         <span class="k">return</span> <span class="kc">True</span>
 
 <div class="viewcode-block" id="Compound.ancestors"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.ancestors">[docs]</a>    <span class="k">def</span> <span class="nf">ancestors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Generate all ancestors of the Compound recursively. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Generate all ancestors of the Compound recursively.</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        ------</span>
+<span class="sd">        mb.Compound</span>
+<span class="sd">            The next Compound above self in the hierarchy</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span>
             <span class="k">for</span> <span class="n">ancestor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">ancestors</span><span class="p">():</span>
@@ -359,6 +423,14 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">root</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The Compound at the top of self&#39;s hierarchy.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mb.Compound</span>
+<span class="sd">            The Compound at the top of self&#39;s hierarchy</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">parent</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ancestors</span><span class="p">():</span>
             <span class="k">pass</span>
@@ -366,10 +438,23 @@
             <span class="k">return</span> <span class="bp">self</span>
         <span class="k">return</span> <span class="n">parent</span>
 
-    <span class="k">def</span> <span class="nf">particles_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.particles_by_name"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.particles_by_name">[docs]</a>    <span class="k">def</span> <span class="nf">particles_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return all Particles of the Compound with a specific name</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            Only particles with this name are returned</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        ------</span>
+<span class="sd">        mb.Compound</span>
+<span class="sd">            The next Particle in the Compound with the user-specified name</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">particle</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">particle</span>
+                <span class="k">yield</span> <span class="n">particle</span></div>
 
 <div class="viewcode-block" id="Compound.add"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_child</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">containment</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">inherit_periodicity</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -390,6 +475,9 @@
 <span class="sd">            Add the part to self.children.</span>
 <span class="sd">        replace : bool, optional, default=True</span>
 <span class="sd">            Replace the label if it already exists.</span>
+<span class="sd">        inherit_periodicity : bool, optional, default=True</span>
+<span class="sd">            Replace the periodicity of self with the periodicity of the</span>
+<span class="sd">            Compound being added</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Support batch add via lists, tuples and sets.</span>
@@ -451,7 +539,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">=</span> <span class="n">new_child</span><span class="o">.</span><span class="n">periodicity</span></div>
 
 <div class="viewcode-block" id="Compound.remove"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">objs_to_remove</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Remove children from the Compound. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Remove children from the Compound.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        objs_to_remove : mb.Compound or list of mb.Compound</span>
+<span class="sd">            The Compound(s) to be removed from self</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
             <span class="k">return</span>
 
@@ -511,19 +606,44 @@
             <span class="n">removed_part</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Compound.referenced_ports"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.referenced_ports">[docs]</a>    <span class="k">def</span> <span class="nf">referenced_ports</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return all Ports referenced by this Compound. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return all Ports referenced by this Compound.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of mb.Compound</span>
+<span class="sd">            A list of all ports referenced by the Compound</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">mbuild.port</span> <span class="k">import</span> <span class="n">Port</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">port</span> <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">Port</span><span class="p">)]</span></div>
 
 <div class="viewcode-block" id="Compound.available_ports"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.available_ports">[docs]</a>    <span class="k">def</span> <span class="nf">available_ports</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return all unoccupied Ports referenced by this Compound. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return all unoccupied Ports referenced by this Compound.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of mb.Compound</span>
+<span class="sd">            A list of all unoccupied ports referenced by the Compound</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">mbuild.port</span> <span class="k">import</span> <span class="n">Port</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">port</span> <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">Port</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">port</span><span class="o">.</span><span class="n">used</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="Compound.bonds"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.bonds">[docs]</a>    <span class="k">def</span> <span class="nf">bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;A list of all Bonds in the Compound and sub-Compounds. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return all bonds in the Compound and sub-Compounds.</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple of mb.Compound</span>
+<span class="sd">            The next bond in the Compound</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        bond_graph.edges_iter : Iterates over all edges in a BondGraph</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">bond_graph</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">==</span> <span class="bp">self</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">bond_graph</span><span class="o">.</span><span class="n">edges_iter</span><span class="p">()</span>
@@ -534,18 +654,45 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n_bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the number of Bonds in the Compound. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return the number of bonds in the Compound.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The number of bonds in the Compound</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonds</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="nf">add_bond</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particle_pair</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Compound.add_bond"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.add_bond">[docs]</a>    <span class="k">def</span> <span class="nf">add_bond</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particle_pair</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a bond between two Particles.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        particle_pair : indexable object, length=2, dtype=mb.Compound</span>
+<span class="sd">            The pair of Particles to add a bond between</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">bond_graph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">bond_graph</span> <span class="o">=</span> <span class="n">BondGraph</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">bond_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">particle_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">particle_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">bond_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">particle_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">particle_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="Compound.generate_bonds"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.generate_bonds">[docs]</a>    <span class="k">def</span> <span class="nf">generate_bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name_a</span><span class="p">,</span> <span class="n">name_b</span><span class="p">,</span> <span class="n">dmin</span><span class="p">,</span> <span class="n">dmax</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Add Bonds between all pairs of types a/b within [dmin, dmax]. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Add Bonds between all pairs of types a/b within [dmin, dmax].</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name_a : str</span>
+<span class="sd">            The name of one of the Particles to be in each bond</span>
+<span class="sd">        name_b : str</span>
+<span class="sd">            The name of the other Particle to be in each bond</span>
+<span class="sd">        dmin : float</span>
+<span class="sd">            The minimum distance between Particles for considering a bond</span>
+<span class="sd">        dmax : float</span>
+<span class="sd">            The maximum distance between Particles for considering a bond</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">particle_kdtree</span> <span class="o">=</span> <span class="n">PeriodicCKDTree</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">xyz</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">)</span>
         <span class="n">particle_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">()))</span>
         <span class="n">added_bonds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -564,11 +711,19 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">add_bond</span><span class="p">((</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">))</span>
                     <span class="n">added_bonds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bond_tuple</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">remove_bond</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particle_pair</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.remove_bond"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.remove_bond">[docs]</a>    <span class="k">def</span> <span class="nf">remove_bond</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particle_pair</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Deletes a bond between a pair of Particles</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        particle_pair : indexable object, length=2, dtype=mb.Compound</span>
+<span class="sd">            The pair of Particles to remove the bond between</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">bond_graph</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">bond_graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="o">*</span><span class="n">particle_pair</span><span class="p">):</span>
             <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Bond between </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2"> doesn&#39;t exist!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">particle_pair</span><span class="p">))</span>
             <span class="k">return</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">bond_graph</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="o">*</span><span class="n">particle_pair</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">bond_graph</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="o">*</span><span class="n">particle_pair</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">pos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -599,7 +754,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        pos : np.ndarray, shape=(n, 3)</span>
+<span class="sd">        pos : np.ndarray, shape=(n, 3), dtype=float</span>
 <span class="sd">            Array with the positions of all particles.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
@@ -612,7 +767,14 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">xyz_with_ports</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return all particle coordinates in this compound including ports. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return all particle coordinates in this compound including ports.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pos : np.ndarray, shape=(n, 3), dtype=float</span>
+<span class="sd">            Array with the positions of all particles and ports.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
             <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span>
         <span class="k">else</span><span class="p">:</span>
@@ -623,25 +785,81 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">center</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;The cartesian center of the Compound based on its Atoms. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;The cartesian center of the Compound based on its Particles.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray, shape=(3,), dtype=float</span>
+<span class="sd">            The cartesian center of the Compound based on its Particles       </span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xyz</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xyz</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">boundingbox</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Compute the bounding box of the compound. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Compute the bounding box of the compound.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mb.Box</span>
+<span class="sd">            The bounding box for this Compound</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">xyz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xyz</span>
         <span class="k">return</span> <span class="n">Box</span><span class="p">(</span><span class="n">mins</span><span class="o">=</span><span class="n">xyz</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">maxs</span><span class="o">=</span><span class="n">xyz</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
 
 <div class="viewcode-block" id="Compound.min_periodic_distance"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.min_periodic_distance">[docs]</a>    <span class="k">def</span> <span class="nf">min_periodic_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyz0</span><span class="p">,</span> <span class="n">xyz1</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Vectorized distance calculation considering minimum image. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Vectorized distance calculation considering minimum image.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xyz0 : np.ndarray, shape=(3,), dtype=float</span>
+<span class="sd">            Coordinates of first point</span>
+<span class="sd">        xyz1 : np.ndarray, shape=(3,), dtype=float</span>
+<span class="sd">            Coordinates of second point</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Vectorized distance between the two points following minimum</span>
+<span class="sd">            image convention</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">xyz0</span> <span class="o">-</span> <span class="n">xyz1</span><span class="p">)</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">-</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">d</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="Compound.particles_in_range"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.particles_in_range">[docs]</a>    <span class="k">def</span> <span class="nf">particles_in_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compound</span><span class="p">,</span> <span class="n">dmax</span><span class="p">,</span> <span class="n">max_particles</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">particle_kdtree</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                            <span class="n">particle_array</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Find particles within a specified range of another particle. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Find particles within a specified range of another particle.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        compound : mb.Compound</span>
+<span class="sd">            Reference particle to find other particles in range of</span>
+<span class="sd">        dmax : float</span>
+<span class="sd">            Maximum distance from &#39;compound&#39; to look for Particles</span>
+<span class="sd">        max_particles : int, optional, default=20</span>
+<span class="sd">            Maximum number of Particles to return</span>
+<span class="sd">        particle_kdtree : mb.PeriodicCKDTree, optional</span>
+<span class="sd">            KD-tree for looking up nearest neighbors. If not provided, a KD-</span>
+<span class="sd">            tree will be generated from all Particles in self</span>
+<span class="sd">        particle_array : np.ndarray, shape=(n,), dtype=mb.Compound, optional</span>
+<span class="sd">            Array of possible particles to consider for return. If not</span>
+<span class="sd">            provided, this defaults to all Particles in self</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray, shape=(n,), dtype=mb.Compound</span>
+<span class="sd">            Particles in range of compound according to user-defined limits</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        periodic_kdtree.PerioidicCKDTree : mBuild implementation of kd-trees</span>
+<span class="sd">        scipy.spatial.ckdtree : Further details on kd-trees</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">particle_kdtree</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">particle_kdtree</span> <span class="o">=</span> <span class="n">PeriodicCKDTree</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">xyz</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">)</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">idxs</span> <span class="o">=</span> <span class="n">particle_kdtree</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">compound</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">max_particles</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">dmax</span><span class="p">)</span>
@@ -651,7 +869,16 @@
         <span class="k">return</span> <span class="n">particle_array</span><span class="p">[</span><span class="n">idxs</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="Compound.visualize"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Visualize the Compound using nglview. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Visualize the Compound using nglview.</span>
+
+<span class="sd">        Allows for visualization of a Compound within a Jupyter Notebook.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        show_ports : bool, optional, default=False</span>
+<span class="sd">            Visualize Ports in addition to Particles</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">nglview</span> <span class="o">=</span> <span class="n">import_</span><span class="p">(</span><span class="s1">&#39;nglview&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">run_from_ipython</span><span class="p">():</span>
             <span class="n">structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">(</span><span class="n">show_ports</span><span class="p">)</span>
@@ -661,7 +888,19 @@
                                <span class="s1">&#39;Notebooks.&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Compound.update_coordinates"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.update_coordinates">[docs]</a>    <span class="k">def</span> <span class="nf">update_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Update the coordinates of this Compound from a file. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Update the coordinates of this Compound from a file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            Name of file from which to load coordinates. Supported file types</span>
+<span class="sd">            are the same as those supported by load()</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        load : Load coordinates from a file</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Compound.save"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">forcefield_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -674,16 +913,38 @@
 <span class="sd">            Filesystem path in which to save the trajectory. The extension or</span>
 <span class="sd">            prefix will be parsed and control the format. Supported</span>
 <span class="sd">            extensions are: &#39;hoomdxml&#39;, &#39;gsd&#39;, &#39;gro&#39;, &#39;top&#39;, &#39;lammps&#39;, &#39;lmp&#39;</span>
-<span class="sd">        show_ports : bool, default=False</span>
+<span class="sd">        show_ports : bool, optional, default=False</span>
 <span class="sd">            Save ports contained within the compound.</span>
-<span class="sd">        forcefield_name : str, default=None</span>
+<span class="sd">        forcefield_name : str, optional, default=None</span>
 <span class="sd">            Apply a forcefield to the output file using a forcefield provided</span>
 <span class="sd">            by the `foyer` package.</span>
-<span class="sd">        forcefield_name : str, default=None</span>
+<span class="sd">        forcefield_name : str, optional, default=None</span>
 <span class="sd">            Apply a forcefield to the output file using the `foyer` package and</span>
 <span class="sd">            a specific forcefield.xml file.</span>
-<span class="sd">        overwrite : bool</span>
-<span class="sd">            Overwrite the file if it already exists.</span>
+<span class="sd">        box : mb.Box, optional, default=self.boundingbox (with buffer)</span>
+<span class="sd">            Box information to be written to the output file. If &#39;None&#39;, a</span>
+<span class="sd">            bounding box is used with 0.25nm buffers at each face to avoid</span>
+<span class="sd">            overlapping atoms.</span>
+<span class="sd">        overwrite : bool, optional, default=False</span>
+<span class="sd">            Overwrite if the filename already exists</span>
+
+<span class="sd">        Other Parameters</span>
+<span class="sd">        ----------------</span>
+<span class="sd">        ref_distance : float, optional, default=1.0</span>
+<span class="sd">            Normalization factor used when saving to .gsd and .hoomdxml formats</span>
+<span class="sd">            for converting distance values to reduced units.</span>
+<span class="sd">        ref_energy : float, optional, default=1.0</span>
+<span class="sd">            Normalization factor used when saving to .gsd and .hoomdxml formats</span>
+<span class="sd">            for converting energy values to reduced units.</span>
+<span class="sd">        ref_mass : float, optional, default=1.0</span>
+<span class="sd">            Normalization factor used when saving to .gsd and .hoomdxml formats</span>
+<span class="sd">            for converting mass values to reduced units.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        formats.gsdwrite.write_gsd : Write to GSD format</span>
+<span class="sd">        formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format</span>
+<span class="sd">        formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -710,13 +971,10 @@
 
         <span class="c1"># Apply a force field with foyer if specified</span>
         <span class="k">if</span> <span class="n">forcefield_name</span> <span class="ow">or</span> <span class="n">forcefield_files</span><span class="p">:</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;forcefield&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="kn">from</span> <span class="nn">foyer</span> <span class="k">import</span> <span class="n">Forcefield</span>
             <span class="n">ff</span> <span class="o">=</span> <span class="n">Forcefield</span><span class="p">(</span><span class="n">forcefield_files</span><span class="o">=</span><span class="n">forcefield_files</span><span class="p">,</span>
                             <span class="n">name</span><span class="o">=</span><span class="n">forcefield_name</span><span class="p">)</span>
             <span class="n">structure</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;forcefield&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">if</span> <span class="n">box</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundingbox</span>
@@ -733,7 +991,6 @@
         <span class="k">if</span> <span class="n">saver</span><span class="p">:</span>  <span class="c1"># mBuild supported saver.</span>
             <span class="n">saver</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="n">structure</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="n">box</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># ParmEd supported saver.</span>
-            <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;forcefield&#39;</span><span class="p">)</span>
             <span class="n">structure</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
     <span class="c1"># Interface to Trajectory for reading/writing .pdb and .mol2 files.</span>
@@ -746,10 +1003,12 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        traj : md.Trajectory</span>
+<span class="sd">        traj : mdtraj.Trajectory</span>
 <span class="sd">            The trajectory to load.</span>
-<span class="sd">        frame : int</span>
+<span class="sd">        frame : int, optional, default=-1 (last)</span>
 <span class="sd">            The frame to take coordinates from.</span>
+<span class="sd">        coords_only : bool, optional, default=False</span>
+<span class="sd">            Only read coordinate information</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">coords_only</span><span class="p">:</span>
@@ -793,6 +1052,10 @@
 <span class="sd">        ----------</span>
 <span class="sd">        show_ports : bool, optional, default=False</span>
 <span class="sd">            Include all port atoms when converting to trajectory.</span>
+<span class="sd">        chain_types : mb.Compound or list of mb.Compound</span>
+<span class="sd">            Chain types to add to the topology</span>
+<span class="sd">        residue_types : mb.Compound or list of mb.Compound</span>
+<span class="sd">            Residue types to add to the topology</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -829,13 +1092,20 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        atom_list :</span>
-<span class="sd">        chain_types :</span>
-<span class="sd">        residue_types :</span>
+<span class="sd">        atom_list : list of mb.Compound</span>
+<span class="sd">            Atoms to include in the topology</span>
+<span class="sd">        chain_types : mb.Compound or list of mb.Compound</span>
+<span class="sd">            Chain types to add to the topology</span>
+<span class="sd">        residue_types : mb.Compound or list of mb.Compound</span>
+<span class="sd">            Residue types to add to the topology</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        top : mtraj.Topology</span>
+<span class="sd">        top : mdtraj.Topology</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        mdtraj.Topology : Details on the mdtraj Topology object</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">mdtraj.core.element</span> <span class="k">import</span> <span class="n">get_by_symbol</span>
@@ -972,7 +1242,23 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="Compound.to_parmed"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.to_parmed">[docs]</a>    <span class="k">def</span> <span class="nf">to_parmed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Create a ParmEd Structure from a Compound. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Create a ParmEd Structure from a Compound.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        title : str, optional, default=self.name</span>
+<span class="sd">            Title/name of the ParmEd Structure</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        parmed.structure.Structure</span>
+<span class="sd">            ParmEd Structure object converted from self</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        parmed.structure.Structure : Details on the ParmEd Structure object</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">structure</span> <span class="o">=</span> <span class="n">pmd</span><span class="o">.</span><span class="n">Structure</span><span class="p">()</span>
         <span class="n">structure</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span> <span class="k">if</span> <span class="n">title</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
         <span class="n">atom_mapping</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># For creating bonds below</span>
