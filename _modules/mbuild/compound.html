@@ -171,7 +171,6 @@
 <span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">run_from_ipython</span><span class="p">,</span> <span class="n">import_</span>
 
 
-
 <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">coords_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
          <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Load a file into an mbuild compound.</span>
@@ -300,6 +299,7 @@
 <span class="sd">    xyz_with_ports</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subcompounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">charge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">periodicity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">port_particle</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Compound</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -904,7 +904,8 @@
         <span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Compound.save"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">forcefield_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">forcefield_files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+             <span class="n">forcefield_files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">residues</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save the Compound to a file.</span>
 
 <span class="sd">        Parameters</span>
@@ -967,7 +968,7 @@
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> exists; not overwriting&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
 
-        <span class="n">structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_parmed</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_parmed</span><span class="p">(</span><span class="n">residues</span><span class="o">=</span><span class="n">residues</span><span class="p">)</span>
 
         <span class="c1"># Apply a force field with foyer if specified</span>
         <span class="k">if</span> <span class="n">forcefield_name</span> <span class="ow">or</span> <span class="n">forcefield_files</span><span class="p">:</span>
@@ -1044,17 +1045,17 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="Compound.to_trajectory"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.to_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">to_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">chain_types</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                      <span class="n">residue_types</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.to_trajectory"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.to_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">to_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">chains</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">residues</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert to an md.Trajectory and flatten the compound.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        show_ports : bool, optional, default=False</span>
 <span class="sd">            Include all port atoms when converting to trajectory.</span>
-<span class="sd">        chain_types : mb.Compound or list of mb.Compound</span>
+<span class="sd">        chains : mb.Compound or list of mb.Compound</span>
 <span class="sd">            Chain types to add to the topology</span>
-<span class="sd">        residue_types : mb.Compound or list of mb.Compound</span>
+<span class="sd">        residues : mb.Compound or list of mb.Compound</span>
 <span class="sd">            Residue types to add to the topology</span>
 
 <span class="sd">        Returns</span>
@@ -1068,7 +1069,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">atom_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">particle</span> <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">(</span><span class="n">show_ports</span><span class="p">)]</span>
 
-        <span class="n">top</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_topology</span><span class="p">(</span><span class="n">atom_list</span><span class="p">,</span> <span class="n">chain_types</span><span class="p">,</span> <span class="n">residue_types</span><span class="p">)</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_topology</span><span class="p">(</span><span class="n">atom_list</span><span class="p">,</span> <span class="n">chains</span><span class="p">,</span> <span class="n">residues</span><span class="p">)</span>
 
         <span class="c1"># Coordinates.</span>
         <span class="n">xyz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">top</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
@@ -1087,16 +1088,16 @@
         <span class="k">return</span> <span class="n">md</span><span class="o">.</span><span class="n">Trajectory</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">unitcell_lengths</span><span class="o">=</span><span class="n">unitcell_lengths</span><span class="p">,</span>
                              <span class="n">unitcell_angles</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">]))</span></div>
 
-    <span class="k">def</span> <span class="nf">_to_topology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom_list</span><span class="p">,</span> <span class="n">chain_types</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">residue_types</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_to_topology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom_list</span><span class="p">,</span> <span class="n">chains</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">residues</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create a mdtraj.Topology from a Compound.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        atom_list : list of mb.Compound</span>
 <span class="sd">            Atoms to include in the topology</span>
-<span class="sd">        chain_types : mb.Compound or list of mb.Compound</span>
+<span class="sd">        chains : mb.Compound or list of mb.Compound</span>
 <span class="sd">            Chain types to add to the topology</span>
-<span class="sd">        residue_types : mb.Compound or list of mb.Compound</span>
+<span class="sd">        residues : mb.Compound or list of mb.Compound</span>
 <span class="sd">            Residue types to add to the topology</span>
 
 <span class="sd">        Returns</span>
@@ -1111,15 +1112,15 @@
         <span class="kn">from</span> <span class="nn">mdtraj.core.element</span> <span class="k">import</span> <span class="n">get_by_symbol</span>
         <span class="kn">from</span> <span class="nn">mdtraj.core.topology</span> <span class="k">import</span> <span class="n">Topology</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chain_types</span><span class="p">,</span> <span class="n">Compound</span><span class="p">):</span>
-            <span class="n">chain_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">Compound</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chain_types</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
-            <span class="n">chain_types</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">chain_types</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chains</span><span class="p">,</span> <span class="n">string_types</span><span class="p">):</span>
+            <span class="n">chains</span> <span class="o">=</span> <span class="p">[</span><span class="n">chains</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chains</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+            <span class="n">chains</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">chains</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">residue_types</span><span class="p">,</span> <span class="n">Compound</span><span class="p">):</span>
-            <span class="n">residue_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">Compound</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">residue_types</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
-            <span class="n">residue_types</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">residue_types</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">residues</span><span class="p">,</span> <span class="n">string_types</span><span class="p">):</span>
+            <span class="n">residues</span> <span class="o">=</span> <span class="p">[</span><span class="n">residues</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">residues</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+            <span class="n">residues</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">residues</span><span class="p">)</span>
         <span class="n">top</span> <span class="o">=</span> <span class="n">Topology</span><span class="p">()</span>
         <span class="n">atom_mapping</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -1134,7 +1135,7 @@
         <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">atom_list</span><span class="p">:</span>
             <span class="c1"># Chains</span>
             <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">ancestors</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">chain_types</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">chain_types</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">chains</span> <span class="ow">and</span> <span class="n">parent</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">chains</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">parent</span> <span class="o">!=</span> <span class="n">last_chain_compound</span><span class="p">:</span>
                         <span class="n">last_chain_compound</span> <span class="o">=</span> <span class="n">parent</span>
                         <span class="n">last_chain</span> <span class="o">=</span> <span class="n">top</span><span class="o">.</span><span class="n">add_chain</span><span class="p">()</span>
@@ -1147,10 +1148,10 @@
 
             <span class="c1"># Residues</span>
             <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">ancestors</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">residue_types</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">residue_types</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">residues</span> <span class="ow">and</span> <span class="n">parent</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">residues</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">parent</span> <span class="o">!=</span> <span class="n">last_residue_compound</span><span class="p">:</span>
                         <span class="n">last_residue_compound</span> <span class="o">=</span> <span class="n">parent</span>
-                        <span class="n">last_residue</span> <span class="o">=</span> <span class="n">top</span><span class="o">.</span><span class="n">add_residue</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">last_chain</span><span class="p">)</span>
+                        <span class="n">last_residue</span> <span class="o">=</span> <span class="n">top</span><span class="o">.</span><span class="n">add_residue</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">last_chain</span><span class="p">)</span>
                         <span class="n">last_residue</span><span class="o">.</span><span class="n">compound</span> <span class="o">=</span> <span class="n">last_residue_compound</span>
                     <span class="k">break</span>
             <span class="k">else</span><span class="p">:</span>
@@ -1230,6 +1231,7 @@
                     <span class="n">new_atom</span> <span class="o">=</span> <span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="n">pos</span><span class="o">=</span><span class="n">structure</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="n">atom</span><span class="o">.</span><span class="n">idx</span><span class="p">])</span>
                     <span class="n">chain_compound</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_atom</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">[$]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
                     <span class="n">atom_mapping</span><span class="p">[</span><span class="n">atom</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_atom</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Added&#39;</span><span class="p">,</span> <span class="n">atom</span><span class="p">,</span> <span class="n">residue</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="n">structure</span><span class="o">.</span><span class="n">bonds</span><span class="p">:</span>
             <span class="n">atom1</span> <span class="o">=</span> <span class="n">atom_mapping</span><span class="p">[</span><span class="n">bond</span><span class="o">.</span><span class="n">atom1</span><span class="p">]</span>
@@ -1241,7 +1243,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="Compound.to_parmed"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.to_parmed">[docs]</a>    <span class="k">def</span> <span class="nf">to_parmed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.to_parmed"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.to_parmed">[docs]</a>    <span class="k">def</span> <span class="nf">to_parmed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">residues</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create a ParmEd Structure from a Compound.</span>
 
 <span class="sd">        Parameters</span>
@@ -1263,7 +1265,34 @@
         <span class="n">structure</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span> <span class="k">if</span> <span class="n">title</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
         <span class="n">atom_mapping</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># For creating bonds below</span>
         <span class="n">guessed_elements</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">residues</span><span class="p">,</span> <span class="n">string_types</span><span class="p">):</span>
+            <span class="n">residues</span> <span class="o">=</span> <span class="p">[</span><span class="n">residues</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">residues</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+            <span class="n">residues</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">residues</span><span class="p">)</span>
+
+        <span class="n">default_residue</span> <span class="o">=</span> <span class="n">pmd</span><span class="o">.</span><span class="n">Residue</span><span class="p">(</span><span class="s1">&#39;RES&#39;</span><span class="p">)</span>
+        <span class="n">default_residue</span><span class="o">.</span><span class="n">compound</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">last_residue_compound</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">():</span>
+            <span class="c1"># Residues</span>
+            <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">ancestors</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">residues</span> <span class="ow">and</span> <span class="n">parent</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">residues</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">parent</span> <span class="o">!=</span> <span class="n">last_residue_compound</span><span class="p">:</span>
+                        <span class="n">last_residue_compound</span> <span class="o">=</span> <span class="n">parent</span>
+                        <span class="n">last_residue</span> <span class="o">=</span> <span class="n">pmd</span><span class="o">.</span><span class="n">Residue</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                        <span class="n">last_residue</span><span class="o">.</span><span class="n">compound</span> <span class="o">=</span> <span class="n">last_residue_compound</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">default_residue</span><span class="o">.</span><span class="n">compound</span> <span class="o">!=</span> <span class="n">last_residue_compound</span><span class="p">:</span>
+                    <span class="n">default_residue</span> <span class="o">=</span> <span class="n">pmd</span><span class="o">.</span><span class="n">Residue</span><span class="p">(</span><span class="s1">&#39;RES&#39;</span><span class="p">)</span>
+                <span class="n">last_residue</span> <span class="o">=</span> <span class="n">default_residue</span>
+                <span class="n">last_residue</span><span class="o">.</span><span class="n">compound</span> <span class="o">=</span> <span class="n">last_residue_compound</span>
+
+            <span class="k">if</span> <span class="n">last_residue</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">structure</span><span class="o">.</span><span class="n">residues</span><span class="p">:</span>
+                <span class="n">structure</span><span class="o">.</span><span class="n">residues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">last_residue</span><span class="p">)</span>
+
             <span class="n">atomic_number</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">char</span> <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">char</span><span class="o">.</span><span class="n">isdigit</span><span class="p">())</span>
             <span class="k">try</span><span class="p">:</span>
@@ -1281,8 +1310,12 @@
             <span class="n">pmd_atom</span> <span class="o">=</span> <span class="n">pmd</span><span class="o">.</span><span class="n">Atom</span><span class="p">(</span><span class="n">atomic_number</span><span class="o">=</span><span class="n">atomic_number</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">atom</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                 <span class="n">mass</span><span class="o">=</span><span class="n">mass</span><span class="p">)</span>
             <span class="n">pmd_atom</span><span class="o">.</span><span class="n">xx</span><span class="p">,</span> <span class="n">pmd_atom</span><span class="o">.</span><span class="n">xy</span><span class="p">,</span> <span class="n">pmd_atom</span><span class="o">.</span><span class="n">xz</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span> <span class="o">*</span> <span class="mi">10</span>  <span class="c1"># Angstroms</span>
-            <span class="n">structure</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="n">pmd_atom</span><span class="p">,</span> <span class="n">resname</span><span class="o">=</span><span class="s1">&#39;RES&#39;</span><span class="p">,</span> <span class="n">resnum</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">structure</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="n">pmd_atom</span><span class="p">,</span> <span class="n">resname</span><span class="o">=</span><span class="n">last_residue</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                               <span class="n">resnum</span><span class="o">=</span><span class="n">last_residue</span><span class="o">.</span><span class="n">idx</span><span class="p">)</span>
+
             <span class="n">atom_mapping</span><span class="p">[</span><span class="n">atom</span><span class="p">]</span> <span class="o">=</span> <span class="n">pmd_atom</span>
+
+        <span class="n">structure</span><span class="o">.</span><span class="n">residues</span><span class="o">.</span><span class="n">claim</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">atom1</span><span class="p">,</span> <span class="n">atom2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonds</span><span class="p">():</span>
             <span class="n">bond</span> <span class="o">=</span> <span class="n">pmd</span><span class="o">.</span><span class="n">Bond</span><span class="p">(</span><span class="n">atom_mapping</span><span class="p">[</span><span class="n">atom1</span><span class="p">],</span> <span class="n">atom_mapping</span><span class="p">[</span><span class="n">atom2</span><span class="p">])</span>

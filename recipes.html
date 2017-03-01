@@ -672,7 +672,7 @@ provided, this defaults to all Particles in self</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.monolayer.Monolayer.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>show_ports=False</em>, <em>forcefield_name=None</em>, <em>forcefield_files=None</em>, <em>box=None</em>, <em>overwrite=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.save" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>show_ports=False</em>, <em>forcefield_name=None</em>, <em>forcefield_files=None</em>, <em>box=None</em>, <em>overwrite=False</em>, <em>residues=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -779,7 +779,7 @@ for converting mass values to reduced units.</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.monolayer.Monolayer.to_parmed">
-<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.to_parmed" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.to_parmed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a ParmEd Structure from a Compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -810,7 +810,7 @@ for converting mass values to reduced units.</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.monolayer.Monolayer.to_trajectory">
-<code class="descname">to_trajectory</code><span class="sig-paren">(</span><em>show_ports=False</em>, <em>chain_types=None</em>, <em>residue_types=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_trajectory</code><span class="sig-paren">(</span><em>show_ports=False</em>, <em>chains=None</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.to_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert to an md.Trajectory and flatten the compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -820,11 +820,11 @@ for converting mass values to reduced units.</p>
 <blockquote>
 <div><p>Include all port atoms when converting to trajectory.</p>
 </div></blockquote>
-<p><strong>chain_types</strong> : mb.Compound or list of mb.Compound</p>
+<p><strong>chains</strong> : mb.Compound or list of mb.Compound</p>
 <blockquote>
 <div><p>Chain types to add to the topology</p>
 </div></blockquote>
-<p><strong>residue_types</strong> : mb.Compound or list of mb.Compound</p>
+<p><strong>residues</strong> : mb.Compound or list of mb.Compound</p>
 <blockquote>
 <div><p>Residue types to add to the topology</p>
 </div></blockquote>
@@ -1433,7 +1433,7 @@ provided, this defaults to all Particles in self</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.polymer.Polymer.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>show_ports=False</em>, <em>forcefield_name=None</em>, <em>forcefield_files=None</em>, <em>box=None</em>, <em>overwrite=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.save" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>show_ports=False</em>, <em>forcefield_name=None</em>, <em>forcefield_files=None</em>, <em>box=None</em>, <em>overwrite=False</em>, <em>residues=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1540,7 +1540,7 @@ for converting mass values to reduced units.</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.polymer.Polymer.to_parmed">
-<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.to_parmed" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.to_parmed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a ParmEd Structure from a Compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1571,7 +1571,7 @@ for converting mass values to reduced units.</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.polymer.Polymer.to_trajectory">
-<code class="descname">to_trajectory</code><span class="sig-paren">(</span><em>show_ports=False</em>, <em>chain_types=None</em>, <em>residue_types=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_trajectory</code><span class="sig-paren">(</span><em>show_ports=False</em>, <em>chains=None</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.to_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert to an md.Trajectory and flatten the compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1581,11 +1581,11 @@ for converting mass values to reduced units.</p>
 <blockquote>
 <div><p>Include all port atoms when converting to trajectory.</p>
 </div></blockquote>
-<p><strong>chain_types</strong> : mb.Compound or list of mb.Compound</p>
+<p><strong>chains</strong> : mb.Compound or list of mb.Compound</p>
 <blockquote>
 <div><p>Chain types to add to the topology</p>
 </div></blockquote>
-<p><strong>residue_types</strong> : mb.Compound or list of mb.Compound</p>
+<p><strong>residues</strong> : mb.Compound or list of mb.Compound</p>
 <blockquote>
 <div><p>Residue types to add to the topology</p>
 </div></blockquote>
@@ -2190,7 +2190,7 @@ provided, this defaults to all Particles in self</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.tiled_compound.TiledCompound.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>show_ports=False</em>, <em>forcefield_name=None</em>, <em>forcefield_files=None</em>, <em>box=None</em>, <em>overwrite=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.save" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>show_ports=False</em>, <em>forcefield_name=None</em>, <em>forcefield_files=None</em>, <em>box=None</em>, <em>overwrite=False</em>, <em>residues=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2297,7 +2297,7 @@ for converting mass values to reduced units.</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.tiled_compound.TiledCompound.to_parmed">
-<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.to_parmed" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.to_parmed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a ParmEd Structure from a Compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2328,7 +2328,7 @@ for converting mass values to reduced units.</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.tiled_compound.TiledCompound.to_trajectory">
-<code class="descname">to_trajectory</code><span class="sig-paren">(</span><em>show_ports=False</em>, <em>chain_types=None</em>, <em>residue_types=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_trajectory</code><span class="sig-paren">(</span><em>show_ports=False</em>, <em>chains=None</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.to_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert to an md.Trajectory and flatten the compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2338,11 +2338,11 @@ for converting mass values to reduced units.</p>
 <blockquote>
 <div><p>Include all port atoms when converting to trajectory.</p>
 </div></blockquote>
-<p><strong>chain_types</strong> : mb.Compound or list of mb.Compound</p>
+<p><strong>chains</strong> : mb.Compound or list of mb.Compound</p>
 <blockquote>
 <div><p>Chain types to add to the topology</p>
 </div></blockquote>
-<p><strong>residue_types</strong> : mb.Compound or list of mb.Compound</p>
+<p><strong>residues</strong> : mb.Compound or list of mb.Compound</p>
 <blockquote>
 <div><p>Residue types to add to the topology</p>
 </div></blockquote>
@@ -2971,7 +2971,7 @@ provided, this defaults to all Particles in self</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.silica_interface.SilicaInterface.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>show_ports=False</em>, <em>forcefield_name=None</em>, <em>forcefield_files=None</em>, <em>box=None</em>, <em>overwrite=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.save" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>show_ports=False</em>, <em>forcefield_name=None</em>, <em>forcefield_files=None</em>, <em>box=None</em>, <em>overwrite=False</em>, <em>residues=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3078,7 +3078,7 @@ for converting mass values to reduced units.</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.silica_interface.SilicaInterface.to_parmed">
-<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.to_parmed" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.to_parmed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a ParmEd Structure from a Compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3109,7 +3109,7 @@ for converting mass values to reduced units.</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.silica_interface.SilicaInterface.to_trajectory">
-<code class="descname">to_trajectory</code><span class="sig-paren">(</span><em>show_ports=False</em>, <em>chain_types=None</em>, <em>residue_types=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_trajectory</code><span class="sig-paren">(</span><em>show_ports=False</em>, <em>chains=None</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.to_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert to an md.Trajectory and flatten the compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3119,11 +3119,11 @@ for converting mass values to reduced units.</p>
 <blockquote>
 <div><p>Include all port atoms when converting to trajectory.</p>
 </div></blockquote>
-<p><strong>chain_types</strong> : mb.Compound or list of mb.Compound</p>
+<p><strong>chains</strong> : mb.Compound or list of mb.Compound</p>
 <blockquote>
 <div><p>Chain types to add to the topology</p>
 </div></blockquote>
-<p><strong>residue_types</strong> : mb.Compound or list of mb.Compound</p>
+<p><strong>residues</strong> : mb.Compound or list of mb.Compound</p>
 <blockquote>
 <div><p>Residue types to add to the topology</p>
 </div></blockquote>
