@@ -148,7 +148,7 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="k">import</span> <span class="p">(</span><span class="n">force_overlap</span><span class="p">,</span> <span class="n">translate</span><span class="p">,</span> <span class="n">spin</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="k">import</span> <span class="n">force_overlap</span>
 <span class="kn">from</span> <span class="nn">mbuild.utils.validation</span> <span class="k">import</span> <span class="n">assert_port_exists</span>
 <span class="kn">from</span> <span class="nn">mbuild</span> <span class="k">import</span> <span class="n">clone</span>
 
@@ -186,7 +186,7 @@
     <span class="k">def</span> <span class="nf">_adjust_ports</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">ports</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">orientations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">port</span><span class="p">,</span> <span class="n">point</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ports</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">):</span>
-                <span class="n">translate</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">point</span><span class="p">)</span>
+                <span class="n">port</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compound</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">compound_port</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Arrange copies of a Compound as specified by the Pattern.</span>
@@ -211,7 +211,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">:</span>
                 <span class="n">new_compound</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
-                <span class="n">translate</span><span class="p">(</span><span class="n">new_compound</span><span class="p">,</span> <span class="n">point</span><span class="p">)</span>
+                <span class="n">new_compound</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
 
                 <span class="n">compounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_compound</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">compounds</span>
@@ -390,11 +390,11 @@
                 <span class="n">port</span> <span class="o">=</span> <span class="n">Port</span><span class="p">()</span>
                 <span class="n">ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
                 <span class="c1"># Make the top of the port point toward the positive x axis.</span>
-                <span class="n">spin</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="n">port</span><span class="o">.</span><span class="n">spin</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
                 <span class="c1"># Raise up (or down) the top of the port in the z direction.</span>
-                <span class="n">spin</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+                <span class="n">port</span><span class="o">.</span><span class="n">spin</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
                 <span class="c1"># Rotate the Port along the z axis.</span>
-                <span class="n">spin</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="n">port</span><span class="o">.</span><span class="n">spin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
                 <span class="c1"># Move the Port a bit away from the surface of the Sphere.</span>
                 <span class="c1"># translate(port, point + 0.07)</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;orientations&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;normal&#39;</span><span class="p">:</span> <span class="n">ports</span><span class="p">}</span>

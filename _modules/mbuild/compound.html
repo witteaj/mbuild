@@ -169,13 +169,13 @@
 <span class="kn">from</span> <span class="nn">mbuild.formats.gsdwriter</span> <span class="k">import</span> <span class="n">write_gsd</span>
 <span class="kn">from</span> <span class="nn">mbuild.periodic_kdtree</span> <span class="k">import</span> <span class="n">PeriodicCKDTree</span>
 <span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">run_from_ipython</span><span class="p">,</span> <span class="n">import_</span>
-
+<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="k">import</span> <span class="n">_translate</span><span class="p">,</span> <span class="n">_rotate</span>
 
 <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">coords_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
          <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Load a file into an mbuild compound.</span>
+    <span class="sd">&quot;&quot;&quot;Load a file into an mBuild Compound.</span>
 
-<span class="sd">    Files are read using the mdtraj package. Please refer to http://mdtraj.org/</span>
+<span class="sd">    Files are read using the MDTraj package. Please refer to http://mdtraj.org/</span>
 <span class="sd">    1.8.0/load_functions.html for supported formats.</span>
 
 <span class="sd">    Parameters</span>
@@ -186,7 +186,7 @@
 <span class="sd">        Instead of looking in the current working directory, look for the file</span>
 <span class="sd">        where this module is defined. This is typically used in Compound classes</span>
 <span class="sd">        that will be instantiated from a different directory (such as the</span>
-<span class="sd">        Compounds located in mbuild.lib). </span>
+<span class="sd">        Compounds located in mbuild.lib).</span>
 <span class="sd">    compound : mb.Compound, optional, default=None</span>
 <span class="sd">        Existing compound to load atom and bond information into.</span>
 <span class="sd">    coords_only : bool, optional, default=False</span>
@@ -365,7 +365,7 @@
                     <span class="k">yield</span> <span class="n">child</span>
 
 <div class="viewcode-block" id="Compound.successors"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.successors">[docs]</a>    <span class="k">def</span> <span class="nf">successors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Yield Compounds below self in the hierarchy. </span>
+        <span class="sd">&quot;&quot;&quot;Yield Compounds below self in the hierarchy.</span>
 
 <span class="sd">        Yields</span>
 <span class="sd">        -------</span>
@@ -440,7 +440,7 @@
 
 <div class="viewcode-block" id="Compound.particles_by_name"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.particles_by_name">[docs]</a>    <span class="k">def</span> <span class="nf">particles_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return all Particles of the Compound with a specific name</span>
-<span class="sd">        </span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        name : str</span>
@@ -783,6 +783,46 @@
             <span class="n">pos</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">pos</span>
 
+    <span class="nd">@xyz</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arrnx3</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the positions of the particles in the Compound, excluding the Ports.</span>
+
+<span class="sd">        This function does not set the position of the ports.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arrnx3 : np.ndarray, shape=(n,3), dtype=float</span>
+<span class="sd">            The new particle positions</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">arrnx3</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Trying to set position of </span><span class="si">{}</span><span class="s1"> with more than one&#39;</span>
+                                 <span class="s1">&#39;coordinate: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arrnx3</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">arrnx3</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">atom</span><span class="p">,</span> <span class="n">coords</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_particles</span><span class="p">(</span><span class="n">include_ports</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">arrnx3</span><span class="p">):</span>
+                <span class="n">atom</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">coords</span>
+
+    <span class="nd">@xyz_with_ports</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">xyz_with_ports</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arrnx3</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the positions of the particles in the Compound, including the Ports.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arrnx3 : np.ndarray, shape=(n,3), dtype=float</span>
+<span class="sd">            The new particle positions</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">arrnx3</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Trying to set position of </span><span class="si">{}</span><span class="s1"> with more than one&#39;</span>
+                                 <span class="s1">&#39;coordinate: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arrnx3</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">arrnx3</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">atom</span><span class="p">,</span> <span class="n">coords</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_particles</span><span class="p">(</span><span class="n">include_ports</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">arrnx3</span><span class="p">):</span>
+                <span class="n">atom</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">coords</span>
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">center</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;The cartesian center of the Compound based on its Particles.</span>
@@ -790,7 +830,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        np.ndarray, shape=(3,), dtype=float</span>
-<span class="sd">            The cartesian center of the Compound based on its Particles       </span>
+<span class="sd">            The cartesian center of the Compound based on its Particles</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xyz</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
@@ -993,6 +1033,58 @@
             <span class="n">saver</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="n">structure</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="n">box</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># ParmEd supported saver.</span>
             <span class="n">structure</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Compound.translate"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.translate">[docs]</a>    <span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">by</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Translate the Compound by a vector</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        by : np.ndarray, shape=(3,), dtype=float</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_positions</span> <span class="o">=</span> <span class="n">_translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xyz_with_ports</span><span class="p">,</span> <span class="n">by</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xyz_with_ports</span> <span class="o">=</span> <span class="n">new_positions</span></div>
+
+<div class="viewcode-block" id="Compound.translate_to"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.translate_to">[docs]</a>    <span class="k">def</span> <span class="nf">translate_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Translate the Compound to a specific position</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pos : np.ndarray, shape=3(,), dtype=float</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">pos</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">center</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Compound.rotate"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.rotate">[docs]</a>    <span class="k">def</span> <span class="nf">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Rotate Compound around an arbitrary vector.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta : float</span>
+<span class="sd">            The angle by which to rotate the Compound, in radians.</span>
+<span class="sd">        around : np.ndarray, shape=(3,), dtype=float</span>
+<span class="sd">            The vector about which to rotate the Compound.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_positions</span> <span class="o">=</span> <span class="n">_rotate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xyz_with_ports</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xyz_with_ports</span> <span class="o">=</span> <span class="n">new_positions</span></div>
+
+<div class="viewcode-block" id="Compound.spin"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.spin">[docs]</a>    <span class="k">def</span> <span class="nf">spin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Rotate Compound in place around an arbitrary vector.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta : float</span>
+<span class="sd">            The angle by which to rotate the Compound, in radians.</span>
+<span class="sd">        around : np.ndarray, shape=(3,), dtype=float</span>
+<span class="sd">            The axis about which to spin the Compound.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">around</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">around</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">center_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">center</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="o">-</span><span class="n">center_pos</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">center_pos</span><span class="p">)</span></div>
 
     <span class="c1"># Interface to Trajectory for reading/writing .pdb and .mol2 files.</span>
     <span class="c1"># -----------------------------------------------------------------</span>

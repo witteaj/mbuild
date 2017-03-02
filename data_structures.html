@@ -747,6 +747,28 @@ provided, this defaults to all Particles in self</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="mbuild.compound.Compound.rotate">
+<code class="descname">rotate</code><span class="sig-paren">(</span><em>theta</em>, <em>around</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.rotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.rotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate Compound around an arbitrary vector.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : float</p>
+<blockquote>
+<div><p>The angle by which to rotate the Compound, in radians.</p>
+</div></blockquote>
+<p><strong>around</strong> : np.ndarray, shape=(3,), dtype=float</p>
+<blockquote class="last">
+<div><p>The vector about which to rotate the Compound.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="mbuild.compound.Compound.save">
 <code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>show_ports=False</em>, <em>forcefield_name=None</em>, <em>forcefield_files=None</em>, <em>box=None</em>, <em>overwrite=False</em>, <em>residues=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
@@ -817,6 +839,28 @@ for converting mass values to reduced units.</p>
 <dd>Write to LAMMPS data format</dd>
 </dl>
 </div>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.spin">
+<code class="descname">spin</code><span class="sig-paren">(</span><em>theta</em>, <em>around</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.spin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.spin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate Compound in place around an arbitrary vector.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : float</p>
+<blockquote>
+<div><p>The angle by which to rotate the Compound, in radians.</p>
+</div></blockquote>
+<p><strong>around</strong> : np.ndarray, shape=(3,), dtype=float</p>
+<blockquote class="last">
+<div><p>The axis about which to spin the Compound.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -915,6 +959,34 @@ for converting mass values to reduced units.</p>
 <p class="first admonition-title">See also</p>
 <p class="last"><code class="xref py py-obj docutils literal"><span class="pre">_to_topology</span></code></p>
 </div>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.translate">
+<code class="descname">translate</code><span class="sig-paren">(</span><em>by</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.translate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.translate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate the Compound by a vector</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>by</strong> : np.ndarray, shape=(3,), dtype=float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.translate_to">
+<code class="descname">translate_to</code><span class="sig-paren">(</span><em>pos</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/compound.html#Compound.translate_to"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.translate_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate the Compound to a specific position</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pos</strong> : np.ndarray, shape=3(,), dtype=float</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -1503,6 +1575,28 @@ provided, this defaults to all Particles in self</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="mbuild.port.Port.rotate">
+<code class="descname">rotate</code><span class="sig-paren">(</span><em>theta</em>, <em>around</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.rotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate Compound around an arbitrary vector.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : float</p>
+<blockquote>
+<div><p>The angle by which to rotate the Compound, in radians.</p>
+</div></blockquote>
+<p><strong>around</strong> : np.ndarray, shape=(3,), dtype=float</p>
+<blockquote class="last">
+<div><p>The vector about which to rotate the Compound.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="mbuild.port.Port.save">
 <code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>show_ports=False</em>, <em>forcefield_name=None</em>, <em>forcefield_files=None</em>, <em>box=None</em>, <em>overwrite=False</em>, <em>residues=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
@@ -1573,6 +1667,28 @@ for converting mass values to reduced units.</p>
 <dd>Write to LAMMPS data format</dd>
 </dl>
 </div>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.port.Port.spin">
+<code class="descname">spin</code><span class="sig-paren">(</span><em>theta</em>, <em>around</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.spin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate Compound in place around an arbitrary vector.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : float</p>
+<blockquote>
+<div><p>The angle by which to rotate the Compound, in radians.</p>
+</div></blockquote>
+<p><strong>around</strong> : np.ndarray, shape=(3,), dtype=float</p>
+<blockquote class="last">
+<div><p>The axis about which to spin the Compound.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -1671,6 +1787,34 @@ for converting mass values to reduced units.</p>
 <p class="first admonition-title">See also</p>
 <p class="last"><code class="xref py py-obj docutils literal"><span class="pre">_to_topology</span></code></p>
 </div>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.port.Port.translate">
+<code class="descname">translate</code><span class="sig-paren">(</span><em>by</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.translate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate the Compound by a vector</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>by</strong> : np.ndarray, shape=(3,), dtype=float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.port.Port.translate_to">
+<code class="descname">translate_to</code><span class="sig-paren">(</span><em>pos</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.port.Port.translate_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate the Compound to a specific position</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pos</strong> : np.ndarray, shape=3(,), dtype=float</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">

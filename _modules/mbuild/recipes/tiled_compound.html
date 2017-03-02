@@ -151,7 +151,6 @@
 <span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="k">import</span> <span class="n">Compound</span>
 <span class="kn">from</span> <span class="nn">mbuild.exceptions</span> <span class="k">import</span> <span class="n">MBuildError</span>
 <span class="kn">from</span> <span class="nn">mbuild.port</span> <span class="k">import</span> <span class="n">Port</span>
-<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="k">import</span> <span class="n">translate</span>
 <span class="kn">from</span> <span class="nn">mbuild.periodic_kdtree</span> <span class="k">import</span> <span class="n">PeriodicCKDTree</span>
 <span class="kn">from</span> <span class="nn">mbuild</span> <span class="k">import</span> <span class="n">clone</span>
 
@@ -208,7 +207,7 @@
                               <span class="nb">range</span><span class="p">(</span><span class="n">n_tiles</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
                               <span class="nb">range</span><span class="p">(</span><span class="n">n_tiles</span><span class="p">[</span><span class="mi">2</span><span class="p">])):</span>
             <span class="n">new_tile</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">tile</span><span class="p">)</span>
-            <span class="n">translate</span><span class="p">(</span><span class="n">new_tile</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ijk</span> <span class="o">*</span> <span class="n">tile</span><span class="o">.</span><span class="n">periodicity</span><span class="p">))</span>
+            <span class="n">new_tile</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ijk</span> <span class="o">*</span> <span class="n">tile</span><span class="o">.</span><span class="n">periodicity</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_tile</span><span class="p">(</span><span class="n">new_tile</span><span class="p">,</span> <span class="n">ijk</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_hoist_ports</span><span class="p">(</span><span class="n">new_tile</span><span class="p">)</span>
 

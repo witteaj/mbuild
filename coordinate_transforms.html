@@ -178,99 +178,23 @@ between the two anchor atoms.</p>
 
 <dl class="function">
 <dt id="mbuild.coordinate_transform.translate">
-<code class="descclassname">mbuild.coordinate_transform.</code><code class="descname">translate</code><span class="sig-paren">(</span><em>compound</em>, <em>pos</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#translate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.translate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Translate a compound by a vector.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>compound</strong> : mb.Compound</p>
-<blockquote>
-<div><p>The compound being translated.</p>
-</div></blockquote>
-<p><strong>pos</strong> : np.ndarray, shape=(3,), dtype=float</p>
-<blockquote class="last">
-<div><p>The vector to translate the compound by.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<code class="descclassname">mbuild.coordinate_transform.</code><code class="descname">translate</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.coordinate_transform.translate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="mbuild.coordinate_transform.translate_to">
-<code class="descclassname">mbuild.coordinate_transform.</code><code class="descname">translate_to</code><span class="sig-paren">(</span><em>compound</em>, <em>pos</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#translate_to"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.translate_to" title="Permalink to this definition">¶</a></dt>
-<dd><p>Translate a compound to a coordinate.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>compound</strong> : mb.Compound</p>
-<blockquote>
-<div><p>The compound being translated.</p>
-</div></blockquote>
-<p><strong>pos</strong> : np.ndarray, shape=(3,), dtype=float</p>
-<blockquote class="last">
-<div><p>The coordinate to translate the compound to.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<code class="descclassname">mbuild.coordinate_transform.</code><code class="descname">translate_to</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.coordinate_transform.translate_to" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="mbuild.coordinate_transform.rotate">
-<code class="descclassname">mbuild.coordinate_transform.</code><code class="descname">rotate</code><span class="sig-paren">(</span><em>compound</em>, <em>theta</em>, <em>around</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#rotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.rotate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Rotate a compound around an arbitrary vector.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>compound</strong> : mb.Compound</p>
-<blockquote>
-<div><p>The compound being rotated.</p>
-</div></blockquote>
-<p><strong>theta</strong> : float</p>
-<blockquote>
-<div><p>The angle by which to rotate the compound, in radians.</p>
-</div></blockquote>
-<p><strong>around</strong> : np.ndarray, shape=(3,), dtype=float</p>
-<blockquote class="last">
-<div><p>The vector about which to rotate the compound.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<code class="descclassname">mbuild.coordinate_transform.</code><code class="descname">rotate</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.coordinate_transform.rotate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="mbuild.coordinate_transform.spin">
-<code class="descclassname">mbuild.coordinate_transform.</code><code class="descname">spin</code><span class="sig-paren">(</span><em>compound</em>, <em>theta</em>, <em>around</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#spin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.spin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Rotate a compound in place around an arbitrary vector.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>compound</strong> : mb.Compound</p>
-<blockquote>
-<div><p>The compound being rotated.</p>
-</div></blockquote>
-<p><strong>theta</strong> : float</p>
-<blockquote>
-<div><p>The angle by which to rotate the compound, in radians.</p>
-</div></blockquote>
-<p><strong>around</strong> : np.ndarray, shape=(3,), dtype=float</p>
-<blockquote class="last">
-<div><p>The axis about which to spin the compound.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<code class="descclassname">mbuild.coordinate_transform.</code><code class="descname">spin</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.coordinate_transform.spin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="mbuild.coordinate_transform.x_axis_transform">
