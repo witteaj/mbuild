@@ -172,8 +172,8 @@
 <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="k">import</span> <span class="n">_translate</span><span class="p">,</span> <span class="n">_rotate</span>
 
 <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">coords_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-         <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Load a file into an mBuild Compound.</span>
+         <span class="n">rigid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load a file into an mbuild compound.</span>
 
 <span class="sd">    Files are read using the MDTraj package. Please refer to http://mdtraj.org/</span>
 <span class="sd">    1.8.0/load_functions.html for supported formats.</span>
@@ -191,6 +191,8 @@
 <span class="sd">        Existing compound to load atom and bond information into.</span>
 <span class="sd">    coords_only : bool, optional, default=False</span>
 <span class="sd">        Only load the coordinates into an existing compoint.</span>
+<span class="sd">    rigid : bool, optional</span>
+<span class="sd">        Treat the compound as a rigid body</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -210,6 +212,8 @@
 
     <span class="n">traj</span> <span class="o">=</span> <span class="n">md</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">compound</span><span class="o">.</span><span class="n">from_trajectory</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">frame</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">coords_only</span><span class="o">=</span><span class="n">coords_only</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rigid</span><span class="p">:</span>
+        <span class="n">compound</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">compound</span>
 
 
@@ -290,8 +294,15 @@
 <span class="sd">        compound is the root of the containment hierarchy.</span>
 <span class="sd">    referrers : set</span>
 <span class="sd">        Other compounds that reference this part with labels.</span>
+<span class="sd">    rigid_id : int, default=None</span>
+<span class="sd">        The ID of the rigid body that this Compound belongs to.  Only Particles</span>
+<span class="sd">        (the bottom of the containment hierarchy) can have integer values for</span>
+<span class="sd">        `rigid_id`. Compounds containing rigid particles will always have </span>
+<span class="sd">        `rigid_id == None`. See also `contains_rigid`.</span>
 <span class="sd">    boundingbox</span>
 <span class="sd">    center</span>
+<span class="sd">    contains_rigid</span>
+<span class="sd">    max_rigid_id</span>
 <span class="sd">    n_particles</span>
 <span class="sd">    n_bonds</span>
 <span class="sd">    root</span>
@@ -332,6 +343,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">bond_graph</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">port_particle</span> <span class="o">=</span> <span class="n">port_particle</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rigid_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_contains_rigid</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_if_contains_rigid_bodies</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="c1"># self.add() must be called after labels and children are initialized.</span>
         <span class="k">if</span> <span class="n">subcompounds</span><span class="p">:</span>
@@ -456,8 +471,226 @@
             <span class="k">if</span> <span class="n">particle</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">particle</span></div>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">rigid_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rigid_id</span>
+
+    <span class="nd">@rigid_id</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">rigid_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contains_only_ports</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rigid_id</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">for</span> <span class="n">ancestor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ancestors</span><span class="p">():</span>
+                <span class="n">ancestor</span><span class="o">.</span><span class="n">_check_if_contains_rigid_bodies</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;rigid_id is immutable for Compounds that are &quot;</span>
+                                 <span class="s2">&quot;not at the bottom of the containment hierarchy.&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">contains_rigid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns True if the Compound contains rigid bodies</span>
+
+<span class="sd">        If the Compound contains any particle with a rigid_id != None </span>
+<span class="sd">        then contains_rigid will return True. If the Compound has no</span>
+<span class="sd">        children (i.e. the Compound resides at the bottom of the containment</span>
+<span class="sd">        hierarchy) then contains_rigid will return False.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if the Compound contains any particle with a rigid_id != None</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The private variable &#39;_check_if_contains_rigid_bodies&#39; is used to help</span>
+<span class="sd">        cache the status of &#39;contains_rigid&#39;. If &#39;_check_if_contains_rigid_bodies&#39;</span>
+<span class="sd">        is False, then the rigid body containment of the Compound has not changed,</span>
+<span class="sd">        and the particle tree is not traversed, boosting performance.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_if_contains_rigid_bodies</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_if_contains_rigid_bodies</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">particle</span><span class="o">.</span><span class="n">rigid_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_particles</span><span class="p">()):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_contains_rigid</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_contains_rigid</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contains_rigid</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">max_rigid_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the maximum rigid body ID contained in the Compound.</span>
+
+<span class="sd">        This is usually used by compound.root to determine the maximum</span>
+<span class="sd">        rigid_id in the containment hierarchy.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int or None</span>
+<span class="sd">            The maximum rigid body ID contained in the Compound. If no</span>
+<span class="sd">            rigid body IDs are found, None is returned</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">max</span><span class="p">([</span><span class="n">particle</span><span class="o">.</span><span class="n">rigid_id</span> <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">particle</span><span class="o">.</span><span class="n">rigid_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span>
+
+<div class="viewcode-block" id="Compound.rigid_particles"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.rigid_particles">[docs]</a>    <span class="k">def</span> <span class="nf">rigid_particles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rigid_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate all particles in rigid bodies.</span>
+
+<span class="sd">        If a rigid_id is specified, then this function will only yield particles</span>
+<span class="sd">        with a matching rigid_id.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rigid_id : int, optional</span>
+<span class="sd">            Include only particles with this rigid body ID</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        ------</span>
+<span class="sd">        mb.Compound</span>
+<span class="sd">            The next particle with a rigid_id that is not None, or the next</span>
+<span class="sd">            particle with a matching rigid_id if specified</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">rigid_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">particle</span><span class="o">.</span><span class="n">rigid_id</span> <span class="o">==</span> <span class="n">rigid_id</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">particle</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">particle</span><span class="o">.</span><span class="n">rigid_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">particle</span></div>
+
+<div class="viewcode-block" id="Compound.label_rigid_bodies"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.label_rigid_bodies">[docs]</a>    <span class="k">def</span> <span class="nf">label_rigid_bodies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">discrete_bodies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rigid_particles</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Designate which Compounds should be treated as rigid bodies</span>
+
+<span class="sd">        If no arguments are provided, this function will treat the compound</span>
+<span class="sd">        as a single rigid body by providing all particles in `self` with the</span>
+<span class="sd">        same rigid_id. If `discrete_bodies` is not None, each instance of </span>
+<span class="sd">        a Compound with a name found in `discrete_bodies` will be treated as a </span>
+<span class="sd">        unique rigid body. If `rigid_particles` is not None, only Particles </span>
+<span class="sd">        (Compounds at the bottom of the containment hierarchy) matching this name </span>
+<span class="sd">        will be considered part of the rigid body.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        discrete_bodies : str or list of str, optional, default=None</span>
+<span class="sd">            Name(s) of Compound instances to be treated as unique rigid bodies.</span>
+<span class="sd">            Compound instances matching this (these) name(s) will be provided </span>
+<span class="sd">            with unique rigid_ids</span>
+<span class="sd">        rigid_particles : str or list of str, optional, default=None</span>
+<span class="sd">            Name(s) of Compound instances at the bottom of the containment</span>
+<span class="sd">            hierarchy (Particles) to be included in rigid bodies. Only Particles</span>
+<span class="sd">            matching this (these) name(s) will have their rigid_ids altered to </span>
+<span class="sd">            match the rigid body number.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        Creating a rigid benzene</span>
+
+<span class="sd">        &gt;&gt;&gt; import mbuild as mb</span>
+<span class="sd">        &gt;&gt;&gt; from mbuild.utils.io import get_fn</span>
+<span class="sd">        &gt;&gt;&gt; benzene = mb.load(get_fn(&#39;benzene.mol2&#39;))</span>
+<span class="sd">        &gt;&gt;&gt; benzene.label_rigid_bodies()</span>
+
+<span class="sd">        Creating a semi-rigid benzene, where only the carbons are treated as</span>
+<span class="sd">        a rigid body</span>
+
+<span class="sd">        &gt;&gt;&gt; import mbuild as mb</span>
+<span class="sd">        &gt;&gt;&gt; from mbuild.utils.io import get_fn</span>
+<span class="sd">        &gt;&gt;&gt; benzene = mb.load(get_fn(&#39;benzene.mol2&#39;))</span>
+<span class="sd">        &gt;&gt;&gt; benzene.label_rigid_bodies(rigid_particles=&#39;C&#39;)</span>
+
+<span class="sd">        Create a box of rigid benzenes, where each benzene has a unique rigid</span>
+<span class="sd">        body ID.</span>
+
+<span class="sd">        &gt;&gt;&gt; import mbuild as mb</span>
+<span class="sd">        &gt;&gt;&gt; from mbuild.utils.io import get_fn</span>
+<span class="sd">        &gt;&gt;&gt; benzene = mb.load(get_fn(&#39;benzene.mol2&#39;))</span>
+<span class="sd">        &gt;&gt;&gt; benzene.name = &#39;Benzene&#39;</span>
+<span class="sd">        &gt;&gt;&gt; filled = mb.fill_box(benzene,</span>
+<span class="sd">        ...                      n_compounds=10,</span>
+<span class="sd">        ...                      box=[0, 0, 0, 4, 4, 4])</span>
+<span class="sd">        &gt;&gt;&gt; filled.label_rigid_bodies(distinct_bodies=&#39;Benzene&#39;)</span>
+
+<span class="sd">        Create a box of semi-rigid benzenes, where each benzene has a unique</span>
+<span class="sd">        rigid body ID and only the carbon portion is treated as rigid.</span>
+
+<span class="sd">        &gt;&gt;&gt; import mbuild as mb</span>
+<span class="sd">        &gt;&gt;&gt; from mbuild.utils.io import get_fn</span>
+<span class="sd">        &gt;&gt;&gt; benzene = mb.load(get_fn(&#39;benzene.mol2&#39;))</span>
+<span class="sd">        &gt;&gt;&gt; benzene.name = &#39;Benzene&#39;</span>
+<span class="sd">        &gt;&gt;&gt; filled = mb.fill_box(benzene,</span>
+<span class="sd">        ...                      n_compounds=10,</span>
+<span class="sd">        ...                      box=[0, 0, 0, 4, 4, 4])</span>
+<span class="sd">        &gt;&gt;&gt; filled.label_rigid_bodies(distinct_bodies=&#39;Benzene&#39;,</span>
+<span class="sd">        ...                           rigid_particles=&#39;C&#39;)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">discrete_bodies</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">discrete_bodies</span><span class="p">,</span> <span class="n">string_types</span><span class="p">):</span>
+                <span class="n">discrete_bodies</span> <span class="o">=</span> <span class="p">[</span><span class="n">discrete_bodies</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">rigid_particles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rigid_particles</span><span class="p">,</span> <span class="n">string_types</span><span class="p">):</span>
+                <span class="n">rigid_particles</span> <span class="o">=</span> <span class="p">[</span><span class="n">rigid_particles</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">max_rigid_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rigid_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">max_rigid_id</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> rigid bodies already exist.  Incrementing &#39;rigid_id&#39;&quot;</span>
+                 <span class="s2">&quot;starting from </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rigid_id</span><span class="p">,</span> <span class="n">rigid_id</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rigid_id</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">successor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">successors</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">discrete_bodies</span> <span class="ow">and</span> <span class="n">successor</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">discrete_bodies</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="n">successor</span><span class="o">.</span><span class="n">particles</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">rigid_particles</span> <span class="ow">and</span> <span class="n">particle</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rigid_particles</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">particle</span><span class="o">.</span><span class="n">rigid_id</span> <span class="o">=</span> <span class="n">rigid_id</span>
+            <span class="k">if</span> <span class="n">discrete_bodies</span><span class="p">:</span>
+                <span class="n">rigid_id</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="Compound.unlabel_rigid_bodies"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.unlabel_rigid_bodies">[docs]</a>    <span class="k">def</span> <span class="nf">unlabel_rigid_bodies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove all rigid body labels from the Compound &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_if_contains_rigid_bodies</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">_check_if_contains_rigid_bodies</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">():</span>
+            <span class="n">particle</span><span class="o">.</span><span class="n">rigid_id</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="nf">_increment_rigid_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">increment</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Increment the rigid_id of all rigid Particles in a Compound</span>
+
+<span class="sd">        Adds `increment` to the rigid_id of all Particles in `self` that</span>
+<span class="sd">        already have an integer rigid_id.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">particle</span><span class="o">.</span><span class="n">rigid_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">particle</span><span class="o">.</span><span class="n">rigid_id</span> <span class="o">+=</span> <span class="n">increment</span>
+
+    <span class="k">def</span> <span class="nf">_reorder_rigid_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reorder rigid body IDs ensuring consecutiveness.</span>
+
+<span class="sd">        Primarily used internally to ensure consecutive rigid_ids following </span>
+<span class="sd">        removal of a Compound.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">max_rigid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_rigid_id</span>
+        <span class="n">unique_rigid_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">rigid_id</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rigid_particles</span><span class="p">()]))</span>
+        <span class="n">n_unique_rigid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_rigid_ids</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_rigid</span> <span class="ow">and</span> <span class="n">n_unique_rigid</span> <span class="o">!=</span> <span class="n">max_rigid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">missing_rigid_id</span> <span class="o">=</span> <span class="p">(</span><span class="n">unique_rigid_ids</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">unique_rigid_ids</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">unique_rigid_ids</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">successor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">successors</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">successor</span><span class="o">.</span><span class="n">rigid_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">successor</span><span class="o">.</span><span class="n">rigid_id</span> <span class="o">&gt;</span> <span class="n">missing_rigid_id</span><span class="p">:</span>
+                        <span class="n">successor</span><span class="o">.</span><span class="n">rigid_id</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rigid_id</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rigid_id</span> <span class="o">&gt;</span> <span class="n">missing_rigid_id</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">rigid_id</span> <span class="o">-=</span> <span class="mi">1</span>
+
 <div class="viewcode-block" id="Compound.add"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_child</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">containment</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">inherit_periodicity</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">inherit_periodicity</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reset_rigid_ids</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add a part to the Compound.</span>
 
 <span class="sd">        Note:</span>
@@ -478,19 +711,31 @@
 <span class="sd">        inherit_periodicity : bool, optional, default=True</span>
 <span class="sd">            Replace the periodicity of self with the periodicity of the</span>
 <span class="sd">            Compound being added</span>
+<span class="sd">        reset_rigid_ids : bool, optional, default=True</span>
+<span class="sd">            If the Compound to be added contains rigid bodies, reset the </span>
+<span class="sd">            rigid_ids such that values remain distinct from rigid_ids</span>
+<span class="sd">            already present in `self`. Can be set to False if attempting</span>
+<span class="sd">            to add Compounds to an existing rigid body.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Support batch add via lists, tuples and sets.</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">new_child</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Iterable</span><span class="p">)</span> <span class="ow">and</span>
                 <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_child</span><span class="p">,</span> <span class="n">string_types</span><span class="p">)):</span>
             <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">new_child</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">reset_rigid_ids</span><span class="o">=</span><span class="n">reset_rigid_ids</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_child</span><span class="p">,</span> <span class="n">Compound</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Only objects that inherit from mbuild.Compound &#39;</span>
                              <span class="s1">&#39;can be added to Compounds. You tried to add &#39;</span>
                              <span class="s1">&#39;&quot;</span><span class="si">{}</span><span class="s1">&quot;.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">new_child</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">new_child</span><span class="o">.</span><span class="n">contains_rigid</span> <span class="ow">or</span> <span class="n">new_child</span><span class="o">.</span><span class="n">rigid_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">contains_rigid</span> <span class="ow">and</span> <span class="n">reset_rigid_ids</span><span class="p">:</span>
+                <span class="n">new_child</span><span class="o">.</span><span class="n">_increment_rigid_ids</span><span class="p">(</span><span class="n">increment</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_rigid_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_if_contains_rigid_bodies</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rigid_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rigid_id</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Create children and labels on the first add operation</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -566,13 +811,18 @@
                 <span class="n">removed</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">removed_part</span> <span class="ow">in</span> <span class="n">remove_from_here</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">removed_part</span><span class="o">.</span><span class="n">rigid_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">ancestor</span> <span class="ow">in</span> <span class="n">removed_part</span><span class="o">.</span><span class="n">ancestors</span><span class="p">():</span>
+                    <span class="n">ancestor</span><span class="o">.</span><span class="n">_check_if_contains_rigid_bodies</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">bond_graph</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">bond_graph</span><span class="o">.</span><span class="n">has_node</span><span class="p">(</span><span class="n">removed_part</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">bond_graph</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">removed_part</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_remove_references</span><span class="p">(</span><span class="n">removed_part</span><span class="p">)</span>
 
         <span class="c1"># Remove the part recursively from sub-compounds.</span>
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
-            <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">yet_to_remove</span><span class="p">)</span></div>
+            <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">yet_to_remove</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">contains_rigid</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_reorder_rigid_ids</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">_remove_references</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">removed_part</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Remove labels pointing to this part and vice versa. &quot;&quot;&quot;</span>
@@ -1029,7 +1279,16 @@
                     <span class="n">box</span><span class="o">.</span><span class="n">mins</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">-=</span> <span class="mf">0.25</span>
                     <span class="n">box</span><span class="o">.</span><span class="n">lengths</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.5</span>
 
+        <span class="c1"># Provide a warning if rigid_ids are not sequential from 0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">contains_rigid</span><span class="p">:</span>
+            <span class="n">unique_rigid_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">rigid_id</span> 
+                                           <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rigid_particles</span><span class="p">()]))</span>
+            <span class="k">if</span> <span class="nb">max</span><span class="p">(</span><span class="n">unique_rigid_ids</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_rigid_ids</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unique rigid body IDs are not sequential starting from zero.&quot;</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">saver</span><span class="p">:</span>  <span class="c1"># mBuild supported saver.</span>
+            <span class="k">if</span> <span class="n">extension</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;.hoomdxml&#39;</span><span class="p">]:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;rigid_bodies&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">rigid_id</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">()]</span>
             <span class="n">saver</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="n">structure</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="n">box</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># ParmEd supported saver.</span>
             <span class="n">structure</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
@@ -1540,6 +1799,9 @@
         <span class="n">newone</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">)</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">charge</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">charge</span><span class="p">)</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">port_particle</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port_particle</span><span class="p">)</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">_check_if_contains_rigid_bodies</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_check_if_contains_rigid_bodies</span><span class="p">)</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">_contains_rigid</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_contains_rigid</span><span class="p">)</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">_rigid_id</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rigid_id</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">):</span>
             <span class="n">newone</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
 

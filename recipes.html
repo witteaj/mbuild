@@ -198,7 +198,7 @@ surface will be filled with <cite>chain</cite>.</p>
 </table>
 <dl class="method">
 <dt id="mbuild.recipes.monolayer.Monolayer.add">
-<code class="descname">add</code><span class="sig-paren">(</span><em>new_child</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.add" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add</code><span class="sig-paren">(</span><em>new_child</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em>, <em>reset_rigid_ids=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <dl class="docutils">
 <dt>Note:</dt>
@@ -227,9 +227,16 @@ instead be used to add a reference to the part to self.labels. See
 <div><p>Replace the label if it already exists.</p>
 </div></blockquote>
 <p><strong>inherit_periodicity</strong> : bool, optional, default=True</p>
-<blockquote class="last">
+<blockquote>
 <div><p>Replace the periodicity of self with the periodicity of the
 Compound being added</p>
+</div></blockquote>
+<p><strong>reset_rigid_ids</strong> : bool, optional, default=True</p>
+<blockquote class="last">
+<div><p>If the Compound to be added contains rigid bodies, reset the 
+rigid_ids such that values remain distinct from rigid_ids
+already present in <cite>self</cite>. Can be set to False if attempting
+to add Compounds to an existing rigid body.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -352,6 +359,33 @@ Compound being added</p>
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="mbuild.recipes.monolayer.Monolayer.contains_rigid">
+<code class="descname">contains_rigid</code><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.contains_rigid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the Compound contains rigid bodies</p>
+<p>If the Compound contains any particle with a rigid_id != None 
+then contains_rigid will return True. If the Compound has no
+children (i.e. the Compound resides at the bottom of the containment
+hierarchy) then contains_rigid will return False.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">bool</p>
+<blockquote class="last">
+<div><p>True if the Compound contains any particle with a rigid_id != None</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>The private variable &#8216;_check_if_contains_rigid_bodies&#8217; is used to help
+cache the status of &#8216;contains_rigid&#8217;. If &#8216;_check_if_contains_rigid_bodies&#8217;
+is False, then the rigid body containment of the Compound has not changed,
+and the particle tree is not traversed, boosting performance.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="mbuild.recipes.monolayer.Monolayer.from_parmed">
 <code class="descname">from_parmed</code><span class="sig-paren">(</span><em>structure</em>, <em>coords_only=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.from_parmed" title="Permalink to this definition">¶</a></dt>
@@ -427,6 +461,102 @@ and sub-sub-compounds for every residue.</p>
 <p><strong>dmax</strong> : float</p>
 <blockquote class="last">
 <div><p>The maximum distance between Particles for considering a bond</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.monolayer.Monolayer.label_rigid_bodies">
+<code class="descname">label_rigid_bodies</code><span class="sig-paren">(</span><em>discrete_bodies=None</em>, <em>rigid_particles=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.label_rigid_bodies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Designate which Compounds should be treated as rigid bodies</p>
+<p>If no arguments are provided, this function will treat the compound
+as a single rigid body by providing all particles in <cite>self</cite> with the
+same rigid_id. If <cite>discrete_bodies</cite> is not None, each instance of 
+a Compound with a name found in <cite>discrete_bodies</cite> will be treated as a 
+unique rigid body. If <cite>rigid_particles</cite> is not None, only Particles 
+(Compounds at the bottom of the containment hierarchy) matching this name 
+will be considered part of the rigid body.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>discrete_bodies</strong> : str or list of str, optional, default=None</p>
+<blockquote>
+<div><p>Name(s) of Compound instances to be treated as unique rigid bodies.
+Compound instances matching this (these) name(s) will be provided 
+with unique rigid_ids</p>
+</div></blockquote>
+<p><strong>rigid_particles</strong> : str or list of str, optional, default=None</p>
+<blockquote class="last">
+<div><p>Name(s) of Compound instances at the bottom of the containment
+hierarchy (Particles) to be included in rigid bodies. Only Particles
+matching this (these) name(s) will have their rigid_ids altered to 
+match the rigid body number.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>Creating a rigid benzene</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Creating a semi-rigid benzene, where only the carbons are treated as
+a rigid body</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">(</span><span class="n">rigid_particles</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create a box of rigid benzenes, where each benzene has a unique rigid
+body ID.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Benzene&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">fill_box</span><span class="p">(</span><span class="n">benzene</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">n_compounds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">(</span><span class="n">distinct_bodies</span><span class="o">=</span><span class="s1">&#39;Benzene&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create a box of semi-rigid benzenes, where each benzene has a unique
+rigid body ID and only the carbon portion is treated as rigid.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Benzene&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">fill_box</span><span class="p">(</span><span class="n">benzene</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">n_compounds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">(</span><span class="n">distinct_bodies</span><span class="o">=</span><span class="s1">&#39;Benzene&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                          <span class="n">rigid_particles</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.recipes.monolayer.Monolayer.max_rigid_id">
+<code class="descname">max_rigid_id</code><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.max_rigid_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the maximum rigid body ID contained in the Compound.</p>
+<p>This is usually used by compound.root to determine the maximum
+rigid_id in the containment hierarchy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">int or None</p>
+<blockquote class="last">
+<div><p>The maximum rigid body ID contained in the Compound. If no
+rigid body IDs are found, None is returned</p>
 </div></blockquote>
 </td>
 </tr>
@@ -645,6 +775,33 @@ provided, this defaults to all Particles in self</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>particle_pair</strong> : indexable object, length=2, dtype=mb.Compound</p>
 <blockquote class="last">
 <div><p>The pair of Particles to remove the bond between</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.monolayer.Monolayer.rigid_particles">
+<code class="descname">rigid_particles</code><span class="sig-paren">(</span><em>rigid_id=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.rigid_particles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all particles in rigid bodies.</p>
+<p>If a rigid_id is specified, then this function will only yield particles
+with a matching rigid_id.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rigid_id</strong> : int, optional</p>
+<blockquote>
+<div><p>Include only particles with this rigid body ID</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first">mb.Compound</p>
+<blockquote class="last">
+<div><p>The next particle with a rigid_id that is not None, or the next
+particle with a matching rigid_id if specified</p>
 </div></blockquote>
 </td>
 </tr>
@@ -914,6 +1071,12 @@ for converting mass values to reduced units.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="mbuild.recipes.monolayer.Monolayer.unlabel_rigid_bodies">
+<code class="descname">unlabel_rigid_bodies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.unlabel_rigid_bodies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all rigid body labels from the Compound</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="mbuild.recipes.monolayer.Monolayer.update_coordinates">
 <code class="descname">update_coordinates</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.update_coordinates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the coordinates of this Compound from a file.</p>
@@ -1031,7 +1194,7 @@ monomers in the order assigned by the built-in <cite>sorted()</cite>.</p>
 </table>
 <dl class="method">
 <dt id="mbuild.recipes.polymer.Polymer.add">
-<code class="descname">add</code><span class="sig-paren">(</span><em>new_child</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.add" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add</code><span class="sig-paren">(</span><em>new_child</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em>, <em>reset_rigid_ids=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <dl class="docutils">
 <dt>Note:</dt>
@@ -1060,9 +1223,16 @@ instead be used to add a reference to the part to self.labels. See
 <div><p>Replace the label if it already exists.</p>
 </div></blockquote>
 <p><strong>inherit_periodicity</strong> : bool, optional, default=True</p>
-<blockquote class="last">
+<blockquote>
 <div><p>Replace the periodicity of self with the periodicity of the
 Compound being added</p>
+</div></blockquote>
+<p><strong>reset_rigid_ids</strong> : bool, optional, default=True</p>
+<blockquote class="last">
+<div><p>If the Compound to be added contains rigid bodies, reset the 
+rigid_ids such that values remain distinct from rigid_ids
+already present in <cite>self</cite>. Can be set to False if attempting
+to add Compounds to an existing rigid body.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -1185,6 +1355,33 @@ Compound being added</p>
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="mbuild.recipes.polymer.Polymer.contains_rigid">
+<code class="descname">contains_rigid</code><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.contains_rigid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the Compound contains rigid bodies</p>
+<p>If the Compound contains any particle with a rigid_id != None 
+then contains_rigid will return True. If the Compound has no
+children (i.e. the Compound resides at the bottom of the containment
+hierarchy) then contains_rigid will return False.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">bool</p>
+<blockquote class="last">
+<div><p>True if the Compound contains any particle with a rigid_id != None</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>The private variable &#8216;_check_if_contains_rigid_bodies&#8217; is used to help
+cache the status of &#8216;contains_rigid&#8217;. If &#8216;_check_if_contains_rigid_bodies&#8217;
+is False, then the rigid body containment of the Compound has not changed,
+and the particle tree is not traversed, boosting performance.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="mbuild.recipes.polymer.Polymer.from_parmed">
 <code class="descname">from_parmed</code><span class="sig-paren">(</span><em>structure</em>, <em>coords_only=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.from_parmed" title="Permalink to this definition">¶</a></dt>
@@ -1260,6 +1457,102 @@ and sub-sub-compounds for every residue.</p>
 <p><strong>dmax</strong> : float</p>
 <blockquote class="last">
 <div><p>The maximum distance between Particles for considering a bond</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.polymer.Polymer.label_rigid_bodies">
+<code class="descname">label_rigid_bodies</code><span class="sig-paren">(</span><em>discrete_bodies=None</em>, <em>rigid_particles=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.label_rigid_bodies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Designate which Compounds should be treated as rigid bodies</p>
+<p>If no arguments are provided, this function will treat the compound
+as a single rigid body by providing all particles in <cite>self</cite> with the
+same rigid_id. If <cite>discrete_bodies</cite> is not None, each instance of 
+a Compound with a name found in <cite>discrete_bodies</cite> will be treated as a 
+unique rigid body. If <cite>rigid_particles</cite> is not None, only Particles 
+(Compounds at the bottom of the containment hierarchy) matching this name 
+will be considered part of the rigid body.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>discrete_bodies</strong> : str or list of str, optional, default=None</p>
+<blockquote>
+<div><p>Name(s) of Compound instances to be treated as unique rigid bodies.
+Compound instances matching this (these) name(s) will be provided 
+with unique rigid_ids</p>
+</div></blockquote>
+<p><strong>rigid_particles</strong> : str or list of str, optional, default=None</p>
+<blockquote class="last">
+<div><p>Name(s) of Compound instances at the bottom of the containment
+hierarchy (Particles) to be included in rigid bodies. Only Particles
+matching this (these) name(s) will have their rigid_ids altered to 
+match the rigid body number.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>Creating a rigid benzene</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Creating a semi-rigid benzene, where only the carbons are treated as
+a rigid body</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">(</span><span class="n">rigid_particles</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create a box of rigid benzenes, where each benzene has a unique rigid
+body ID.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Benzene&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">fill_box</span><span class="p">(</span><span class="n">benzene</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">n_compounds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">(</span><span class="n">distinct_bodies</span><span class="o">=</span><span class="s1">&#39;Benzene&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create a box of semi-rigid benzenes, where each benzene has a unique
+rigid body ID and only the carbon portion is treated as rigid.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Benzene&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">fill_box</span><span class="p">(</span><span class="n">benzene</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">n_compounds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">(</span><span class="n">distinct_bodies</span><span class="o">=</span><span class="s1">&#39;Benzene&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                          <span class="n">rigid_particles</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.recipes.polymer.Polymer.max_rigid_id">
+<code class="descname">max_rigid_id</code><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.max_rigid_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the maximum rigid body ID contained in the Compound.</p>
+<p>This is usually used by compound.root to determine the maximum
+rigid_id in the containment hierarchy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">int or None</p>
+<blockquote class="last">
+<div><p>The maximum rigid body ID contained in the Compound. If no
+rigid body IDs are found, None is returned</p>
 </div></blockquote>
 </td>
 </tr>
@@ -1478,6 +1771,33 @@ provided, this defaults to all Particles in self</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>particle_pair</strong> : indexable object, length=2, dtype=mb.Compound</p>
 <blockquote class="last">
 <div><p>The pair of Particles to remove the bond between</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.polymer.Polymer.rigid_particles">
+<code class="descname">rigid_particles</code><span class="sig-paren">(</span><em>rigid_id=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.rigid_particles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all particles in rigid bodies.</p>
+<p>If a rigid_id is specified, then this function will only yield particles
+with a matching rigid_id.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rigid_id</strong> : int, optional</p>
+<blockquote>
+<div><p>Include only particles with this rigid body ID</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first">mb.Compound</p>
+<blockquote class="last">
+<div><p>The next particle with a rigid_id that is not None, or the next
+particle with a matching rigid_id if specified</p>
 </div></blockquote>
 </td>
 </tr>
@@ -1747,6 +2067,12 @@ for converting mass values to reduced units.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="mbuild.recipes.polymer.Polymer.unlabel_rigid_bodies">
+<code class="descname">unlabel_rigid_bodies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.unlabel_rigid_bodies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all rigid body labels from the Compound</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="mbuild.recipes.polymer.Polymer.update_coordinates">
 <code class="descname">update_coordinates</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.update_coordinates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the coordinates of this Compound from a file.</p>
@@ -1860,7 +2186,7 @@ conditions.</p>
 </table>
 <dl class="method">
 <dt id="mbuild.recipes.tiled_compound.TiledCompound.add">
-<code class="descname">add</code><span class="sig-paren">(</span><em>new_child</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.add" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add</code><span class="sig-paren">(</span><em>new_child</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em>, <em>reset_rigid_ids=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <dl class="docutils">
 <dt>Note:</dt>
@@ -1889,9 +2215,16 @@ instead be used to add a reference to the part to self.labels. See
 <div><p>Replace the label if it already exists.</p>
 </div></blockquote>
 <p><strong>inherit_periodicity</strong> : bool, optional, default=True</p>
-<blockquote class="last">
+<blockquote>
 <div><p>Replace the periodicity of self with the periodicity of the
 Compound being added</p>
+</div></blockquote>
+<p><strong>reset_rigid_ids</strong> : bool, optional, default=True</p>
+<blockquote class="last">
+<div><p>If the Compound to be added contains rigid bodies, reset the 
+rigid_ids such that values remain distinct from rigid_ids
+already present in <cite>self</cite>. Can be set to False if attempting
+to add Compounds to an existing rigid body.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -2014,6 +2347,33 @@ Compound being added</p>
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="mbuild.recipes.tiled_compound.TiledCompound.contains_rigid">
+<code class="descname">contains_rigid</code><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.contains_rigid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the Compound contains rigid bodies</p>
+<p>If the Compound contains any particle with a rigid_id != None 
+then contains_rigid will return True. If the Compound has no
+children (i.e. the Compound resides at the bottom of the containment
+hierarchy) then contains_rigid will return False.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">bool</p>
+<blockquote class="last">
+<div><p>True if the Compound contains any particle with a rigid_id != None</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>The private variable &#8216;_check_if_contains_rigid_bodies&#8217; is used to help
+cache the status of &#8216;contains_rigid&#8217;. If &#8216;_check_if_contains_rigid_bodies&#8217;
+is False, then the rigid body containment of the Compound has not changed,
+and the particle tree is not traversed, boosting performance.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="mbuild.recipes.tiled_compound.TiledCompound.from_parmed">
 <code class="descname">from_parmed</code><span class="sig-paren">(</span><em>structure</em>, <em>coords_only=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.from_parmed" title="Permalink to this definition">¶</a></dt>
@@ -2089,6 +2449,102 @@ and sub-sub-compounds for every residue.</p>
 <p><strong>dmax</strong> : float</p>
 <blockquote class="last">
 <div><p>The maximum distance between Particles for considering a bond</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.tiled_compound.TiledCompound.label_rigid_bodies">
+<code class="descname">label_rigid_bodies</code><span class="sig-paren">(</span><em>discrete_bodies=None</em>, <em>rigid_particles=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.label_rigid_bodies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Designate which Compounds should be treated as rigid bodies</p>
+<p>If no arguments are provided, this function will treat the compound
+as a single rigid body by providing all particles in <cite>self</cite> with the
+same rigid_id. If <cite>discrete_bodies</cite> is not None, each instance of 
+a Compound with a name found in <cite>discrete_bodies</cite> will be treated as a 
+unique rigid body. If <cite>rigid_particles</cite> is not None, only Particles 
+(Compounds at the bottom of the containment hierarchy) matching this name 
+will be considered part of the rigid body.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>discrete_bodies</strong> : str or list of str, optional, default=None</p>
+<blockquote>
+<div><p>Name(s) of Compound instances to be treated as unique rigid bodies.
+Compound instances matching this (these) name(s) will be provided 
+with unique rigid_ids</p>
+</div></blockquote>
+<p><strong>rigid_particles</strong> : str or list of str, optional, default=None</p>
+<blockquote class="last">
+<div><p>Name(s) of Compound instances at the bottom of the containment
+hierarchy (Particles) to be included in rigid bodies. Only Particles
+matching this (these) name(s) will have their rigid_ids altered to 
+match the rigid body number.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>Creating a rigid benzene</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Creating a semi-rigid benzene, where only the carbons are treated as
+a rigid body</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">(</span><span class="n">rigid_particles</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create a box of rigid benzenes, where each benzene has a unique rigid
+body ID.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Benzene&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">fill_box</span><span class="p">(</span><span class="n">benzene</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">n_compounds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">(</span><span class="n">distinct_bodies</span><span class="o">=</span><span class="s1">&#39;Benzene&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create a box of semi-rigid benzenes, where each benzene has a unique
+rigid body ID and only the carbon portion is treated as rigid.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Benzene&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">fill_box</span><span class="p">(</span><span class="n">benzene</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">n_compounds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">(</span><span class="n">distinct_bodies</span><span class="o">=</span><span class="s1">&#39;Benzene&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                          <span class="n">rigid_particles</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.recipes.tiled_compound.TiledCompound.max_rigid_id">
+<code class="descname">max_rigid_id</code><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.max_rigid_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the maximum rigid body ID contained in the Compound.</p>
+<p>This is usually used by compound.root to determine the maximum
+rigid_id in the containment hierarchy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">int or None</p>
+<blockquote class="last">
+<div><p>The maximum rigid body ID contained in the Compound. If no
+rigid body IDs are found, None is returned</p>
 </div></blockquote>
 </td>
 </tr>
@@ -2307,6 +2763,33 @@ provided, this defaults to all Particles in self</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>particle_pair</strong> : indexable object, length=2, dtype=mb.Compound</p>
 <blockquote class="last">
 <div><p>The pair of Particles to remove the bond between</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.tiled_compound.TiledCompound.rigid_particles">
+<code class="descname">rigid_particles</code><span class="sig-paren">(</span><em>rigid_id=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.rigid_particles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all particles in rigid bodies.</p>
+<p>If a rigid_id is specified, then this function will only yield particles
+with a matching rigid_id.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rigid_id</strong> : int, optional</p>
+<blockquote>
+<div><p>Include only particles with this rigid body ID</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first">mb.Compound</p>
+<blockquote class="last">
+<div><p>The next particle with a rigid_id that is not None, or the next
+particle with a matching rigid_id if specified</p>
 </div></blockquote>
 </td>
 </tr>
@@ -2576,6 +3059,12 @@ for converting mass values to reduced units.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="mbuild.recipes.tiled_compound.TiledCompound.unlabel_rigid_bodies">
+<code class="descname">unlabel_rigid_bodies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.unlabel_rigid_bodies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all rigid body labels from the Compound</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="mbuild.recipes.tiled_compound.TiledCompound.update_coordinates">
 <code class="descname">update_coordinates</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.update_coordinates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the coordinates of this Compound from a file.</p>
@@ -2713,7 +3202,7 @@ Zhuravlev model.&#8221; (2000) Colloids Surf., A. 10, 1-38</td></tr>
 </table>
 <dl class="method">
 <dt id="mbuild.recipes.silica_interface.SilicaInterface.add">
-<code class="descname">add</code><span class="sig-paren">(</span><em>new_child</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.add" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add</code><span class="sig-paren">(</span><em>new_child</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em>, <em>reset_rigid_ids=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <dl class="docutils">
 <dt>Note:</dt>
@@ -2742,9 +3231,16 @@ instead be used to add a reference to the part to self.labels. See
 <div><p>Replace the label if it already exists.</p>
 </div></blockquote>
 <p><strong>inherit_periodicity</strong> : bool, optional, default=True</p>
-<blockquote class="last">
+<blockquote>
 <div><p>Replace the periodicity of self with the periodicity of the
 Compound being added</p>
+</div></blockquote>
+<p><strong>reset_rigid_ids</strong> : bool, optional, default=True</p>
+<blockquote class="last">
+<div><p>If the Compound to be added contains rigid bodies, reset the 
+rigid_ids such that values remain distinct from rigid_ids
+already present in <cite>self</cite>. Can be set to False if attempting
+to add Compounds to an existing rigid body.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -2867,6 +3363,33 @@ Compound being added</p>
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.contains_rigid">
+<code class="descname">contains_rigid</code><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.contains_rigid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the Compound contains rigid bodies</p>
+<p>If the Compound contains any particle with a rigid_id != None 
+then contains_rigid will return True. If the Compound has no
+children (i.e. the Compound resides at the bottom of the containment
+hierarchy) then contains_rigid will return False.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">bool</p>
+<blockquote class="last">
+<div><p>True if the Compound contains any particle with a rigid_id != None</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>The private variable &#8216;_check_if_contains_rigid_bodies&#8217; is used to help
+cache the status of &#8216;contains_rigid&#8217;. If &#8216;_check_if_contains_rigid_bodies&#8217;
+is False, then the rigid body containment of the Compound has not changed,
+and the particle tree is not traversed, boosting performance.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="mbuild.recipes.silica_interface.SilicaInterface.from_parmed">
 <code class="descname">from_parmed</code><span class="sig-paren">(</span><em>structure</em>, <em>coords_only=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.from_parmed" title="Permalink to this definition">¶</a></dt>
@@ -2942,6 +3465,102 @@ and sub-sub-compounds for every residue.</p>
 <p><strong>dmax</strong> : float</p>
 <blockquote class="last">
 <div><p>The maximum distance between Particles for considering a bond</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.label_rigid_bodies">
+<code class="descname">label_rigid_bodies</code><span class="sig-paren">(</span><em>discrete_bodies=None</em>, <em>rigid_particles=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.label_rigid_bodies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Designate which Compounds should be treated as rigid bodies</p>
+<p>If no arguments are provided, this function will treat the compound
+as a single rigid body by providing all particles in <cite>self</cite> with the
+same rigid_id. If <cite>discrete_bodies</cite> is not None, each instance of 
+a Compound with a name found in <cite>discrete_bodies</cite> will be treated as a 
+unique rigid body. If <cite>rigid_particles</cite> is not None, only Particles 
+(Compounds at the bottom of the containment hierarchy) matching this name 
+will be considered part of the rigid body.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>discrete_bodies</strong> : str or list of str, optional, default=None</p>
+<blockquote>
+<div><p>Name(s) of Compound instances to be treated as unique rigid bodies.
+Compound instances matching this (these) name(s) will be provided 
+with unique rigid_ids</p>
+</div></blockquote>
+<p><strong>rigid_particles</strong> : str or list of str, optional, default=None</p>
+<blockquote class="last">
+<div><p>Name(s) of Compound instances at the bottom of the containment
+hierarchy (Particles) to be included in rigid bodies. Only Particles
+matching this (these) name(s) will have their rigid_ids altered to 
+match the rigid body number.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>Creating a rigid benzene</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Creating a semi-rigid benzene, where only the carbons are treated as
+a rigid body</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">(</span><span class="n">rigid_particles</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create a box of rigid benzenes, where each benzene has a unique rigid
+body ID.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Benzene&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">fill_box</span><span class="p">(</span><span class="n">benzene</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">n_compounds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">(</span><span class="n">distinct_bodies</span><span class="o">=</span><span class="s1">&#39;Benzene&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create a box of semi-rigid benzenes, where each benzene has a unique
+rigid body ID and only the carbon portion is treated as rigid.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mbuild</span> <span class="k">as</span> <span class="nn">mb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">get_fn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s1">&#39;benzene.mol2&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">benzene</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Benzene&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">fill_box</span><span class="p">(</span><span class="n">benzene</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">n_compounds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filled</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">(</span><span class="n">distinct_bodies</span><span class="o">=</span><span class="s1">&#39;Benzene&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                          <span class="n">rigid_particles</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.max_rigid_id">
+<code class="descname">max_rigid_id</code><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.max_rigid_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the maximum rigid body ID contained in the Compound.</p>
+<p>This is usually used by compound.root to determine the maximum
+rigid_id in the containment hierarchy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">int or None</p>
+<blockquote class="last">
+<div><p>The maximum rigid body ID contained in the Compound. If no
+rigid body IDs are found, None is returned</p>
 </div></blockquote>
 </td>
 </tr>
@@ -3160,6 +3779,33 @@ provided, this defaults to all Particles in self</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>particle_pair</strong> : indexable object, length=2, dtype=mb.Compound</p>
 <blockquote class="last">
 <div><p>The pair of Particles to remove the bond between</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.rigid_particles">
+<code class="descname">rigid_particles</code><span class="sig-paren">(</span><em>rigid_id=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.rigid_particles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all particles in rigid bodies.</p>
+<p>If a rigid_id is specified, then this function will only yield particles
+with a matching rigid_id.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rigid_id</strong> : int, optional</p>
+<blockquote>
+<div><p>Include only particles with this rigid body ID</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first">mb.Compound</p>
+<blockquote class="last">
+<div><p>The next particle with a rigid_id that is not None, or the next
+particle with a matching rigid_id if specified</p>
 </div></blockquote>
 </td>
 </tr>
@@ -3426,6 +4072,12 @@ for converting mass values to reduced units.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.recipes.silica_interface.SilicaInterface.unlabel_rigid_bodies">
+<code class="descname">unlabel_rigid_bodies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.unlabel_rigid_bodies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all rigid body labels from the Compound</p>
 </dd></dl>
 
 <dl class="method">
