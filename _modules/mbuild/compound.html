@@ -152,6 +152,7 @@
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 
 <span class="kn">import</span> <span class="nn">mdtraj</span> <span class="k">as</span> <span class="nn">md</span>
@@ -163,6 +164,7 @@
 
 <span class="kn">from</span> <span class="nn">mbuild.bond_graph</span> <span class="k">import</span> <span class="n">BondGraph</span>
 <span class="kn">from</span> <span class="nn">mbuild.box</span> <span class="k">import</span> <span class="n">Box</span>
+<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="k">import</span> <span class="n">translate</span>
 <span class="kn">from</span> <span class="nn">mbuild.exceptions</span> <span class="k">import</span> <span class="n">MBuildError</span>
 <span class="kn">from</span> <span class="nn">mbuild.formats.hoomdxml</span> <span class="k">import</span> <span class="n">write_hoomdxml</span>
 <span class="kn">from</span> <span class="nn">mbuild.formats.lammpsdata</span> <span class="k">import</span> <span class="n">write_lammpsdata</span>
@@ -868,6 +870,19 @@
         <span class="k">return</span> <span class="p">[</span><span class="n">port</span> <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">Port</span><span class="p">)]</span></div>
 
+<div class="viewcode-block" id="Compound.all_ports"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.all_ports">[docs]</a>    <span class="k">def</span> <span class="nf">all_ports</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return all Ports referenced by this Compound and its successors</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of mb.Compound</span>
+<span class="sd">            A list of all Ports referenced by this Compound and its successors</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">mbuild.port</span> <span class="k">import</span> <span class="n">Port</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">successor</span> <span class="k">for</span> <span class="n">successor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">successors</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">successor</span><span class="p">,</span> <span class="n">Port</span><span class="p">)]</span></div>
+
 <div class="viewcode-block" id="Compound.available_ports"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.available_ports">[docs]</a>    <span class="k">def</span> <span class="nf">available_ports</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return all unoccupied Ports referenced by this Compound.</span>
 
@@ -1177,7 +1192,7 @@
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Visualization is only supported in Jupyter &#39;</span>
                                <span class="s1">&#39;Notebooks.&#39;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Compound.update_coordinates"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.update_coordinates">[docs]</a>    <span class="k">def</span> <span class="nf">update_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.update_coordinates"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.update_coordinates">[docs]</a>    <span class="k">def</span> <span class="nf">update_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">update_port_locations</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update the coordinates of this Compound from a file.</span>
 
 <span class="sd">        Parameters</span>
@@ -1185,13 +1200,171 @@
 <span class="sd">        filename : str</span>
 <span class="sd">            Name of file from which to load coordinates. Supported file types</span>
 <span class="sd">            are the same as those supported by load()</span>
+<span class="sd">        update_port_locations : bool, optional, default=True</span>
+<span class="sd">            Update the locations of Ports so that they are shifted along with</span>
+<span class="sd">            their anchor particles.  Note: This conserves the location of</span>
+<span class="sd">            Ports with respect to the anchor Particle, but does not conserve</span>
+<span class="sd">            the orientation of Ports with respect to the molecule as a whole.</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        load : Load coordinates from a file</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="n">update_port_locations</span><span class="p">:</span>
+            <span class="n">xyz_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xyz</span>
+            <span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_port_locations</span><span class="p">(</span><span class="n">xyz_init</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_update_port_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial_coordinates</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adjust port locations after particles have moved</span>
+
+<span class="sd">        Compares the locations of Particles between &#39;self&#39; and an array of</span>
+<span class="sd">        reference coordinates.  Shifts Ports in accordance with how far anchors </span>
+<span class="sd">        have been moved.  This conserves the location of Ports with respect to </span>
+<span class="sd">        their anchor Particles, but does not conserve the orientation of Ports </span>
+<span class="sd">        with respect to the molecule as a whole.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        initial_coordinates : np.ndarray, shape=(n, 3), dtype=float</span>
+<span class="sd">            Reference coordinates to use for comparing how far anchor Particles</span>
+<span class="sd">            have shifted.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">particles</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_ports</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">port</span><span class="o">.</span><span class="n">anchor</span><span class="p">:</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">port</span><span class="o">.</span><span class="n">anchor</span><span class="p">)</span>
+                <span class="n">shift</span> <span class="o">=</span> <span class="n">particles</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span> <span class="o">-</span> <span class="n">initial_coordinates</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+                <span class="n">port</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">shift</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_kick</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Slightly adjust all coordinates in a Compound</span>
+
+<span class="sd">        Provides a slight adjustment to coordinates to kick them out of local </span>
+<span class="sd">        energy minima.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xyz_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xyz</span>
+        <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">():</span>
+            <span class="n">particle</span><span class="o">.</span><span class="n">pos</span> <span class="o">+=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_port_locations</span><span class="p">(</span><span class="n">xyz_init</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Compound.energy_minimization"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.energy_minimization">[docs]</a>    <span class="k">def</span> <span class="nf">energy_minimization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">2500</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s1">&#39;cg&#39;</span><span class="p">,</span>
+                            <span class="n">forcefield</span><span class="o">=</span><span class="s1">&#39;UFF&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform an energy minimization on a Compound</span>
+
+<span class="sd">        Utilizes Open Babel (http://openbabel.org/docs/dev/) to perform an</span>
+<span class="sd">        energy minimization/geometry optimization on a Compound by applying</span>
+<span class="sd">        a generic force field.</span>
+
+<span class="sd">        This function is primarily intended to be used on smaller components,</span>
+<span class="sd">        with sizes on the order of 10&#39;s to 100&#39;s of particles, as the energy</span>
+<span class="sd">        minimization scales poorly with the number of particles.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        steps : int, optionl, default=1000</span>
+<span class="sd">            The number of optimization iterations</span>
+<span class="sd">        algorithm : str, optional, default=&#39;cg&#39;</span>
+<span class="sd">            The energy minimization algorithm.  Valid options are &#39;steep&#39;, </span>
+<span class="sd">            &#39;cg&#39;, and &#39;md&#39;, corresponding to steepest descent, conjugate</span>
+<span class="sd">            gradient, and equilibrium molecular dynamics respectively.</span>
+<span class="sd">        forcefield : str, optional, default=&#39;UFF&#39;</span>
+<span class="sd">            The generic force field to apply to the Compound for minimization.</span>
+<span class="sd">            Valid options are &#39;MMFF94&#39;, &#39;MMFF94s&#39;, &#39;&#39;UFF&#39;, &#39;GAFF&#39;, and &#39;Ghemical&#39;.</span>
+<span class="sd">            Please refer to the Open Babel documentation (http://open-babel.</span>
+<span class="sd">            readthedocs.io/en/latest/Forcefields/Overview.html) when considering </span>
+<span class="sd">            your choice of force field.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        .. [1] O&#39;Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.; </span>
+<span class="sd">               Vandermeersch, T.; Hutchison, G.R. &quot;Open Babel: An open</span>
+<span class="sd">               chemical toolbox.&quot; (2011) J. Cheminf. 3, 33</span>
+<span class="sd">        .. [2] Open Babel, version X.X.X http://openbabel.org, (installed</span>
+<span class="sd">               Month Year)</span>
+
+<span class="sd">        If using the &#39;MMFF94&#39; force field please also cite the following:</span>
+<span class="sd">        .. [3] T.A. Halgren, &quot;Merck molecular force field. I. Basis, form,</span>
+<span class="sd">               scope, parameterization, and performance of MMFF94.&quot; (1996)</span>
+<span class="sd">               J. Comput. Chem. 17, 490-519</span>
+<span class="sd">        .. [4] T.A. Halgren, &quot;Merck molecular force field. II. MMFF94 van der</span>
+<span class="sd">               Waals and electrostatic parameters for intermolecular</span>
+<span class="sd">               interactions.&quot; (1996) J. Comput. Chem. 17, 520-552</span>
+<span class="sd">        .. [5] T.A. Halgren, &quot;Merck molecular force field. III. Molecular</span>
+<span class="sd">               geometries and vibrational frequencies for MMFF94.&quot; (1996)</span>
+<span class="sd">               J. Comput. Chem. 17, 553-586</span>
+<span class="sd">        .. [6] T.A. Halgren and R.B. Nachbar, &quot;Merck molecular force field.</span>
+<span class="sd">               IV. Conformational energies and geometries for MMFF94.&quot; (1996)</span>
+<span class="sd">               J. Comput. Chem. 17, 587-615</span>
+<span class="sd">        .. [7] T.A. Halgren, &quot;Merck molecular force field. V. Extension of</span>
+<span class="sd">               MMFF94 using experimental data, additional computational data,</span>
+<span class="sd">               and empirical rules.&quot; (1996) J. Comput. Chem. 17, 616-641</span>
+
+<span class="sd">        If using the &#39;MMFF94s&#39; force field please cite the above along with:</span>
+<span class="sd">        .. [8] T.A. Halgren, &quot;MMFF VI. MMFF94s option for energy minimization</span>
+<span class="sd">               studies.&quot; (1999) J. Comput. Chem. 20, 720-729</span>
+
+<span class="sd">        If using the &#39;UFF&#39; force field please cite the following:</span>
+<span class="sd">        .. [3] Rappe, A.K., Casewit, C.J., Colwell, K.S., Goddard, W.A. III,</span>
+<span class="sd">               Skiff, W.M. &quot;UFF, a full periodic table force field for</span>
+<span class="sd">               molecular mechanics and molecular dynamics simulations.&quot; (1992)</span>
+<span class="sd">               J. Am. Chem. Soc. 114, 10024-10039</span>
+
+<span class="sd">        If using the &#39;GAFF&#39; force field please cite the following:</span>
+<span class="sd">        .. [3] Wang, J., Wolf, R.M., Caldwell, J.W., Kollman, P.A., Case, D.A.</span>
+<span class="sd">               &quot;Development and testing of a general AMBER force field&quot; (2004)</span>
+<span class="sd">               J. Comput. Chem. 25, 1157-1174</span>
+
+<span class="sd">        If using the &#39;Ghemical&#39; force field please cite the following:</span>
+<span class="sd">        .. [3] T. Hassinen and M. Perakyla, &quot;New energy terms for reduced </span>
+<span class="sd">               protein models implemented in an off-lattice force field&quot; (2001)</span>
+<span class="sd">               J. Comput. Chem. 22, 1229-1242</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">openbabel</span> <span class="o">=</span> <span class="n">import_</span><span class="p">(</span><span class="s1">&#39;openbabel&#39;</span><span class="p">)</span>
+
+        <span class="n">tmp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+        <span class="n">original</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kick</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">,</span><span class="s1">&#39;un-minimized.pdb&#39;</span><span class="p">))</span>
+        <span class="n">obConversion</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBConversion</span><span class="p">()</span>
+        <span class="n">obConversion</span><span class="o">.</span><span class="n">SetInAndOutFormats</span><span class="p">(</span><span class="s2">&quot;pdb&quot;</span><span class="p">,</span> <span class="s2">&quot;mol2&quot;</span><span class="p">)</span>
+        <span class="n">mol</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBMol</span><span class="p">()</span>
+
+        <span class="n">obConversion</span><span class="o">.</span><span class="n">ReadFile</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="s2">&quot;un-minimized.pdb&quot;</span><span class="p">))</span>
+
+        <span class="n">ff</span> <span class="o">=</span> <span class="n">openbabel</span><span class="o">.</span><span class="n">OBForceField</span><span class="o">.</span><span class="n">FindForceField</span><span class="p">(</span><span class="n">forcefield</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MBuildError</span><span class="p">(</span><span class="s2">&quot;Force field &#39;</span><span class="si">{}</span><span class="s2">&#39; not supported for energy &quot;</span>
+                              <span class="s2">&quot;minimization. Valid force fields are &#39;MMFF94&#39;, &quot;</span>
+                              <span class="s2">&quot;&#39;MMFF94s&#39;, &#39;UFF&#39;, &#39;GAFF&#39;, and &#39;Ghemical&#39;.&quot;</span>
+                              <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">forcefield</span><span class="p">))</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Performing energy minimization using the Open Babel package. Please &quot;</span>
+             <span class="s2">&quot;refer to the documentation to find the appropriate citations for &quot;</span>
+             <span class="s2">&quot;Open Babel and the </span><span class="si">{}</span><span class="s2"> force field&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">forcefield</span><span class="p">))</span>
+        <span class="n">ff</span><span class="o">.</span><span class="n">Setup</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;steep&#39;</span><span class="p">:</span>
+            <span class="n">ff</span><span class="o">.</span><span class="n">SteepestDescent</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;md&#39;</span><span class="p">:</span>
+            <span class="n">ff</span><span class="o">.</span><span class="n">MolecularDynamicsTakeNSteps</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;cg&#39;</span><span class="p">:</span>
+            <span class="n">ff</span><span class="o">.</span><span class="n">ConjugateGradients</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MBuildError</span><span class="p">(</span><span class="s2">&quot;Invalid minimization algorithm. Valid options &quot;</span>
+                              <span class="s2">&quot;are &#39;steep&#39;, &#39;cg&#39;, and &#39;md&#39;.&quot;</span><span class="p">)</span>
+        <span class="n">ff</span><span class="o">.</span><span class="n">UpdateCoordinates</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+
+        <span class="n">obConversion</span><span class="o">.</span><span class="n">WriteFile</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="s1">&#39;minimized.mol2&#39;</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_coordinates</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="s1">&#39;minimized.mol2&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">particle</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">()):</span>
+                <span class="n">particle</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">original</span><span class="o">.</span><span class="n">xyz</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Minimization failed (perhaps your Compound contains non-&quot;</span>
+                 <span class="s2">&quot;element types). Coordinates not updated.&quot;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Compound.save"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">forcefield_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">forcefield_files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">residues</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
