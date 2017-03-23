@@ -233,7 +233,7 @@ Compound being added</p>
 </div></blockquote>
 <p><strong>reset_rigid_ids</strong> : bool, optional, default=True</p>
 <blockquote class="last">
-<div><p>If the Compound to be added contains rigid bodies, reset the 
+<div><p>If the Compound to be added contains rigid bodies, reset the
 rigid_ids such that values remain distinct from rigid_ids
 already present in <cite>self</cite>. Can be set to False if attempting
 to add Compounds to an existing rigid body.</p>
@@ -381,7 +381,7 @@ to add Compounds to an existing rigid body.</p>
 <dt id="mbuild.recipes.monolayer.Monolayer.contains_rigid">
 <code class="descname">contains_rigid</code><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.contains_rigid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if the Compound contains rigid bodies</p>
-<p>If the Compound contains any particle with a rigid_id != None 
+<p>If the Compound contains any particle with a rigid_id != None
 then contains_rigid will return True. If the Compound has no
 children (i.e. the Compound resides at the bottom of the containment
 hierarchy) then contains_rigid will return False.</p>
@@ -424,7 +424,7 @@ minimization scales poorly with the number of particles.</p>
 </div></blockquote>
 <p><strong>algorithm</strong> : str, optional, default=&#8217;cg&#8217;</p>
 <blockquote>
-<div><p>The energy minimization algorithm.  Valid options are &#8216;steep&#8217;, 
+<div><p>The energy minimization algorithm.  Valid options are &#8216;steep&#8217;,
 &#8216;cg&#8217;, and &#8216;md&#8217;, corresponding to steepest descent, conjugate
 gradient, and equilibrium molecular dynamics respectively.</p>
 </div></blockquote>
@@ -433,7 +433,7 @@ gradient, and equilibrium molecular dynamics respectively.</p>
 <div><p>The generic force field to apply to the Compound for minimization.
 Valid options are &#8216;MMFF94&#8217;, &#8216;MMFF94s&#8217;, &#8216;&#8217;UFF&#8217;, &#8216;GAFF&#8217;, and &#8216;Ghemical&#8217;.
 Please refer to the Open Babel documentation (<a class="reference external" href="http://open-babel">http://open-babel</a>.
-readthedocs.io/en/latest/Forcefields/Overview.html) when considering 
+readthedocs.io/en/latest/Forcefields/Overview.html) when considering
 your choice of force field.</p>
 </div></blockquote>
 </td>
@@ -444,7 +444,7 @@ your choice of force field.</p>
 <table class="docutils citation" frame="void" id="r23" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[R23]</a></td><td>O&#8217;Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.; 
+<tr><td class="label"><a class="fn-backref" href="#id1">[R23]</a></td><td>O&#8217;Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.;
 Vandermeersch, T.; Hutchison, G.R. &#8220;Open Babel: An open
 chemical toolbox.&#8221; (2011) J. Cheminf. 3, 33</td></tr>
 </tbody>
@@ -603,10 +603,10 @@ and sub-sub-compounds for every residue.</p>
 <dd><p>Designate which Compounds should be treated as rigid bodies</p>
 <p>If no arguments are provided, this function will treat the compound
 as a single rigid body by providing all particles in <cite>self</cite> with the
-same rigid_id. If <cite>discrete_bodies</cite> is not None, each instance of 
-a Compound with a name found in <cite>discrete_bodies</cite> will be treated as a 
-unique rigid body. If <cite>rigid_particles</cite> is not None, only Particles 
-(Compounds at the bottom of the containment hierarchy) matching this name 
+same rigid_id. If <cite>discrete_bodies</cite> is not None, each instance of
+a Compound with a name found in <cite>discrete_bodies</cite> will be treated as a
+unique rigid body. If <cite>rigid_particles</cite> is not None, only Particles
+(Compounds at the bottom of the containment hierarchy) matching this name
 will be considered part of the rigid body.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -615,14 +615,14 @@ will be considered part of the rigid body.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>discrete_bodies</strong> : str or list of str, optional, default=None</p>
 <blockquote>
 <div><p>Name(s) of Compound instances to be treated as unique rigid bodies.
-Compound instances matching this (these) name(s) will be provided 
+Compound instances matching this (these) name(s) will be provided
 with unique rigid_ids</p>
 </div></blockquote>
 <p><strong>rigid_particles</strong> : str or list of str, optional, default=None</p>
 <blockquote class="last">
 <div><p>Name(s) of Compound instances at the bottom of the containment
 hierarchy (Particles) to be included in rigid bodies. Only Particles
-matching this (these) name(s) will have their rigid_ids altered to 
+matching this (these) name(s) will have their rigid_ids altered to
 match the rigid body number.</p>
 </div></blockquote>
 </td>
@@ -1109,7 +1109,7 @@ for converting mass values to reduced units.</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.monolayer.Monolayer.to_parmed">
-<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.to_parmed" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>box=None</em>, <em>title=''</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.monolayer.Monolayer.to_parmed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a ParmEd Structure from a Compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1365,7 +1365,7 @@ Compound being added</p>
 </div></blockquote>
 <p><strong>reset_rigid_ids</strong> : bool, optional, default=True</p>
 <blockquote class="last">
-<div><p>If the Compound to be added contains rigid bodies, reset the 
+<div><p>If the Compound to be added contains rigid bodies, reset the
 rigid_ids such that values remain distinct from rigid_ids
 already present in <cite>self</cite>. Can be set to False if attempting
 to add Compounds to an existing rigid body.</p>
@@ -1513,7 +1513,7 @@ to add Compounds to an existing rigid body.</p>
 <dt id="mbuild.recipes.polymer.Polymer.contains_rigid">
 <code class="descname">contains_rigid</code><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.contains_rigid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if the Compound contains rigid bodies</p>
-<p>If the Compound contains any particle with a rigid_id != None 
+<p>If the Compound contains any particle with a rigid_id != None
 then contains_rigid will return True. If the Compound has no
 children (i.e. the Compound resides at the bottom of the containment
 hierarchy) then contains_rigid will return False.</p>
@@ -1556,7 +1556,7 @@ minimization scales poorly with the number of particles.</p>
 </div></blockquote>
 <p><strong>algorithm</strong> : str, optional, default=&#8217;cg&#8217;</p>
 <blockquote>
-<div><p>The energy minimization algorithm.  Valid options are &#8216;steep&#8217;, 
+<div><p>The energy minimization algorithm.  Valid options are &#8216;steep&#8217;,
 &#8216;cg&#8217;, and &#8216;md&#8217;, corresponding to steepest descent, conjugate
 gradient, and equilibrium molecular dynamics respectively.</p>
 </div></blockquote>
@@ -1565,7 +1565,7 @@ gradient, and equilibrium molecular dynamics respectively.</p>
 <div><p>The generic force field to apply to the Compound for minimization.
 Valid options are &#8216;MMFF94&#8217;, &#8216;MMFF94s&#8217;, &#8216;&#8217;UFF&#8217;, &#8216;GAFF&#8217;, and &#8216;Ghemical&#8217;.
 Please refer to the Open Babel documentation (<a class="reference external" href="http://open-babel">http://open-babel</a>.
-readthedocs.io/en/latest/Forcefields/Overview.html) when considering 
+readthedocs.io/en/latest/Forcefields/Overview.html) when considering
 your choice of force field.</p>
 </div></blockquote>
 </td>
@@ -1576,7 +1576,7 @@ your choice of force field.</p>
 <table class="docutils citation" frame="void" id="r34" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id12">[R34]</a></td><td>O&#8217;Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.; 
+<tr><td class="label"><a class="fn-backref" href="#id12">[R34]</a></td><td>O&#8217;Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.;
 Vandermeersch, T.; Hutchison, G.R. &#8220;Open Babel: An open
 chemical toolbox.&#8221; (2011) J. Cheminf. 3, 33</td></tr>
 </tbody>
@@ -1735,10 +1735,10 @@ and sub-sub-compounds for every residue.</p>
 <dd><p>Designate which Compounds should be treated as rigid bodies</p>
 <p>If no arguments are provided, this function will treat the compound
 as a single rigid body by providing all particles in <cite>self</cite> with the
-same rigid_id. If <cite>discrete_bodies</cite> is not None, each instance of 
-a Compound with a name found in <cite>discrete_bodies</cite> will be treated as a 
-unique rigid body. If <cite>rigid_particles</cite> is not None, only Particles 
-(Compounds at the bottom of the containment hierarchy) matching this name 
+same rigid_id. If <cite>discrete_bodies</cite> is not None, each instance of
+a Compound with a name found in <cite>discrete_bodies</cite> will be treated as a
+unique rigid body. If <cite>rigid_particles</cite> is not None, only Particles
+(Compounds at the bottom of the containment hierarchy) matching this name
 will be considered part of the rigid body.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1747,14 +1747,14 @@ will be considered part of the rigid body.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>discrete_bodies</strong> : str or list of str, optional, default=None</p>
 <blockquote>
 <div><p>Name(s) of Compound instances to be treated as unique rigid bodies.
-Compound instances matching this (these) name(s) will be provided 
+Compound instances matching this (these) name(s) will be provided
 with unique rigid_ids</p>
 </div></blockquote>
 <p><strong>rigid_particles</strong> : str or list of str, optional, default=None</p>
 <blockquote class="last">
 <div><p>Name(s) of Compound instances at the bottom of the containment
 hierarchy (Particles) to be included in rigid bodies. Only Particles
-matching this (these) name(s) will have their rigid_ids altered to 
+matching this (these) name(s) will have their rigid_ids altered to
 match the rigid body number.</p>
 </div></blockquote>
 </td>
@@ -2241,7 +2241,7 @@ for converting mass values to reduced units.</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.polymer.Polymer.to_parmed">
-<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.to_parmed" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>box=None</em>, <em>title=''</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.polymer.Polymer.to_parmed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a ParmEd Structure from a Compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2493,7 +2493,7 @@ Compound being added</p>
 </div></blockquote>
 <p><strong>reset_rigid_ids</strong> : bool, optional, default=True</p>
 <blockquote class="last">
-<div><p>If the Compound to be added contains rigid bodies, reset the 
+<div><p>If the Compound to be added contains rigid bodies, reset the
 rigid_ids such that values remain distinct from rigid_ids
 already present in <cite>self</cite>. Can be set to False if attempting
 to add Compounds to an existing rigid body.</p>
@@ -2641,7 +2641,7 @@ to add Compounds to an existing rigid body.</p>
 <dt id="mbuild.recipes.tiled_compound.TiledCompound.contains_rigid">
 <code class="descname">contains_rigid</code><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.contains_rigid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if the Compound contains rigid bodies</p>
-<p>If the Compound contains any particle with a rigid_id != None 
+<p>If the Compound contains any particle with a rigid_id != None
 then contains_rigid will return True. If the Compound has no
 children (i.e. the Compound resides at the bottom of the containment
 hierarchy) then contains_rigid will return False.</p>
@@ -2684,7 +2684,7 @@ minimization scales poorly with the number of particles.</p>
 </div></blockquote>
 <p><strong>algorithm</strong> : str, optional, default=&#8217;cg&#8217;</p>
 <blockquote>
-<div><p>The energy minimization algorithm.  Valid options are &#8216;steep&#8217;, 
+<div><p>The energy minimization algorithm.  Valid options are &#8216;steep&#8217;,
 &#8216;cg&#8217;, and &#8216;md&#8217;, corresponding to steepest descent, conjugate
 gradient, and equilibrium molecular dynamics respectively.</p>
 </div></blockquote>
@@ -2693,7 +2693,7 @@ gradient, and equilibrium molecular dynamics respectively.</p>
 <div><p>The generic force field to apply to the Compound for minimization.
 Valid options are &#8216;MMFF94&#8217;, &#8216;MMFF94s&#8217;, &#8216;&#8217;UFF&#8217;, &#8216;GAFF&#8217;, and &#8216;Ghemical&#8217;.
 Please refer to the Open Babel documentation (<a class="reference external" href="http://open-babel">http://open-babel</a>.
-readthedocs.io/en/latest/Forcefields/Overview.html) when considering 
+readthedocs.io/en/latest/Forcefields/Overview.html) when considering
 your choice of force field.</p>
 </div></blockquote>
 </td>
@@ -2704,7 +2704,7 @@ your choice of force field.</p>
 <table class="docutils citation" frame="void" id="r45" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id23">[R45]</a></td><td>O&#8217;Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.; 
+<tr><td class="label"><a class="fn-backref" href="#id23">[R45]</a></td><td>O&#8217;Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.;
 Vandermeersch, T.; Hutchison, G.R. &#8220;Open Babel: An open
 chemical toolbox.&#8221; (2011) J. Cheminf. 3, 33</td></tr>
 </tbody>
@@ -2863,10 +2863,10 @@ and sub-sub-compounds for every residue.</p>
 <dd><p>Designate which Compounds should be treated as rigid bodies</p>
 <p>If no arguments are provided, this function will treat the compound
 as a single rigid body by providing all particles in <cite>self</cite> with the
-same rigid_id. If <cite>discrete_bodies</cite> is not None, each instance of 
-a Compound with a name found in <cite>discrete_bodies</cite> will be treated as a 
-unique rigid body. If <cite>rigid_particles</cite> is not None, only Particles 
-(Compounds at the bottom of the containment hierarchy) matching this name 
+same rigid_id. If <cite>discrete_bodies</cite> is not None, each instance of
+a Compound with a name found in <cite>discrete_bodies</cite> will be treated as a
+unique rigid body. If <cite>rigid_particles</cite> is not None, only Particles
+(Compounds at the bottom of the containment hierarchy) matching this name
 will be considered part of the rigid body.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2875,14 +2875,14 @@ will be considered part of the rigid body.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>discrete_bodies</strong> : str or list of str, optional, default=None</p>
 <blockquote>
 <div><p>Name(s) of Compound instances to be treated as unique rigid bodies.
-Compound instances matching this (these) name(s) will be provided 
+Compound instances matching this (these) name(s) will be provided
 with unique rigid_ids</p>
 </div></blockquote>
 <p><strong>rigid_particles</strong> : str or list of str, optional, default=None</p>
 <blockquote class="last">
 <div><p>Name(s) of Compound instances at the bottom of the containment
 hierarchy (Particles) to be included in rigid bodies. Only Particles
-matching this (these) name(s) will have their rigid_ids altered to 
+matching this (these) name(s) will have their rigid_ids altered to
 match the rigid body number.</p>
 </div></blockquote>
 </td>
@@ -3369,7 +3369,7 @@ for converting mass values to reduced units.</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.tiled_compound.TiledCompound.to_parmed">
-<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.to_parmed" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>box=None</em>, <em>title=''</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.tiled_compound.TiledCompound.to_parmed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a ParmEd Structure from a Compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3645,7 +3645,7 @@ Compound being added</p>
 </div></blockquote>
 <p><strong>reset_rigid_ids</strong> : bool, optional, default=True</p>
 <blockquote class="last">
-<div><p>If the Compound to be added contains rigid bodies, reset the 
+<div><p>If the Compound to be added contains rigid bodies, reset the
 rigid_ids such that values remain distinct from rigid_ids
 already present in <cite>self</cite>. Can be set to False if attempting
 to add Compounds to an existing rigid body.</p>
@@ -3793,7 +3793,7 @@ to add Compounds to an existing rigid body.</p>
 <dt id="mbuild.recipes.silica_interface.SilicaInterface.contains_rigid">
 <code class="descname">contains_rigid</code><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.contains_rigid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if the Compound contains rigid bodies</p>
-<p>If the Compound contains any particle with a rigid_id != None 
+<p>If the Compound contains any particle with a rigid_id != None
 then contains_rigid will return True. If the Compound has no
 children (i.e. the Compound resides at the bottom of the containment
 hierarchy) then contains_rigid will return False.</p>
@@ -3836,7 +3836,7 @@ minimization scales poorly with the number of particles.</p>
 </div></blockquote>
 <p><strong>algorithm</strong> : str, optional, default=&#8217;cg&#8217;</p>
 <blockquote>
-<div><p>The energy minimization algorithm.  Valid options are &#8216;steep&#8217;, 
+<div><p>The energy minimization algorithm.  Valid options are &#8216;steep&#8217;,
 &#8216;cg&#8217;, and &#8216;md&#8217;, corresponding to steepest descent, conjugate
 gradient, and equilibrium molecular dynamics respectively.</p>
 </div></blockquote>
@@ -3845,7 +3845,7 @@ gradient, and equilibrium molecular dynamics respectively.</p>
 <div><p>The generic force field to apply to the Compound for minimization.
 Valid options are &#8216;MMFF94&#8217;, &#8216;MMFF94s&#8217;, &#8216;&#8217;UFF&#8217;, &#8216;GAFF&#8217;, and &#8216;Ghemical&#8217;.
 Please refer to the Open Babel documentation (<a class="reference external" href="http://open-babel">http://open-babel</a>.
-readthedocs.io/en/latest/Forcefields/Overview.html) when considering 
+readthedocs.io/en/latest/Forcefields/Overview.html) when considering
 your choice of force field.</p>
 </div></blockquote>
 </td>
@@ -3856,7 +3856,7 @@ your choice of force field.</p>
 <table class="docutils citation" frame="void" id="r58" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id36">[R58]</a></td><td>O&#8217;Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.; 
+<tr><td class="label"><a class="fn-backref" href="#id36">[R58]</a></td><td>O&#8217;Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.;
 Vandermeersch, T.; Hutchison, G.R. &#8220;Open Babel: An open
 chemical toolbox.&#8221; (2011) J. Cheminf. 3, 33</td></tr>
 </tbody>
@@ -4015,10 +4015,10 @@ and sub-sub-compounds for every residue.</p>
 <dd><p>Designate which Compounds should be treated as rigid bodies</p>
 <p>If no arguments are provided, this function will treat the compound
 as a single rigid body by providing all particles in <cite>self</cite> with the
-same rigid_id. If <cite>discrete_bodies</cite> is not None, each instance of 
-a Compound with a name found in <cite>discrete_bodies</cite> will be treated as a 
-unique rigid body. If <cite>rigid_particles</cite> is not None, only Particles 
-(Compounds at the bottom of the containment hierarchy) matching this name 
+same rigid_id. If <cite>discrete_bodies</cite> is not None, each instance of
+a Compound with a name found in <cite>discrete_bodies</cite> will be treated as a
+unique rigid body. If <cite>rigid_particles</cite> is not None, only Particles
+(Compounds at the bottom of the containment hierarchy) matching this name
 will be considered part of the rigid body.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -4027,14 +4027,14 @@ will be considered part of the rigid body.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>discrete_bodies</strong> : str or list of str, optional, default=None</p>
 <blockquote>
 <div><p>Name(s) of Compound instances to be treated as unique rigid bodies.
-Compound instances matching this (these) name(s) will be provided 
+Compound instances matching this (these) name(s) will be provided
 with unique rigid_ids</p>
 </div></blockquote>
 <p><strong>rigid_particles</strong> : str or list of str, optional, default=None</p>
 <blockquote class="last">
 <div><p>Name(s) of Compound instances at the bottom of the containment
 hierarchy (Particles) to be included in rigid bodies. Only Particles
-matching this (these) name(s) will have their rigid_ids altered to 
+matching this (these) name(s) will have their rigid_ids altered to
 match the rigid body number.</p>
 </div></blockquote>
 </td>
@@ -4521,7 +4521,7 @@ for converting mass values to reduced units.</p>
 
 <dl class="method">
 <dt id="mbuild.recipes.silica_interface.SilicaInterface.to_parmed">
-<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>title=''</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.to_parmed" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_parmed</code><span class="sig-paren">(</span><em>box=None</em>, <em>title=''</em>, <em>residues=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mbuild.recipes.silica_interface.SilicaInterface.to_parmed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a ParmEd Structure from a Compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

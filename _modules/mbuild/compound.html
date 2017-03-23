@@ -174,6 +174,7 @@
 <span class="kn">from</span> <span class="nn">mbuild.utils.io</span> <span class="k">import</span> <span class="n">run_from_ipython</span><span class="p">,</span> <span class="n">import_</span>
 <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="k">import</span> <span class="n">_translate</span><span class="p">,</span> <span class="n">_rotate</span>
 
+
 <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">coords_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
          <span class="n">rigid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Load a file into an mbuild compound.</span>
@@ -187,15 +188,17 @@
 <span class="sd">        Name of the file from which to load atom and bond information.</span>
 <span class="sd">    relative_to_module : str, optional, default=None</span>
 <span class="sd">        Instead of looking in the current working directory, look for the file</span>
-<span class="sd">        where this module is defined. This is typically used in Compound classes</span>
-<span class="sd">        that will be instantiated from a different directory (such as the</span>
-<span class="sd">        Compounds located in mbuild.lib).</span>
+<span class="sd">        where this module is defined. This is typically used in Compound</span>
+<span class="sd">        classes that will be instantiated from a different directory</span>
+<span class="sd">        (such as the Compounds located in mbuild.lib).</span>
 <span class="sd">    compound : mb.Compound, optional, default=None</span>
 <span class="sd">        Existing compound to load atom and bond information into.</span>
 <span class="sd">    coords_only : bool, optional, default=False</span>
 <span class="sd">        Only load the coordinates into an existing compoint.</span>
-<span class="sd">    rigid : bool, optional</span>
+<span class="sd">    rigid : bool, optional, default=False</span>
 <span class="sd">        Treat the compound as a rigid body</span>
+<span class="sd">    **kwargs : keyword arguments</span>
+<span class="sd">        Key word arguments passed to mdTraj for loading.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -300,7 +303,7 @@
 <span class="sd">    rigid_id : int, default=None</span>
 <span class="sd">        The ID of the rigid body that this Compound belongs to.  Only Particles</span>
 <span class="sd">        (the bottom of the containment hierarchy) can have integer values for</span>
-<span class="sd">        `rigid_id`. Compounds containing rigid particles will always have </span>
+<span class="sd">        `rigid_id`. Compounds containing rigid particles will always have</span>
 <span class="sd">        `rigid_id == None`. See also `contains_rigid`.</span>
 <span class="sd">    boundingbox</span>
 <span class="sd">    center</span>
@@ -357,7 +360,7 @@
 
 <div class="viewcode-block" id="Compound.particles"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.particles">[docs]</a>    <span class="k">def</span> <span class="nf">particles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_ports</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return all Particles of the Compound.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        include_ports : bool, optional, default=False</span>
@@ -492,7 +495,7 @@
     <span class="k">def</span> <span class="nf">contains_rigid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Returns True if the Compound contains rigid bodies</span>
 
-<span class="sd">        If the Compound contains any particle with a rigid_id != None </span>
+<span class="sd">        If the Compound contains any particle with a rigid_id != None</span>
 <span class="sd">        then contains_rigid will return True. If the Compound has no</span>
 <span class="sd">        children (i.e. the Compound resides at the bottom of the containment</span>
 <span class="sd">        hierarchy) then contains_rigid will return False.</span>
@@ -569,22 +572,22 @@
 
 <span class="sd">        If no arguments are provided, this function will treat the compound</span>
 <span class="sd">        as a single rigid body by providing all particles in `self` with the</span>
-<span class="sd">        same rigid_id. If `discrete_bodies` is not None, each instance of </span>
-<span class="sd">        a Compound with a name found in `discrete_bodies` will be treated as a </span>
-<span class="sd">        unique rigid body. If `rigid_particles` is not None, only Particles </span>
-<span class="sd">        (Compounds at the bottom of the containment hierarchy) matching this name </span>
+<span class="sd">        same rigid_id. If `discrete_bodies` is not None, each instance of</span>
+<span class="sd">        a Compound with a name found in `discrete_bodies` will be treated as a</span>
+<span class="sd">        unique rigid body. If `rigid_particles` is not None, only Particles</span>
+<span class="sd">        (Compounds at the bottom of the containment hierarchy) matching this name</span>
 <span class="sd">        will be considered part of the rigid body.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        discrete_bodies : str or list of str, optional, default=None</span>
 <span class="sd">            Name(s) of Compound instances to be treated as unique rigid bodies.</span>
-<span class="sd">            Compound instances matching this (these) name(s) will be provided </span>
+<span class="sd">            Compound instances matching this (these) name(s) will be provided</span>
 <span class="sd">            with unique rigid_ids</span>
 <span class="sd">        rigid_particles : str or list of str, optional, default=None</span>
 <span class="sd">            Name(s) of Compound instances at the bottom of the containment</span>
 <span class="sd">            hierarchy (Particles) to be included in rigid bodies. Only Particles</span>
-<span class="sd">            matching this (these) name(s) will have their rigid_ids altered to </span>
+<span class="sd">            matching this (these) name(s) will have their rigid_ids altered to</span>
 <span class="sd">            match the rigid body number.</span>
 
 <span class="sd">        Examples</span>
@@ -675,7 +678,7 @@
     <span class="k">def</span> <span class="nf">_reorder_rigid_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Reorder rigid body IDs ensuring consecutiveness.</span>
 
-<span class="sd">        Primarily used internally to ensure consecutive rigid_ids following </span>
+<span class="sd">        Primarily used internally to ensure consecutive rigid_ids following</span>
 <span class="sd">        removal of a Compound.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -715,7 +718,7 @@
 <span class="sd">            Replace the periodicity of self with the periodicity of the</span>
 <span class="sd">            Compound being added</span>
 <span class="sd">        reset_rigid_ids : bool, optional, default=True</span>
-<span class="sd">            If the Compound to be added contains rigid bodies, reset the </span>
+<span class="sd">            If the Compound to be added contains rigid bodies, reset the</span>
 <span class="sd">            rigid_ids such that values remain distinct from rigid_ids</span>
 <span class="sd">            already present in `self`. Can be set to False if attempting</span>
 <span class="sd">            to add Compounds to an existing rigid body.</span>
@@ -1223,9 +1226,9 @@
         <span class="sd">&quot;&quot;&quot;Adjust port locations after particles have moved</span>
 
 <span class="sd">        Compares the locations of Particles between &#39;self&#39; and an array of</span>
-<span class="sd">        reference coordinates.  Shifts Ports in accordance with how far anchors </span>
-<span class="sd">        have been moved.  This conserves the location of Ports with respect to </span>
-<span class="sd">        their anchor Particles, but does not conserve the orientation of Ports </span>
+<span class="sd">        reference coordinates.  Shifts Ports in accordance with how far anchors</span>
+<span class="sd">        have been moved.  This conserves the location of Ports with respect to</span>
+<span class="sd">        their anchor Particles, but does not conserve the orientation of Ports</span>
 <span class="sd">        with respect to the molecule as a whole.</span>
 
 <span class="sd">        Parameters</span>
@@ -1245,7 +1248,7 @@
     <span class="k">def</span> <span class="nf">_kick</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Slightly adjust all coordinates in a Compound</span>
 
-<span class="sd">        Provides a slight adjustment to coordinates to kick them out of local </span>
+<span class="sd">        Provides a slight adjustment to coordinates to kick them out of local</span>
 <span class="sd">        energy minima.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">xyz_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xyz</span>
@@ -1270,19 +1273,19 @@
 <span class="sd">        steps : int, optionl, default=1000</span>
 <span class="sd">            The number of optimization iterations</span>
 <span class="sd">        algorithm : str, optional, default=&#39;cg&#39;</span>
-<span class="sd">            The energy minimization algorithm.  Valid options are &#39;steep&#39;, </span>
+<span class="sd">            The energy minimization algorithm.  Valid options are &#39;steep&#39;,</span>
 <span class="sd">            &#39;cg&#39;, and &#39;md&#39;, corresponding to steepest descent, conjugate</span>
 <span class="sd">            gradient, and equilibrium molecular dynamics respectively.</span>
 <span class="sd">        forcefield : str, optional, default=&#39;UFF&#39;</span>
 <span class="sd">            The generic force field to apply to the Compound for minimization.</span>
 <span class="sd">            Valid options are &#39;MMFF94&#39;, &#39;MMFF94s&#39;, &#39;&#39;UFF&#39;, &#39;GAFF&#39;, and &#39;Ghemical&#39;.</span>
 <span class="sd">            Please refer to the Open Babel documentation (http://open-babel.</span>
-<span class="sd">            readthedocs.io/en/latest/Forcefields/Overview.html) when considering </span>
+<span class="sd">            readthedocs.io/en/latest/Forcefields/Overview.html) when considering</span>
 <span class="sd">            your choice of force field.</span>
 
 <span class="sd">        References</span>
 <span class="sd">        ----------</span>
-<span class="sd">        .. [1] O&#39;Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.; </span>
+<span class="sd">        .. [1] O&#39;Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.;</span>
 <span class="sd">               Vandermeersch, T.; Hutchison, G.R. &quot;Open Babel: An open</span>
 <span class="sd">               chemical toolbox.&quot; (2011) J. Cheminf. 3, 33</span>
 <span class="sd">        .. [2] Open Babel, version X.X.X http://openbabel.org, (installed</span>
@@ -1321,7 +1324,7 @@
 <span class="sd">               J. Comput. Chem. 25, 1157-1174</span>
 
 <span class="sd">        If using the &#39;Ghemical&#39; force field please cite the following:</span>
-<span class="sd">        .. [3] T. Hassinen and M. Perakyla, &quot;New energy terms for reduced </span>
+<span class="sd">        .. [3] T. Hassinen and M. Perakyla, &quot;New energy terms for reduced</span>
 <span class="sd">               protein models implemented in an off-lattice force field&quot; (2001)</span>
 <span class="sd">               J. Comput. Chem. 22, 1229-1242</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1434,8 +1437,7 @@
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> exists; not overwriting&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
 
-        <span class="n">structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_parmed</span><span class="p">(</span><span class="n">residues</span><span class="o">=</span><span class="n">residues</span><span class="p">)</span>
-
+        <span class="n">structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_parmed</span><span class="p">(</span><span class="n">box</span><span class="o">=</span><span class="n">box</span><span class="p">,</span> <span class="n">residues</span><span class="o">=</span><span class="n">residues</span><span class="p">)</span>
         <span class="c1"># Apply a force field with foyer if specified</span>
         <span class="k">if</span> <span class="n">forcefield_name</span> <span class="ow">or</span> <span class="n">forcefield_files</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">foyer</span> <span class="k">import</span> <span class="n">Forcefield</span>
@@ -1443,21 +1445,9 @@
                             <span class="n">name</span><span class="o">=</span><span class="n">forcefield_name</span><span class="p">)</span>
             <span class="n">structure</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">box</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundingbox</span>
-            <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
-                    <span class="n">box</span><span class="o">.</span><span class="n">lengths</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
-                    <span class="n">box</span><span class="o">.</span><span class="n">maxs</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
-                    <span class="n">box</span><span class="o">.</span><span class="n">mins</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">val</span><span class="p">:</span>
-                    <span class="n">box</span><span class="o">.</span><span class="n">maxs</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.25</span>
-                    <span class="n">box</span><span class="o">.</span><span class="n">mins</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">-=</span> <span class="mf">0.25</span>
-                    <span class="n">box</span><span class="o">.</span><span class="n">lengths</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.5</span>
-
         <span class="c1"># Provide a warning if rigid_ids are not sequential from 0</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">contains_rigid</span><span class="p">:</span>
-            <span class="n">unique_rigid_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">rigid_id</span> 
+            <span class="n">unique_rigid_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">rigid_id</span>
                                            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rigid_particles</span><span class="p">()]))</span>
             <span class="k">if</span> <span class="nb">max</span><span class="p">(</span><span class="n">unique_rigid_ids</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_rigid_ids</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unique rigid body IDs are not sequential starting from zero.&quot;</span><span class="p">)</span>
@@ -1465,7 +1455,7 @@
         <span class="k">if</span> <span class="n">saver</span><span class="p">:</span>  <span class="c1"># mBuild supported saver.</span>
             <span class="k">if</span> <span class="n">extension</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;.hoomdxml&#39;</span><span class="p">]:</span>
                 <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;rigid_bodies&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">rigid_id</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">()]</span>
-            <span class="n">saver</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="n">structure</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="n">box</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">saver</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="n">structure</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># ParmEd supported saver.</span>
             <span class="n">structure</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
@@ -1785,7 +1775,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="Compound.to_parmed"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.to_parmed">[docs]</a>    <span class="k">def</span> <span class="nf">to_parmed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">residues</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.to_parmed"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.to_parmed">[docs]</a>    <span class="k">def</span> <span class="nf">to_parmed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">residues</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create a ParmEd Structure from a Compound.</span>
 
 <span class="sd">        Parameters</span>
@@ -1868,15 +1858,25 @@
         <span class="k">for</span> <span class="n">atom1</span><span class="p">,</span> <span class="n">atom2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonds</span><span class="p">():</span>
             <span class="n">bond</span> <span class="o">=</span> <span class="n">pmd</span><span class="o">.</span><span class="n">Bond</span><span class="p">(</span><span class="n">atom_mapping</span><span class="p">[</span><span class="n">atom1</span><span class="p">],</span> <span class="n">atom_mapping</span><span class="p">[</span><span class="n">atom2</span><span class="p">])</span>
             <span class="n">structure</span><span class="o">.</span><span class="n">bonds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bond</span><span class="p">)</span>
+        <span class="c1"># pad box with .25nm buffers</span>
+        <span class="k">if</span> <span class="n">box</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundingbox</span>
+            <span class="n">box_vec_max</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">maxs</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="n">box_vec_min</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">mins</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
+                    <span class="n">box_vec_max</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+                    <span class="n">box_vec_min</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">val</span><span class="p">:</span>
+                    <span class="n">box_vec_max</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.25</span>
+                    <span class="n">box_vec_min</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">-=</span> <span class="mf">0.25</span>
+            <span class="n">box</span><span class="o">.</span><span class="n">mins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">box_vec_min</span><span class="p">)</span>
+            <span class="n">box</span><span class="o">.</span><span class="n">maxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">box_vec_max</span><span class="p">)</span>
 
-        <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundingbox</span>
         <span class="n">box_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
         <span class="n">box_vector</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">box_vector</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">box_vector</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="mf">90.0</span>
-        <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
-                <span class="n">box_vector</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span> <span class="o">*</span> <span class="mi">10</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">box_vector</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">lengths</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">5</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+            <span class="n">box_vector</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">lengths</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span>
         <span class="n">structure</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="n">box_vector</span>
         <span class="k">return</span> <span class="n">structure</span></div>
 
