@@ -1336,7 +1336,7 @@
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">MBuildError</span><span class="p">(</span><span class="s2">&quot;Element name </span><span class="si">{}</span><span class="s2"> not recognized. Cannot &quot;</span>
                                   <span class="s2">&quot;perform minimization.&quot;</span>
-                                  <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">particle</span><span class="o">.</span><span class="n">name</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">None</span>
+                                  <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">particle</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
 
         <span class="n">tmp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
         <span class="n">original</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -1454,7 +1454,7 @@
                 <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unique rigid body IDs are not sequential starting from zero.&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">saver</span><span class="p">:</span>  <span class="c1"># mBuild supported saver.</span>
-            <span class="k">if</span> <span class="n">extension</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;.hoomdxml&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">extension</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;.gsd&#39;</span><span class="p">,</span> <span class="s1">&#39;.hoomdxml&#39;</span><span class="p">]:</span>
                 <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;rigid_bodies&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">rigid_id</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">()]</span>
             <span class="n">saver</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="n">structure</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># ParmEd supported saver.</span>
