@@ -340,8 +340,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">charge</span> <span class="o">=</span> <span class="n">charge</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="n">OrderedSet</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
@@ -356,7 +354,13 @@
 
         <span class="c1"># self.add() must be called after labels and children are initialized.</span>
         <span class="k">if</span> <span class="n">subcompounds</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">charge</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">MBuildError</span><span class="p">(</span><span class="s1">&#39;Cannot set the charge of a Compound containing &#39;</span>
+                                  <span class="s1">&#39;subcompounds.&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">subcompounds</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_charge</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_charge</span> <span class="o">=</span> <span class="n">charge</span>
 
 <div class="viewcode-block" id="Compound.particles"><a class="viewcode-back" href="../../data_structures.html#mbuild.compound.Compound.particles">[docs]</a>    <span class="k">def</span> <span class="nf">particles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_ports</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return all Particles of the Compound.</span>
@@ -476,6 +480,18 @@
         <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">particle</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">particle</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">charge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">particle</span><span class="o">.</span><span class="n">_charge</span> <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">()])</span>
+
+    <span class="nd">@charge</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">charge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contains_only_ports</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_charge</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;charge is immutable for Compounds that are &quot;</span>
+                                 <span class="s2">&quot;not at the bottom of the containment hierarchy.&quot;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">rigid_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1446,6 +1462,11 @@
                             <span class="n">name</span><span class="o">=</span><span class="n">forcefield_name</span><span class="p">)</span>
             <span class="n">structure</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span>
 
+        <span class="n">total_charge</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">atom</span><span class="o">.</span><span class="n">charge</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">structure</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">round</span><span class="p">(</span><span class="n">total_charge</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;System is not charge neutral. Total charge is </span><span class="si">{}</span><span class="s1">.&#39;</span>
+                 <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">total_charge</span><span class="p">))</span>
+
         <span class="c1"># Provide a warning if rigid_ids are not sequential from 0</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">contains_rigid</span><span class="p">:</span>
             <span class="n">unique_rigid_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">rigid_id</span>
@@ -1845,7 +1866,7 @@
             <span class="n">atomic_number</span> <span class="o">=</span> <span class="n">atomic_number</span> <span class="ow">or</span> <span class="n">AtomicNum</span><span class="p">[</span><span class="n">element</span><span class="p">]</span>
             <span class="n">mass</span> <span class="o">=</span> <span class="n">Mass</span><span class="p">[</span><span class="n">element</span><span class="p">]</span>
             <span class="n">pmd_atom</span> <span class="o">=</span> <span class="n">pmd</span><span class="o">.</span><span class="n">Atom</span><span class="p">(</span><span class="n">atomic_number</span><span class="o">=</span><span class="n">atomic_number</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">atom</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                                <span class="n">mass</span><span class="o">=</span><span class="n">mass</span><span class="p">)</span>
+                                <span class="n">mass</span><span class="o">=</span><span class="n">mass</span><span class="p">,</span> <span class="n">charge</span><span class="o">=</span><span class="n">atom</span><span class="o">.</span><span class="n">charge</span><span class="p">)</span>
             <span class="n">pmd_atom</span><span class="o">.</span><span class="n">xx</span><span class="p">,</span> <span class="n">pmd_atom</span><span class="o">.</span><span class="n">xy</span><span class="p">,</span> <span class="n">pmd_atom</span><span class="o">.</span><span class="n">xz</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span> <span class="o">*</span> <span class="mi">10</span>  <span class="c1"># Angstroms</span>
 
             <span class="n">residue</span> <span class="o">=</span> <span class="n">atom_residue_map</span><span class="p">[</span><span class="n">atom</span><span class="p">]</span>
@@ -1995,11 +2016,11 @@
         <span class="n">newone</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">)</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">)</span>
-        <span class="n">newone</span><span class="o">.</span><span class="n">charge</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">charge</span><span class="p">)</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">port_particle</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port_particle</span><span class="p">)</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">_check_if_contains_rigid_bodies</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_check_if_contains_rigid_bodies</span><span class="p">)</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">_contains_rigid</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_contains_rigid</span><span class="p">)</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">_rigid_id</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rigid_id</span><span class="p">)</span>
+        <span class="n">newone</span><span class="o">.</span><span class="n">_charge</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_charge</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">):</span>
             <span class="n">newone</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
 
