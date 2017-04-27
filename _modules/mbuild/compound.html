@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -43,6 +45,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -83,7 +86,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 </ul>
 <ul>
@@ -109,8 +115,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../../index.html">mbuild</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">mbuild</a>
+        
       </nav>
 
 
@@ -123,19 +131,36 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="../../index.html">Docs</a> &raquo;</li>
-      
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
           <li><a href="../index.html">Module code</a> &raquo;</li>
-      
-    <li>mbuild.compound</li>
+        
+      <li>mbuild.compound</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
+            
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -176,11 +201,13 @@
 
 
 <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">coords_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-         <span class="n">rigid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+         <span class="n">rigid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">use_parmed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Load a file into an mbuild compound.</span>
 
-<span class="sd">    Files are read using the MDTraj package. Please refer to http://mdtraj.org/</span>
-<span class="sd">    1.8.0/load_functions.html for supported formats.</span>
+<span class="sd">    Files are read using the MDTraj package unless the `use_parmed` argument is</span>
+<span class="sd">    specified as True. Please refer to http://mdtraj.org/1.8.0/load_functions.html</span>
+<span class="sd">    for formats supported by MDTraj and https://parmed.github.io/ParmEd/html/</span>
+<span class="sd">    readwrite.html for formats supported by ParmEd.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -197,6 +224,8 @@
 <span class="sd">        Only load the coordinates into an existing compoint.</span>
 <span class="sd">    rigid : bool, optional, default=False</span>
 <span class="sd">        Treat the compound as a rigid body</span>
+<span class="sd">    use_parmed : bool, optional, default=False</span>
+<span class="sd">        Use readers from ParmEd instead of MDTraj.</span>
 <span class="sd">    **kwargs : keyword arguments</span>
 <span class="sd">        Key word arguments passed to mdTraj for loading.</span>
 
@@ -216,8 +245,13 @@
     <span class="k">if</span> <span class="n">compound</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">compound</span> <span class="o">=</span> <span class="n">Compound</span><span class="p">()</span>
 
-    <span class="n">traj</span> <span class="o">=</span> <span class="n">md</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">compound</span><span class="o">.</span><span class="n">from_trajectory</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">frame</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">coords_only</span><span class="o">=</span><span class="n">coords_only</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">use_parmed</span><span class="p">:</span>
+        <span class="n">structure</span> <span class="o">=</span> <span class="n">pmd</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">compound</span><span class="o">.</span><span class="n">from_parmed</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">traj</span> <span class="o">=</span> <span class="n">md</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">compound</span><span class="o">.</span><span class="n">from_trajectory</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">frame</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">coords_only</span><span class="o">=</span><span class="n">coords_only</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">rigid</span><span class="p">:</span>
         <span class="n">compound</span><span class="o">.</span><span class="n">label_rigid_bodies</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">compound</span>
@@ -2070,6 +2104,9 @@
 <span class="n">Particle</span> <span class="o">=</span> <span class="n">Compound</span>
 </pre></div>
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
