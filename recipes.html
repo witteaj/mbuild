@@ -4741,7 +4741,7 @@ the orientation of Ports with respect to the molecule as a whole.</p>
 <h2>Lattice<a class="headerlink" href="#lattice" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="mbuild.lattice.Lattice">
-<em class="property">class </em><code class="descclassname">mbuild.lattice.</code><code class="descname">Lattice</code><span class="sig-paren">(</span><em>lattice_spacings</em>, <em>dimension=None</em>, <em>lattice_vectors=None</em>, <em>basis_vectors=None</em>, <em>angles=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/lattice.html#Lattice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.lattice.Lattice" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">mbuild.lattice.</code><code class="descname">Lattice</code><span class="sig-paren">(</span><em>lattice_spacings</em>, <em>dimension=None</em>, <em>lattice_vectors=None</em>, <em>basis_atoms=None</em>, <em>angles=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/lattice.html#Lattice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.lattice.Lattice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Develop crystal structure from user defined inputs.</p>
 <p>Lattice, the abstract building block of a crystal cell.
 Once defined by the user, the crystal is returned as
@@ -4774,10 +4774,10 @@ Cartesian space.</p>
 <blockquote>
 <div><p>Length of unit cell edges.</p>
 </div></blockquote>
-<p><strong>basis_vectors</strong> : dictionary-like, shape=([&#8216;id&#8217;,[dimension,]], ...) optional</p>
+<p><strong>basis_atoms</strong> : dictionary, shape={&#8216;id&#8217;:[nested list of coordinate pairs]}</p>
 <blockquote>
 <div><blockquote>
-<div><p>default={(&#8216;default&#8217;, ([0,0,0]))}</p>
+<div><p>default={&#8216;default&#8217;:[[0., 0., 0.]]</p>
 </div></blockquote>
 <p>Location of all basis Compounds in unit cell.</p>
 </div></blockquote>
@@ -4796,10 +4796,10 @@ Cartesian space.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># reading in the lattice parameters for crystalline cholesterol</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">angle_values</span> <span class="o">=</span> <span class="p">[</span><span class="mf">94.64</span><span class="p">,</span> <span class="mf">90.67</span><span class="p">,</span> <span class="mf">96.32</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">spacings</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.4172</span><span class="p">,</span> <span class="mf">3.4209</span><span class="p">,</span> <span class="mf">1.0481</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">basis_vector</span> <span class="o">=</span> <span class="p">(</span> <span class="p">(</span><span class="s1">&#39;cholesterol&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">basis</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;cholesterol&#39;</span><span class="p">:[[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]]}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cholesterol_lattice</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Lattice</span><span class="p">(</span><span class="n">spacings</span><span class="p">,</span>
 <span class="gp">... </span>                                 <span class="n">angles</span><span class="o">=</span><span class="n">angle_values</span><span class="p">,</span>
-<span class="gp">... </span>                                 <span class="n">basis_vectors</span><span class="o">=</span><span class="n">basis_vector</span><span class="p">,</span>
+<span class="gp">... </span>                                 <span class="n">basis_atoms</span><span class="o">=</span><span class="n">basis</span><span class="p">,</span>
 <span class="gp">... </span>                                 <span class="n">dimension</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -4822,35 +4822,33 @@ Compounds were populated.</p>
 &gt;&gt;&gt; # angles not needed, when not provided, defaults to 90,90,90
 &gt;&gt;&gt; cesium = mb.Compound(name=&#8217;Cs&#8217;)
 &gt;&gt;&gt; spacings = [.4123, .4123, .4123]
-&gt;&gt;&gt; basis_vector = ( (&#8216;Cl&#8217;, [0,0,0]), (&#8216;Cs&#8217;, [.5, .5, .5]), )
-&gt;&gt;&gt; cscl_lattice = mb.Lattice(spacings, basis_vectors=basis_vector,
+&gt;&gt;&gt; basis = {&#8216;Cl&#8217; : [[0., 0., 0.]], &#8216;Cs&#8217; : [[.5, .5, .5]]}
+&gt;&gt;&gt; cscl_lattice = mb.Lattice(spacings, basis_atoms=basis,
 ...                           dimension=3)</p>
 <p>Now associate id with Compounds for basis atoms and replicate 3x3x3
 &gt;&gt;&gt; cscl_dict = {&#8216;Cl&#8217; : chlorine, &#8216;Cs&#8217; : cesium}
 &gt;&gt;&gt; cscl_compound = cscl_lattice.populate(x=3, y=3, z=3,
 ...                                       compound_dict=cscl_dict)</p>
 <p>A multi-Compound basis was created and replicated. For each unique basis
-atom position, a separate entry must be completed for the basis_vector
+atom position, a separate entry must be completed for the basis_atom
 input.</p>
 <p>Generating FCC Copper cell with lattice_vectors instead of angles
 &gt;&gt;&gt; import mbuild as mb
 &gt;&gt;&gt; copper = mb.Compound(name=&#8217;Cu&#8217;)
 &gt;&gt;&gt; lattice_vector = ( [1, 0, 0], [0, 1, 0], [0, 0, 1])
 &gt;&gt;&gt; spacings = [.36149, .36149, .36149]
-&gt;&gt;&gt; basis_vector = ( (&#8216;Cu&#8217;, [0, 0, 0]), (&#8216;Cu&#8217;, [.5, .5, 0]),
-...                 (&#8216;Cu&#8217;, [.5, 0, .5] ), (&#8216;Cu&#8217;, [0, .5, .5]), )
+&gt;&gt;&gt; copper_locations = [[0., 0., 0.], [.5, .5, 0.],
+...                     [.5, 0., .5], [0., .5, .5]]
+&gt;&gt;&gt; basis = {&#8216;Cu&#8217; : copper_locations}
 &gt;&gt;&gt; copper_lattice = mb.Lattice(spacings, dimension=3,
 ...                           lattice_vectors=lattice_vector,
-...                           basis_vectors=basis_vector)
+...                           basis_atoms=basis)
 &gt;&gt;&gt; copper_dict = {&#8216;Cu&#8217; : copper}
 &gt;&gt;&gt; copper_cell = copper_lattice.populate(x=3, y=3, z=20,
 ...                                       compound_dict=copper_dict)</p>
-<p>TODO(Justin Gilmer) : migrate data cleaning to separate functions
-TODO(Justin Gilmer) : Print function to display info about Lattice (repr)
+<p>TODO(Justin Gilmer) : Print function to display info about Lattice (repr)
 TODO(Justin Gilmer) : inheritance(Cubic, orthorhombic, hexangonal)
-TODO(Justin Gilmer) : nested for loop cleaning up
-TODO(Justin Gilmer) : orientation functionality
-TODO(Justin Gilmer) : conversion to idiomatic python</p>
+TODO(Justin Gilmer) : orientation functionality</p>
 <p class="rubric">Attributes</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -4867,7 +4865,7 @@ TODO(Justin Gilmer) : conversion to idiomatic python</p>
 <tr class="row-odd"><td>lattice_spacings</td>
 <td>(list-like, shape=(dimension,), required, default=None) Length of unit cell edges.</td>
 </tr>
-<tr class="row-even"><td>basis_vectors</td>
+<tr class="row-even"><td>basis_atoms</td>
 <td>(list-like, shape=([&#8216;id&#8217;,[dimension,]], ... ,) optional) default={(&#8216;default&#8217;,([0,0,0]))} Location of all basis Compounds in unit cell.</td>
 </tr>
 <tr class="row-odd"><td>angles</td>
@@ -4877,7 +4875,7 @@ TODO(Justin Gilmer) : conversion to idiomatic python</p>
 </table>
 <dl class="method">
 <dt id="mbuild.lattice.Lattice.populate">
-<code class="descname">populate</code><span class="sig-paren">(</span><em>compound_dict=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/lattice.html#Lattice.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.lattice.Lattice.populate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">populate</code><span class="sig-paren">(</span><em>compound_dict=None</em>, <em>x=1</em>, <em>y=1</em>, <em>z=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mbuild/lattice.html#Lattice.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.lattice.Lattice.populate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Expand lattice and create compound from lattice.</p>
 <p>populate will expand lattice based on user input. The user must also
 pass in a dictionary that contains the keys that exist in the
@@ -4888,15 +4886,15 @@ returned to the user.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : int, optional, default=None</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>x</strong> : int, optional, default=1</p>
 <blockquote>
 <div><p>How many iterations in the x direction.</p>
 </div></blockquote>
-<p><strong>y</strong> : int, optional, default=None</p>
+<p><strong>y</strong> : int, optional, default=1</p>
 <blockquote>
 <div><p>How many iterations in the y direction.</p>
 </div></blockquote>
-<p><strong>z</strong> : int, optional, default=None</p>
+<p><strong>z</strong> : int, optional, default=1</p>
 <blockquote>
 <div><p>How many iterations in the z direction.</p>
 </div></blockquote>
