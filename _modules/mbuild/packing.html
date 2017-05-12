@@ -209,8 +209,8 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    compound : mb.Compound</span>
-<span class="sd">    n_compounds : int</span>
+<span class="sd">    compound : mb.Compound or list of mb.Compound</span>
+<span class="sd">    n_compounds : int or list of int</span>
 <span class="sd">    box : mb.Box</span>
 <span class="sd">    overlap : float</span>
 
@@ -227,22 +227,27 @@
         <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
     <span class="n">box</span> <span class="o">=</span> <span class="n">_validate_box</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
-
-    <span class="n">n_compounds</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_compounds</span><span class="p">)</span>
-    <span class="n">compound_pdb</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.pdb&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">compound</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">compound_pdb</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">filled_pdb</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.pdb&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+        <span class="n">compound</span> <span class="o">=</span> <span class="p">[</span><span class="n">compound</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_compounds</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+        <span class="n">n_compounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">n_compounds</span><span class="p">]</span>
 
     <span class="c1"># In angstroms for packmol.</span>
     <span class="n">box_mins</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">mins</span> <span class="o">*</span> <span class="mi">10</span>
     <span class="n">box_maxs</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">maxs</span> <span class="o">*</span> <span class="mi">10</span>
     <span class="n">overlap</span> <span class="o">*=</span> <span class="mi">10</span>
 
-    <span class="c1"># Build the input file and call packmol.</span>
-    <span class="n">input_text</span> <span class="o">=</span> <span class="p">(</span><span class="n">PACKMOL_HEADER</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">overlap</span><span class="p">,</span> <span class="n">filled_pdb</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span> <span class="o">+</span>
-                  <span class="n">PACKMOL_BOX</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">compound_pdb</span><span class="p">,</span> <span class="n">n_compounds</span><span class="p">,</span>
-                                     <span class="n">box_mins</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">box_mins</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">box_mins</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                     <span class="n">box_maxs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">box_maxs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">box_maxs</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="c1"># Build the input file for each compound and call packmol.</span>
+    <span class="n">filled_pdb</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.pdb&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">input_text</span> <span class="o">=</span> <span class="n">PACKMOL_HEADER</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">overlap</span><span class="p">,</span> <span class="n">filled_pdb</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">comp</span><span class="p">,</span> <span class="n">m_compounds</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">n_compounds</span><span class="p">):</span>
+        <span class="n">m_compounds</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m_compounds</span><span class="p">)</span>
+        <span class="n">compound_pdb</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.pdb&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">comp</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">compound_pdb</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">input_text</span> <span class="o">+=</span> <span class="n">PACKMOL_BOX</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">compound_pdb</span><span class="p">,</span> <span class="n">m_compounds</span><span class="p">,</span>
+                           <span class="n">box_mins</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">box_mins</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">box_mins</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                           <span class="n">box_maxs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">box_maxs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">box_maxs</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 
     <span class="n">proc</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="n">PACKMOL</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">input_text</span><span class="p">)</span>
@@ -251,8 +256,9 @@
 
     <span class="c1"># Create the topology and update the coordinates.</span>
     <span class="n">filled</span> <span class="o">=</span> <span class="n">Compound</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_compounds</span><span class="p">):</span>
-        <span class="n">filled</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">clone</span><span class="p">(</span><span class="n">compound</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">comp</span><span class="p">,</span> <span class="n">m_compounds</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">n_compounds</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m_compounds</span><span class="p">):</span>
+            <span class="n">filled</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">clone</span><span class="p">(</span><span class="n">comp</span><span class="p">))</span>
     <span class="n">filled</span><span class="o">.</span><span class="n">update_coordinates</span><span class="p">(</span><span class="n">filled_pdb</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">filled</span></div>
 
@@ -277,14 +283,10 @@
         <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Packmol not found&quot;</span><span class="p">)</span>
 
     <span class="n">box</span> <span class="o">=</span> <span class="n">_validate_box</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
-
-    <span class="n">n_solvent</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_solvent</span><span class="p">)</span>
-
-    <span class="n">solute_pdb</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.pdb&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">solute</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">solute_pdb</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">solvent_pdb</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.pdb&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">solvent</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">solvent_pdb</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">solvated_pdb</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.pdb&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">solvent</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+        <span class="n">solvent</span> <span class="o">=</span> <span class="p">[</span><span class="n">solvent</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_solvent</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+        <span class="n">n_solvent</span> <span class="o">=</span> <span class="p">[</span><span class="n">n_solvent</span><span class="p">]</span>
 
     <span class="c1"># In angstroms for packmol.</span>
     <span class="n">box_mins</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">mins</span> <span class="o">*</span> <span class="mi">10</span>
@@ -292,12 +294,20 @@
     <span class="n">overlap</span> <span class="o">*=</span> <span class="mi">10</span>
     <span class="n">center_solute</span> <span class="o">=</span> <span class="p">(</span><span class="n">box_maxs</span> <span class="o">+</span> <span class="n">box_mins</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 
-    <span class="c1"># Build the input file and call packmol.</span>
+    <span class="c1"># Build the input file for each compound and call packmol.</span>
+    <span class="n">solvated_pdb</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.pdb&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">solute_pdb</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.pdb&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">solute</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">solute_pdb</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">input_text</span> <span class="o">=</span> <span class="p">(</span><span class="n">PACKMOL_HEADER</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">overlap</span><span class="p">,</span> <span class="n">solvated_pdb</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span> <span class="o">+</span>
-                  <span class="n">PACKMOL_SOLUTE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solute_pdb</span><span class="p">,</span> <span class="o">*</span><span class="n">center_solute</span><span class="p">)</span> <span class="o">+</span>
-                  <span class="n">PACKMOL_BOX</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solvent_pdb</span><span class="p">,</span> <span class="n">n_solvent</span><span class="p">,</span>
-                                     <span class="n">box_mins</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">box_mins</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">box_mins</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                                     <span class="n">box_maxs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">box_maxs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">box_maxs</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+                  <span class="n">PACKMOL_SOLUTE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solute_pdb</span><span class="p">,</span> <span class="o">*</span><span class="n">center_solute</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">solv</span><span class="p">,</span> <span class="n">m_solvent</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">solvent</span><span class="p">,</span> <span class="n">n_solvent</span><span class="p">):</span>
+        <span class="n">m_solvent</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m_solvent</span><span class="p">)</span>
+        <span class="n">solvent_pdb</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.pdb&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">solv</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">solvent_pdb</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">input_text</span> <span class="o">+=</span> <span class="n">PACKMOL_BOX</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solvent_pdb</span><span class="p">,</span> <span class="n">m_solvent</span><span class="p">,</span>
+                           <span class="n">box_mins</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">box_mins</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">box_mins</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                           <span class="n">box_maxs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">box_maxs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">box_maxs</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 
     <span class="n">proc</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="n">PACKMOL</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">input_text</span><span class="p">)</span>
@@ -307,8 +317,9 @@
     <span class="c1"># Create the topology and update the coordinates.</span>
     <span class="n">solvated</span> <span class="o">=</span> <span class="n">Compound</span><span class="p">()</span>
     <span class="n">solvated</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">solute</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_solvent</span><span class="p">):</span>
-        <span class="n">solvated</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">clone</span><span class="p">(</span><span class="n">solvent</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">solv</span><span class="p">,</span> <span class="n">m_solvent</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">solvent</span><span class="p">,</span> <span class="n">n_solvent</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m_solvent</span><span class="p">):</span>
+            <span class="n">solvated</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">clone</span><span class="p">(</span><span class="n">solv</span><span class="p">))</span>
     <span class="n">solvated</span><span class="o">.</span><span class="n">update_coordinates</span><span class="p">(</span><span class="n">solvated_pdb</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">solvated</span></div>
 
