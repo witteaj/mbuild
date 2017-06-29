@@ -345,6 +345,16 @@ class Compound(object):
         for particle in self.particles():
             if particle.name == name:
                 yield particle
+    def mirror(self, about):
+         """"""
+         if self.made_from_lattice:
+             warn('This compound was made from a lattice, it is recommended'
+                " that you use the corresponding lattice object's"
+                ' .mirror() method, as it is unlikely that you produced'                                                                                                                                
+                ' the desrired results.'
+                " Ex: some_lattice.mirror(some_compound, 'xy')")
+                ### you should see if calling mirror again undoes it
+        new_positions = _mirror(self.xyz_with_ports, )
 
     @property
     def charge(self):
@@ -1384,6 +1394,7 @@ class Compound(object):
             The vector about which to rotate the Compound.
 
         """
+        if self.
         new_positions = _rotate(self.xyz_with_ports, theta, around)
         self.xyz_with_ports = new_positions
 
