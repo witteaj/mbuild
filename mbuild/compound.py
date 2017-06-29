@@ -216,6 +216,7 @@ class Compound(object):
         self._rigid_id = None
         self._contains_rigid = False
         self._check_if_contains_rigid_bodies = False
+        self.made_from_lattice = False
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
@@ -226,6 +227,16 @@ class Compound(object):
             self._charge = 0.0
         else:
             self._charge = charge
+
+    def mirror(self, about):
+        """"""
+        if self.made_from_lattice:
+            warn('This compound was made from a lattice, it is recommended'
+                " that you use the corresponding lattice object's"
+                ' .mirror() method, as it is unlikely that you produced'
+                ' the desrired results.'
+                " Ex: some_lattice.mirror(some_compound, 'xy')")
+        pass
 
     def particles(self, include_ports=False):
         """Return all Particles of the Compound.

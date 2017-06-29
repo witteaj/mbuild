@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[ ]:
+# In[245]:
 
 from collections import (defaultdict, Iterable, deque)
 from copy import deepcopy
@@ -146,8 +146,10 @@ class Lattice(object):
         self.basis_atoms = dict()
         self.angles = None
         self.past_lat_vecs = deque()
-        self.past_lat_vecs.append(lattice_vectors)
+        self.past_lat_vecs.append(deepcopy(lattice_vectors))
         self.redo_lat_vecs = deque()
+        self.been_mirrored = [1, deque(), deque(), deque(), deque(), True]
+        # the first two deques are for undo the last 2 are for redo
         self._sanitize_inputs(lattice_vectors=lattice_vectors,
                               dimension=dimension,
                               lattice_spacings=lattice_spacings,
@@ -515,6 +517,7 @@ class Lattice(object):
                     raise TypeError('Invalid type in provided Compound dictionary. '
                               'For key {}, type: {} was provided, '
                               'not mbuild.Compound.'.format(key_id, err_type))
+        ret_lattice.made_from_lattice = True 
         return ret_lattice
     
     
@@ -611,7 +614,7 @@ class Lattice(object):
             #the next part must be done before new_face checks.
         #grab the old lattice vectors
         #create a list to store the most current location of each lattice vector lattice vectors in
-        updated_lat_vecs = [kk for kk in self.lattice_vectors]
+        updated_lat_vecs = list(deepcopy(self.lattice_vectors))
         
         if new_face:
             if self.dimension != 3: # sketchy on this one
@@ -667,7 +670,11 @@ class Lattice(object):
                 
                 #########
             return 
-        self.redo_lat_vecs.clear()
+        
+        if self.been_mirrored[5]:
+            self.been_mirrored[3].clear()
+            self.been_mirrored[4].clear()
+            self.redo_lat_vecs.clear()
                     
                    
         standard_option = False
@@ -840,7 +847,7 @@ class Lattice(object):
             raise ValueError('underdefined system')
             
         self.lattice_vectors = np.array(updated_lat_vecs) 
-        self.past_lat_vecs.append(self.lattice_vectors)
+        self.past_lat_vecs.append(np.array(updated_lat_vecs))
         # new face still does not update the past lat vecs 
              
     def mirror(self, cmpnd, about):
@@ -881,7 +888,14 @@ class Lattice(object):
             else:
                 w[str_dict[letta]] = 0
         which_flip = w.index(1)
-        updated_lat_vecs = [kk for kk in self.lattice_vectors]
+        updated_lat_vecs = list(deepcopy(self.lattice_vectors))
+        self.been_mirrored[0] *= -1
+        self.been_mirrored[1].append(about)
+        self.been_mirrored[2].append(which_flip)
+        if self.been_mirrored[5]:
+            self.been_mirrored[3].clear()
+            self.been_mirrored[4].clear()
+            self.redo_lat_vecs.clear()
         
         
 #         if self.rotated:
@@ -907,52 +921,224 @@ class Lattice(object):
 #                 part.pos[which_flip] = -1*part.pos[which_flip]
         for part in cmpnd.children:
             part.pos[which_flip] *= -1
+        print('andy')
+        print(updated_lat_vecs)
         for ii in range(self.dimension):
             updated_lat_vecs[ii][which_flip] *= -1
+        print(updated_lat_vecs)
+         
+        self.past_lat_vecs.append(np.array(updated_lat_vecs))
+        self.lattice_vectors = np.array(updated_lat_vecs)
+        
         # make sure to update past lattice vecs 
+        
+        # later on look into the effect of mirroring each individual atom too this may be important for 
+        # compounds like cholesterol
         
             
             
     def undo_rotation(self, cmpnd, OG = False):
         """rotate back to original orientation or just a one."""
+        
+        # work on case of enantiomer.
+        
+        # ensure that this is compatible with 2d
+        
+        # in all instances where past_lat_vecs or lattice_vectors are updated ensure
+        #they're normalized
         if len(self.past_lat_vecs) == 1:
             raise ValueError('Cannot undo since this is the original lattice orientation.')
-        start = self.past_lat_vecs.pop()
-        self.redo_lat_vecs.append(start)
+        #self.been_mirrored[5] = False
+        start = deepcopy(self.past_lat_vecs.pop())
+        self.redo_lat_vecs.append(start)#######
         if OG:
             while len(self.past_lat_vecs) > 1:
-                self.redo_lat_vecs.append(self.past_lat_vecs.pop())
-        destination = self.past_lat_vecs[-1]
-        self.lattice_vectors = destination
-        # and now we rotate
+                self.redo_lat_vecs.append(self.past_lat_vecs.pop())###
+            while len(self.been_mirrored[1]) > 0:
+                self.been_mirrored[3].append(self.been_mirrored[1].pop())###
+                self.been_mirrored[4].append(self.been_mirrored[2].pop())###
+            self.been_mirrored[0] = 1
+            destination = self.past_lat_vecs[-1]
+            self.lattice_vectors = deepcopy(destination)###
+
+            R = np.matmul(destination, np.linalg.inv(start))
+            for ii in R:
+                ii /= np.linalg.norm(ii)
+            for part in cmpnd.children:
+                part.pos = np.matmul(np.linalg.inv(R), part.pos)           
+        else:
+            destination = np.array(deepcopy(self.past_lat_vecs[-1]))
+            if np.linalg.det(destination)*np.linalg.det(start) < 0:
+                self.been_mirrored[5] = False
+                self.past_lat_vecs.pop()
+                print('this is a mirror')
+                print(self.been_mirrored)
+                self.mirror(cmpnd, about= self.been_mirrored[1].pop())
+                print(self.been_mirrored)
+                self.been_mirrored[3].append(self.been_mirrored[1].pop())##
+                self.been_mirrored[4].append(self.been_mirrored[2].pop())##
+                self.been_mirrored[2].pop()
+                print(self.been_mirrored)
+                self.been_mirrored[5] = True
+            else:
+                if self.dimension < 3:
+                    pass
+                else:
+#                     print('__________________________')
+#                     print('pre rotation')
+#                     print(start)
+#                     print(destination)
+#                     print('')
+                    flag = 0
+                    for ii in range(3):
+                        if flag == 1:
+                            break
+                        orthag = np.cross(start[ii], destination[ii])
+                        theta = abs(angle(destination[ii], start[ii]))
+                        if self.been_mirrored[0] < 0 and self.been_mirrored[2][-1] == ii:
+                            theta *= -1
+                        start = np.array([Rotation(theta, orthag).apply_to(jj)[0] for jj in start])
+#                         print(ii)
+#                         print('post rotation')
+#                         print(start)
+#                         print(destination)
+#                         print('')
+                        for nn, mm in zip(start, destination):
+                            nn = np.divide(nn, np.linalg.norm(nn))
+                            mm = np.divide(mm, np.linalg.norm(mm))
+#                         print('post normalization')
+#                         print(start)
+#                         print(destination)
+#                         print('')
+                        if ii == 1:
+                            if np.allclose(start, destination, atol= 1e-13):
+                                flag += 1
+                        elif ii == 2:
+                            if not np.allclose(start, destination, atol= 1e-13):
+                                raise ValueError('')
+                        for part in cmpnd.children:
+                            part.pos = Rotation(theta, orthag).apply_to(part.pos)[0]
+                self.lattice_vectors = destination######
         
-        R = np.matmul(destination, np.linalg.inv(start))
-        for ii in R:
-            ii /= np.linalg.norm(ii)
-        for part in cmpnd.children:
-            part.pos = np.matmul(R, part.pos)
+#         if OG:
+#             start = self.past_lat_vecs.pop()
+#             self.redo_lat_vecs.append(start)
+#             if OG:
+#                 while len(self.past_lat_vecs) > 1:
+#                     self.redo_lat_vecs.append(self.past_lat_vecs.pop())
+#             destination = self.past_lat_vecs[-1]
+#             self.lattice_vectors = destination
+
+#             R = np.matmul(destination, np.linalg.inv(start))
+#             for ii in R:
+#                 ii /= np.linalg.norm(ii)
+#             for part in cmpnd.children:
+#                 part.pos = np.matmul(np.linalg.inv(R), part.pos)
+#         else:
+#             updated_lat_vecs = [kk for kk in ]
+#             if self.dimensions < 3:
+#                 pass
+#             else:
+#                 for ii in range(2):
+#                     orthag = np.cross(start[ii], destination[ii])
+#                     theta = abs(angle(destination[ii], start[ii]))
+#                     start = [Rotation(theta, orthag).apply_to(jj)[0] for jj in start]
+#                     if ii == 0:
+#                         if not np.allclose(start[ii], destination[ii]):
+#                             pass
+#                     elif ii == 1:
+#                         for jj, kk in zip(start, destination):
+#                             if not np.allclose(jj, kk):
+#                                 pass
+#                     for part in cmpnd.children:
+#                         part.pos = Rotation(theta, orthag).apply_to(part.pos)[0]
+
+                
+                
+            
         
                 
     def redo_rotation(self, cmpnd, redo_all = False):
         """"""
         if len(self.redo_lat_vecs) == 0:
             raise ValueError('Cannot redo, this is most current rotation.')
-        start = self.past_lat_vecs[-1]
-        
+        start = deepcopy(np.array(self.past_lat_vecs[-1]))
         if redo_all:
             while len(self.redo_lat_vecs) > 0:
-                self.past_lat_vecs.append(self.redo_lat_vecs.pop())
+                #if np.linalg.det(self.past_lat_vecs[-1])
+                self.past_lat_vecs.append(self.redo_lat_vecs.pop())####\
+            while len(self.been_mirrored[3]) > 0:
+                self.been_mirrored[1].append(self.been_mirrored[3].pop())
+                self.been_mirrored[2].append(self.been_mirrored[4].pop())
+                self.been_mirrored[0]*=-1
+                
+            destination = deepcopy(self.past_lat_vecs[-1])
+            #self.past_lat_vecs.append(destination)###
+            self.lattice_vectors = deepcopy(destination)
+                
+            R = np.matmul(destination, np.linalg.inv(start))
+            for ii in R:
+                ii /= np.linalg.norm(ii)
+            for part in cmpnd.children:
+                part.pos = np.matmul(np.linalg.inv(R), part.pos)
         else:
-            self.past_lat_vecs.append(self.redo_lat_vecs.pop())
-        destination = self.past_lat_vecs[-1]
-        self.lattice_vectors = destination
-        # now we rotate
+            destination = deepcopy(self.redo_lat_vecs.pop())
+            if np.linalg.det(destination)*np.linalg.det(start) < 0:
+                self.been_mirrored[5] = False
+                print('this is a redo mirror')
+                self.mirror(cmpnd, about= self.been_mirrored[3].pop())
+                self.been_mirrored[4].pop()
+                self.been_mirrored[5] = True
+            else:
+                if self.dimension < 3:
+                    pass
+                else:
+                    self.past_lat_vecs.append(destination)###
+                    self.lattice_vectors = deepcopy(destination)
+                    flag = 0
+                    for ii in range(3):
+                        if flag == 1:
+                            break 
+#                         print('pre rotation')
+#                         print(start)
+#                         print(destination)
+                        orthag = np.cross(start[ii], destination[ii])
+#                         print('orthag')
+#                         print(orthag)
+#                         print(np.linalg.norm(orthag))
+                        theta = abs(angle(destination[ii], start[ii]))
+                        if self.been_mirrored[0] < 0 and self.been_mirrored[4][-1] == ii:
+                            # this check sees if the vectors are left handed and adjusts theta appropriately
+                            theta *= -1
+#                         print(theta)
+                        start = np.array([Rotation(theta, orthag).apply_to(jj)[0] for jj in start])####
+#                         print(ii)
+#                         print('post rotation')
+#                         print(start)
+#                         print(destination)
+#                         print('')
+                        for nn, mm in zip(start, destination):
+                            nn = np.divide(nn, np.linalg.norm(nn))
+                            mm = np.divide(mm, np.linalg.norm(mm))
+                        print('post normalization')
+                        print(start)
+                        print(destination)
+                        print('')
+                        if ii == 1:
+                            if np.allclose(start, destination, atol= 1e-13):
+                                flag += 1
+                        elif ii == 2:
+                            if not np.allclose(start, destination, atol= 1e-13):
+                                raise ValueError('')
+                        for part in cmpnd.children:
+                            part.pos = Rotation(theta, orthag).apply_to(part.pos)[0]
+            
+            
         
-        R = np.matmul(destination, np.linalg.inv(start))
-        for ii in R:
-            ii /= np.linalg.norm(ii)
-        for part in cmpnd.children:
-            part.pos = np.matmul(R, part.pos)
+        #destination = self.past_lat_vecs[-1]
+        #self.lattice_vectors = destination##
+        
+        
                 
                 
 
@@ -960,7 +1146,317 @@ class Lattice(object):
 print('issa vibe')
 
 
+# In[221]:
+
+# # this cell tests the ability of the undo and redo (and un/redoall) methods to handle multiple mirrors and rotations
+
+
+# import mbuild as mb
+
+# dim = 3
+# cscl_lengths = [.4123, .4123, .4123]
+# cscl_vectors = [[1,0,0], [0,1,0], [0,0,1]]
+# cscl_basis = {'Cs':[[0, 0, 0]], 'Cl':[[.5, .5, .5]]}
+# cscl_lattice = Lattice(cscl_lengths, dimension=dim,
+#                                 lattice_vectors=cscl_vectors, basis_atoms=cscl_basis)
+# cs = mb.Compound(name='Cs')
+# cl = mb.Compound(name='Cl')
+# cscl_dict = {'Cs':cs, 'Cl':cl}
+# cscl_crystal = cscl_lattice.populate(compound_dict=cscl_dict, x=3, y=3, z=3)
+# #cscl_crystal = cscl_lattice.populate(compound_dict=cscl_dict, x=2, y=2, z=2)
+
+
+# import numpy as np
+# dum = []
+# for part in cscl_crystal:
+#     if np.array_equal([0,0,0], part.pos):
+# #         print(part.pos)
+# #         print(type(cscl_crystal))
+# #         print(part.name)
+#         part.name='Rb'
+
+#     if np.sum([1.0308,1.0308,1])<= np.sum(part.pos):
+# #         print(part.pos)
+# #         print(type(cscl_crystal))
+# #         print(part.name)
+#         part.name='O'
+
+#     if part.pos[0] == 0 and part.pos[1] == 0 and .1<= part.pos[2]<=.5:
+# #         print(part.pos)
+# #         print(type(cscl_crystal))
+# #         print(part.name)
+#         part.name='N'
+# #cscl_crystal.save('cscl_crystal_OG_labeled_3x3x3.mol2', overwrite = True)
+# OG_crystal = mb.compound.clone(cscl_crystal) 
+# print('OG')
+# print(cscl_lattice.past_lat_vecs)
+
+# print('rot1')
+# # cscl_lattice.rotate_lattice(lat= cscl_crystal,
+# #                             new_view= [[-2,1,1], [1,1,1], [0,1,-1]],
+# #                             miller_directions= True)
+# cscl_lattice.rotate_lattice(lat= cscl_crystal,
+#                             new_view= [.567, .9, -.257],
+#                             by_angles= True)
+# #cscl_crystal.save('cscl_crystal_rot1_miller_neg211_111_01neg1.mol2', overwrite = True)
+# rotate1_crystal = mb.compound.clone(cscl_crystal)
+# print(cscl_lattice.past_lat_vecs)
+
+# print('mirror1')
+# cscl_lattice.mirror(cmpnd= cscl_crystal, about= 'yx')
+# #cscl_crystal.save('cscl_crystal_mirror1_xy.mol2', overwrite = True)
+# mirror1_crystal = mb.compound.clone(cscl_crystal)
+# print(cscl_lattice.past_lat_vecs)
+
+# print('rot2')
+# # cscl_lattice.rotate_lattice(lat= cscl_crystal,
+# #                             new_view= [[-2,1,1], -20], degrees= True)
+# cscl_lattice.rotate_lattice(lat= cscl_crystal,
+#                             new_view= [[-2,1,1], [1,1,1], [0,1,-1]],
+#                             miller_directions= True)
+# #cscl_crystal.save('cscl_crystal_rot2_AA_neg211_neg20.mol2', overwrite = True)
+# rotate2_crystal = mb.compound.clone(cscl_crystal)
+# print(cscl_lattice.past_lat_vecs)
+
+# print('mirror2')
+# cscl_lattice.mirror(cmpnd= cscl_crystal, about= 'yz')
+# #cscl_crystal.save('cscl_crystal_mirror2_yz.mol2', overwrite = True)
+# mirror2_crystal = mb.compound.clone(cscl_crystal)
+# print(cscl_lattice.past_lat_vecs)
+
+# print('rot3')
+# # cscl_lattice.rotate_lattice(lat= cscl_crystal,
+# #                             new_view= [30,30,40],
+# #                             degrees = True, by_angles = True)
+# cscl_lattice.rotate_lattice(lat= cscl_crystal,
+#                             new_view= [[-3,-3,-4],-15],
+#                             degrees = True)
+# #cscl_crystal.save('cscl_crystal_rot3_byangles_303040.mol2', overwrite = True)
+# rotate3_crystal = mb.compound.clone(cscl_crystal)
+# print(cscl_lattice.past_lat_vecs)
+
+# # print('undoall')
+# # cscl_lattice.undo_rotation(cmpnd= cscl_crystal, OG= True)
+# # undoall_crystal = mb.compound.clone(cscl_crystal)
+# # ########################################## with these instructions, redo3 fails when using undo all but not when 
+# # ########################################## using undo 1-5. Undo all worked previously.
+
+# print('undo1')
+# cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+# cscl_crystal.save('cscl_crystal_undo1.mol2', overwrite = True)
+# undo1_crystal = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('redo lattice Vecs')
+# print(cscl_lattice.redo_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+
+# print('undo2')
+# cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+# cscl_crystal.save('cscl_crystal_undo2.mol2', overwrite = True)
+# undo2_crystal = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('redo lattice Vecs')
+# print(cscl_lattice.redo_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+
+# print('undo3')
+# cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+# cscl_crystal.save('cscl_crystal_undo3.mol2', overwrite = True)
+# undo3_crystal = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('redo lattice Vecs')
+# print(cscl_lattice.redo_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+
+# print('undo4')
+# cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+# cscl_crystal.save('cscl_crystal_undo4.mol2', overwrite = True)
+# undo4_crystal = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+
+# print('undo5')
+# cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+# cscl_crystal.save('cscl_crystal_undo5.mol2', overwrite = True)
+# undo5_crystal = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+# print('redo lat vecs')
+# print(cscl_lattice.redo_lat_vecs)
+
+# print('redo1')
+# cscl_lattice.redo_rotation(cmpnd= cscl_crystal)
+# #cscl_crystal.save('cscl_crystal_redo1.mol2', overwrite = True)
+# redo1_crystal = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('redo lat vecs')
+# print(cscl_lattice.redo_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+
+# print('redo2')
+# cscl_lattice.redo_rotation(cmpnd= cscl_crystal)
+# #cscl_crystal.save('cscl_crystal_redo2.mol2', overwrite = True)
+# redo2_crystal = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('redo_lat vecs')
+# print(cscl_lattice.redo_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+
+# print('redo3')
+# cscl_lattice.redo_rotation(cmpnd= cscl_crystal)
+# #cscl_crystal.save('cscl_crystal_redo3.mol2', overwrite = True)
+# redo3_crystal = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+
+# print('redo4')
+# cscl_lattice.redo_rotation(cmpnd= cscl_crystal)
+# #cscl_crystal.save('cscl_crystal_redo4.mol2', overwrite = True)
+# redo4_crystal = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+
+# print('redo5')
+# cscl_lattice.redo_rotation(cmpnd= cscl_crystal)
+# #cscl_crystal.save('cscl_crystal_redo5.mol2', overwrite = True)
+# redo5_crystal = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+# print('redo lat vecs')
+# print(cscl_lattice.redo_lat_vecs)
+
+# # print('redoall')
+# # cscl_lattice.redo_rotation(cmpnd= cscl_crystal, redo_all= True)
+# # #cscl_crystal.save('cscl_crystal_redoall.mol2', overwrite = True)
+# # redoall_crystal = mb.compound.clone(cscl_crystal)
+# # print('past lattice Vecs')
+# # print(cscl_lattice.past_lat_vecs)
+# # print('been_mirrored')
+# # print(cscl_lattice.been_mirrored)
+# # print('redo lat vecs')
+# # print(cscl_lattice.redo_lat_vecs)
+
+# # print('final rot')
+# # cscl_lattice.rotate_lattice(lat= cscl_crystal, new_view= [[1,1,1], 120],
+# #                             degrees= True)
+# # final_rot_crystal = mb.compound.clone(cscl_crystal)
+# # print('past lattice Vecs')
+# # print(cscl_lattice.past_lat_vecs)
+# # print('been_mirrored')
+# # print(cscl_lattice.been_mirrored)
+# # print('redo lat vecs')
+# # print(cscl_lattice.redo_lat_vecs)
+
+# # print('OG & undoall')
+# # for part1, part2 in zip(OG_crystal, undoall_crystal):
+# #     print(part1.pos)
+# #     print(part2.pos)
+# #     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+# #     print(' ')
+# print('OG & undo5')
+# for part1, part2 in zip(OG_crystal, undo5_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+#     print(' ')
+# print(" rot1 & undo4")
+# for part1, part2 in zip(rotate1_crystal, undo4_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+#     print(' ')
+# print(" mirror 1 & undo 3")
+# for part1, part2 in zip(undo3_crystal, mirror1_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+#     print(' ')
+# print('rotate2 & undo 2')
+# for part1, part2 in zip(undo2_crystal, rotate2_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+#     print(' ')
+# print(" mirror2 & undo1")
+# for part1, part2 in zip(mirror2_crystal, undo1_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+#     print(' ')
+    
+# print('rot3 & redo5')
+# for part1, part2 in zip(rotate3_crystal, redo5_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+#     print(' ')
+# print(" rot1 & redo1")
+# for part1, part2 in zip(rotate1_crystal, redo1_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+#     print(' ')
+# print(" mirror 1 & redo2")
+# for part1, part2 in zip(redo2_crystal, mirror1_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+#     print(' ')
+# print('rotate2 & redo3')
+# for part1, part2 in zip(undo2_crystal, rotate2_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+#     print(' ')
+# print(" mirror2 & redo4")
+# for part1, part2 in zip(mirror2_crystal, redo4_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+#     print(' ')
+
+# # print('rot3 & redoall')
+# # for part1, part2 in zip(rotate3_crystal, redoall_crystal):
+# #     print(part1.pos)
+# #     print(part2.pos)
+# #     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+# #     print(' ')
+
+
+
+
+
 # In[ ]:
+
+
+
+
+# In[275]:
+
+#testing redo's ability to go forward after it has been interrupted and undone 
+
+
+###both scenarios break it
 
 import mbuild as mb
 
@@ -977,6 +1473,468 @@ cscl_crystal = cscl_lattice.populate(compound_dict=cscl_dict, x=3, y=3, z=3)
 #cscl_crystal = cscl_lattice.populate(compound_dict=cscl_dict, x=2, y=2, z=2)
 
 
+import numpy as np
+dum = []
+for part in cscl_crystal:
+    if np.array_equal([0,0,0], part.pos):
+#         print(part.pos)
+#         print(type(cscl_crystal))
+#         print(part.name)
+        part.name='Rb'
+
+    if np.sum([1.0308,1.0308,1])<= np.sum(part.pos):
+#         print(part.pos)
+#         print(type(cscl_crystal))
+#         print(part.name)
+        part.name='O'
+
+    if part.pos[0] == 0 and part.pos[1] == 0 and .1<= part.pos[2]<=.5:
+#         print(part.pos)
+#         print(type(cscl_crystal))
+#         print(part.name)
+        part.name='N'
+#cscl_crystal.save('cscl_crystal_OG_labeled_3x3x3.mol2', overwrite = True)
+OG_crystal = mb.compound.clone(cscl_crystal) 
+print('OG')
+print('past')
+print(cscl_lattice.past_lat_vecs)
+print('redo')
+print(cscl_lattice.redo_lat_vecs)
+print('been mirrored')
+print(cscl_lattice.been_mirrored)
+
+print('rot1')
+# cscl_lattice.rotate_lattice(lat= cscl_crystal,
+#                             new_view= [[-2,1,1], [1,1,1], [0,1,-1]],
+#                             miller_directions= True)
+cscl_lattice.rotate_lattice(lat= cscl_crystal,
+                            new_view= [.567, .9, -.257],
+                            by_angles= True)
+# cscl_lattice.rotate_lattice(lat= cscl_crystal,
+#                             new_view= [[1,1,1],60],
+#                             degrees= True)
+#cscl_crystal.save('cscl_crystal_rot1_miller_neg211_111_01neg1.mol2', overwrite = True)
+rotate1_crystal = mb.compound.clone(cscl_crystal)
+print('det')
+print(np.linalg.det(cscl_lattice.lattice_vectors))
+print('past')
+print(cscl_lattice.past_lat_vecs)
+print('redo')
+print(cscl_lattice.redo_lat_vecs)
+print('been mirrored')
+print(cscl_lattice.been_mirrored)
+
+print('mirror1')
+cscl_lattice.mirror(cmpnd= cscl_crystal, about= 'yx')
+#cscl_crystal.save('cscl_crystal_mirror1_xy.mol2', overwrite = True)
+mirror1_crystal = mb.compound.clone(cscl_crystal)
+print(cscl_lattice.past_lat_vecs)
+
+print('rot2')
+# cscl_lattice.rotate_lattice(lat= cscl_crystal,
+#                             new_view= [[-2,1,1], -20], degrees= True)
+cscl_lattice.rotate_lattice(lat= cscl_crystal,
+                            new_view= [[-2,1,1], [1,1,1], [0,1,-1]],
+                            miller_directions= True)
+# cscl_lattice.rotate_lattice(lat= cscl_crystal,
+#                             new_view= [[1,1,1],60],
+#                             degrees= True)
+#cscl_crystal.save('cscl_crystal_rot2_AA_neg211_neg20.mol2', overwrite = True)
+rotate2_crystal = mb.compound.clone(cscl_crystal)
+print(cscl_lattice.past_lat_vecs)
+
+print('mirror2')
+cscl_lattice.mirror(cmpnd= cscl_crystal, about= 'yz')
+#cscl_crystal.save('cscl_crystal_mirror2_yz.mol2', overwrite = True)
+mirror2_crystal = mb.compound.clone(cscl_crystal)
+print(cscl_lattice.past_lat_vecs)
+
+print('rot3')
+# cscl_lattice.rotate_lattice(lat= cscl_crystal,
+#                             new_view= [30,30,40],
+#                             degrees = True, by_angles = True)
+cscl_lattice.rotate_lattice(lat= cscl_crystal,
+                            new_view= [[-3,-3,-4],-15],
+                            degrees = True)
+# cscl_lattice.rotate_lattice(lat= cscl_crystal,
+#                             new_view= [[1,1,1],60],
+#                             degrees= True)
+#cscl_crystal.save('cscl_crystal_rot3_byangles_303040.mol2', overwrite = True)
+rotate3_crystal = mb.compound.clone(cscl_crystal)
+print(cscl_lattice.past_lat_vecs)
+
+
+print('undo1')
+cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+#cscl_crystal.save('cscl_crystal_undo1.mol2', overwrite = True)
+undo1_crystal = mb.compound.clone(cscl_crystal)
+print('past lattice Vecs')
+print(cscl_lattice.past_lat_vecs)
+print('redo lattice Vecs')
+print(cscl_lattice.redo_lat_vecs)
+print('been_mirrored')
+print(cscl_lattice.been_mirrored)
+
+print('undo2')
+cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+#cscl_crystal.save('cscl_crystal_undo2.mol2', overwrite = True)
+undo2_crystal = mb.compound.clone(cscl_crystal)
+print('past lattice Vecs')
+print(cscl_lattice.past_lat_vecs)
+print('redo lattice Vecs')
+print(cscl_lattice.redo_lat_vecs)
+print('been_mirrored')
+print(cscl_lattice.been_mirrored)
+
+print('undo3')
+cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+#cscl_crystal.save('cscl_crystal_undo3.mol2', overwrite = True)
+undo3_crystal = mb.compound.clone(cscl_crystal)
+print('past lattice Vecs')
+print(cscl_lattice.past_lat_vecs)
+print('redo lattice Vecs')
+print(cscl_lattice.redo_lat_vecs)
+print('been_mirrored')
+print(cscl_lattice.been_mirrored)
+
+print('undo4')
+cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+#cscl_crystal.save('cscl_crystal_undo4.mol2', overwrite = True)
+undo4_crystal = mb.compound.clone(cscl_crystal)
+print('past lattice Vecs')
+print(cscl_lattice.past_lat_vecs)
+print('been_mirrored')
+print(cscl_lattice.been_mirrored)
+
+print('undo5')
+cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+#cscl_crystal.save('cscl_crystal_undo5.mol2', overwrite = True)
+undo5_crystal = mb.compound.clone(cscl_crystal)
+print('past lattice Vecs')
+print(cscl_lattice.past_lat_vecs)
+print('been_mirrored')
+print(cscl_lattice.been_mirrored)
+print('redo lat vecs')
+print(cscl_lattice.redo_lat_vecs)
+
+print('redo1')
+cscl_lattice.redo_rotation(cmpnd= cscl_crystal)
+#cscl_crystal.save('cscl_crystal_redo1.mol2', overwrite = True)
+redo1_crystal = mb.compound.clone(cscl_crystal)
+print('past lattice Vecs')
+print(cscl_lattice.past_lat_vecs)
+print('redo lat vecs')
+print(cscl_lattice.redo_lat_vecs)
+print('been_mirrored')
+print(cscl_lattice.been_mirrored)
+print('lat vecs')
+print(cscl_lattice.lattice_vectors)
+
+print('redo2')
+cscl_lattice.redo_rotation(cmpnd= cscl_crystal)
+#cscl_crystal.save('cscl_crystal_redo2.mol2', overwrite = True)
+redo2_crystal = mb.compound.clone(cscl_crystal)
+print('past lattice Vecs')
+print(cscl_lattice.past_lat_vecs)
+print('redo_lat vecs')
+print(cscl_lattice.redo_lat_vecs)
+print('been_mirrored')
+print(cscl_lattice.been_mirrored)
+
+print('redo3')
+cscl_lattice.redo_rotation(cmpnd= cscl_crystal)
+#cscl_crystal.save('cscl_crystal_redo3.mol2', overwrite = True)
+redo3_crystal = mb.compound.clone(cscl_crystal)
+print('past lattice Vecs')
+print(cscl_lattice.past_lat_vecs)
+print('been_mirrored')
+print(cscl_lattice.been_mirrored)
+
+print('second rotate 1')
+#cscl_lattice.rotate_lattice(lat= cscl_crystal, by_angles= True, new_view= [90,90,90], degrees= True)
+cscl_lattice.rotate_lattice(lat= cscl_crystal,
+                            new_view= [[1,1,1], 30],
+                            degrees= True)
+#cscl_crystal.save('cscl_crystal_second_rotate1.mol2', overwrite = True)
+second_rotation1 = mb.compound.clone(cscl_crystal)
+print('past lattice Vecs')
+print(cscl_lattice.past_lat_vecs)
+print('redo_lat vecs')
+print(cscl_lattice.redo_lat_vecs)
+print('been_mirrored')
+print(cscl_lattice.been_mirrored)
+
+print('second rotate 2')
+#cscl_lattice.rotate_lattice(lat= cscl_crystal, by_angles= True, new_view= [30,30,60], degrees= True)
+cscl_lattice.rotate_lattice(lat= cscl_crystal,
+                            new_view= [[1,1,1],30],
+                            degrees= True)
+#cscl_crystal.save('cscl_crystal_second_rotate2.mol2', overwrite = True)
+second_rotation2 = mb.compound.clone(cscl_crystal)
+print('past lattice Vecs')
+print(cscl_lattice.past_lat_vecs)
+print('redo_lat vecs')
+print(cscl_lattice.redo_lat_vecs)
+print('been_mirrored')
+print(cscl_lattice.been_mirrored)
+
+print('second undo all')
+cscl_lattice.undo_rotation(cmpnd= cscl_crystal, OG= True)
+#cscl_crystal.save('cscl_crystal_second_undoall.mol2', overwrite = True)
+second_undoall = mb.compound.clone(cscl_crystal)
+print('past lattice Vecs')
+print(cscl_lattice.past_lat_vecs)
+print('redo_lat vecs')
+print(cscl_lattice.redo_lat_vecs)
+print('been_mirrored')
+print(cscl_lattice.been_mirrored)
+print('lat vecs')
+print(cscl_lattice.lattice_vectors)
+
+# print('second undo 1')
+# cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+# #cscl_crystal.save('cscl_crystal_second_undo1.mol2', overwrite = True)
+# second_undo1 = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('redo_lat vecs')
+# print(cscl_lattice.redo_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+# print('lat vecs')
+# print(cscl_lattice.lattice_vectors)
+
+# print('second undo 2')
+# cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+# #cscl_crystal.save('cscl_crystal_second_undo2.mol2', overwrite = True)
+# second_undo2 = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('redo_lat vecs')
+# print(cscl_lattice.redo_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+# print('lat vecs')
+# print(cscl_lattice.lattice_vectors)
+
+# print('second undo 3')
+# cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+# #cscl_crystal.save('cscl_crystal_second_undo3.mol2', overwrite = True)
+# second_undo3 = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('redo_lat vecs')
+# print(cscl_lattice.redo_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+# print('lat vecs')
+# print(cscl_lattice.lattice_vectors)
+
+# print('second undo 4')
+# cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+# #cscl_crystal.save('cscl_crystal_second_undo4.mol2', overwrite = True)
+# second_undo4 = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('redo_lat vecs')
+# print(cscl_lattice.redo_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+# print('lat vecs')
+# print(cscl_lattice.lattice_vectors)
+
+# print('second undo 5')
+# cscl_lattice.undo_rotation(cmpnd= cscl_crystal)
+# #cscl_crystal.save('cscl_crystal_second_undo5.mol2', overwrite = True)
+# second_undo5 = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('redo_lat vecs')
+# print(cscl_lattice.redo_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+# print('lat vecs')
+# print(cscl_lattice.lattice_vectors)
+
+print('second redo1')
+cscl_lattice.redo_rotation(cmpnd= cscl_crystal)
+#cscl_crystal.save('cscl_crystal_second_redo1.mol2', overwrite = True)
+second_redo1 = mb.compound.clone(cscl_crystal)
+print('det')
+print(np.linalg.det(cscl_lattice.lattice_vectors))
+print('past lattice Vecs')
+print(cscl_lattice.past_lat_vecs)
+print('redo_lat vecs')
+print(cscl_lattice.redo_lat_vecs)
+print('been_mirrored')
+print(cscl_lattice.been_mirrored)
+print('lat vecs')
+print(cscl_lattice.lattice_vectors)
+
+print('second redo all')
+cscl_lattice.redo_rotation(cmpnd= cscl_crystal, redo_all= True)
+#cscl_crystal.save('cscl_crystal_second_redoall.mol2', overwrite = True)
+second_redoall = mb.compound.clone(cscl_crystal)
+print('past lattice Vecs')
+print(cscl_lattice.past_lat_vecs)
+print('been_mirrored')
+print(cscl_lattice.been_mirrored)
+
+
+# print('redo4')
+# cscl_lattice.redo_rotation(cmpnd= cscl_crystal)
+# #cscl_crystal.save('cscl_crystal_redo4.mol2', overwrite = True)
+# redo4_crystal = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+
+# print('redo5')
+# cscl_lattice.redo_rotation(cmpnd= cscl_crystal)
+# #cscl_crystal.save('cscl_crystal_redo5.mol2', overwrite = True)
+# redo5_crystal = mb.compound.clone(cscl_crystal)
+# print('past lattice Vecs')
+# print(cscl_lattice.past_lat_vecs)
+# print('been_mirrored')
+# print(cscl_lattice.been_mirrored)
+# print('redo lat vecs')
+# print(cscl_lattice.redo_lat_vecs)
+
+
+print('OG & undo5')
+for part1, part2 in zip(OG_crystal, undo5_crystal):
+    print(part1.pos)
+    print(part2.pos)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+    print(' ')
+print(" rot1 & undo4")
+for part1, part2 in zip(rotate1_crystal, undo4_crystal):
+    print(part1.pos)
+    print(part2.pos)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+    print(' ')
+print(" mirror 1 & undo 3")
+for part1, part2 in zip(undo3_crystal, mirror1_crystal):
+    print(part1.pos)
+    print(part2.pos)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+    print(' ')
+print('rotate2 & undo 2')
+for part1, part2 in zip(undo2_crystal, rotate2_crystal):
+    print(part1.pos)
+    print(part2.pos)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+    print(' ')
+print(" mirror2 & undo1")
+for part1, part2 in zip(mirror2_crystal, undo1_crystal):
+    print(part1.pos)
+    print(part2.pos)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+    print(' ')
+    
+# print('rot3 & redo5')
+# for part1, part2 in zip(rotate3_crystal, redo5_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+#     print(' ')
+print(" rot1 & redo1")
+for part1, part2 in zip(rotate1_crystal, redo1_crystal):
+    print(part1.pos)
+    print(part2.pos)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+    print(' ')
+print(" mirror 1 & redo2")
+for part1, part2 in zip(redo2_crystal, mirror1_crystal):
+    print(part1.pos)
+    print(part2.pos)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+    print(' ')
+print('rotate2 & redo3')
+for part1, part2 in zip(undo2_crystal, rotate2_crystal):
+    print(part1.pos)
+    print(part2.pos)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+    print(' ')
+
+    
+print('OG & second undo all')
+for part1, part2 in zip(OG_crystal, second_undoall):
+    print(part1.pos)
+    print(part2.pos)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+    print(' ')
+
+# print('OG & second undo 5')
+# for part1, part2 in zip(OG_crystal, second_undo5):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+#     print(' ')
+
+    
+print('rot1 & second redo 1')
+for part1, part2 in zip(redo1_crystal, second_redo1):
+    print(part1)
+    print(part2)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+    print(' ')
+print('second rotate 2 & second redo all')
+for part1, part2 in zip(second_rotation2, second_redoall):
+    print(part1.pos)
+    print(part2.pos)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+    print(' ')
+# print(" mirror2 & redo4")
+# for part1, part2 in zip(mirror2_crystal, redo4_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+#     print(' ')
+
+# print('rot3 & redoall')
+# for part1, part2 in zip(rotate3_crystal, redoall_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-13))
+#     print(' ')
+
+
+
+# In[280]:
+
+for part1, part2 in zip(second_rotation2, second_redoall):
+    print(part1)
+    print(part2)
+    print(180*angle(part1.pos,part2.pos)/np.pi)
+    
+
+
+
+
+# In[ ]:
+
+################################################
+
+
+# In[181]:
+
+import mbuild as mb
+
+dim = 3
+cscl_lengths = [.4123, .4123, .4123]
+cscl_vectors = [[1,0,0], [0,1,0], [0,0,1]]
+cscl_basis = {'Cs':[[0, 0, 0]], 'Cl':[[.5, .5, .5]]}
+cscl_lattice = Lattice(cscl_lengths, dimension=dim,
+                                lattice_vectors=cscl_vectors, basis_atoms=cscl_basis)
+cs = mb.Compound(name='Cs')
+cl = mb.Compound(name='Cl')
+cscl_dict = {'Cs':cs, 'Cl':cl}
+#cscl_crystal = cscl_lattice.populate(compound_dict=cscl_dict, x=3, y=3, z=3)
+cscl_crystal = cscl_lattice.populate(compound_dict=cscl_dict, x=2, y=2, z=2)
+
+
 
 import numpy as np
 dum = []
@@ -986,13 +1944,13 @@ for part in cscl_crystal:
 #         print(type(cscl_crystal))
 #         print(part.name)
         part.name='Rb'
-        
+
     if np.sum([1.0308,1.0308,1])<= np.sum(part.pos):
 #         print(part.pos)
 #         print(type(cscl_crystal))
 #         print(part.name)
         part.name='O'
-        
+
     if part.pos[0] == 0 and part.pos[1] == 0 and .1<= part.pos[2]<=.5:
 #         print(part.pos)
 #         print(type(cscl_crystal))
@@ -1014,7 +1972,7 @@ print(' ')
 OG_crystal = mb.compound.clone(cscl_crystal)
 
 
-cscl_lattice.rotate_lattice(lat= cscl_crystal, new_view= [[1,1,1], 120], degrees= True)
+cscl_lattice.rotate_lattice(lat= cscl_crystal, new_view= [[1,9,0], 120], degrees= True)
 # for part in cscl_crystal:
 #     dum.append([part.name, part.pos])
 # print(dum)
@@ -1031,7 +1989,8 @@ print('redo lat vecs')
 print(" ")
 rot1_crystal = mb.compound.clone(cscl_crystal)
 
-cscl_lattice.rotate_lattice(lat= cscl_crystal, new_view= [[1,1,1], 120], degrees= True)
+cscl_lattice.rotate_lattice(lat= cscl_crystal, new_view= [[-2,1,1], [1,1,1], [0,1,-1]], miller_directions= True)
+# cscl_lattice.rotate_lattice(lat= cscl_crystal, new_view= [[1,1,2], 150], degrees= True)
 # for part in cscl_crystal:
 #     dum.append([part.name, part.pos])
 #print(dum)
@@ -1071,7 +2030,7 @@ cscl_lattice.undo_rotation(cmpnd=cscl_crystal)
 #     dum.append([part.name, part.pos])
 # print(dum)
 # dum = []
-# cscl_crystal.save('cscl_crystal_undo2.mol2', overwrite = True)
+#cscl_crystal.save('cscl_crystal_undo2.mol2', overwrite = True)
 # print("undo 2")
 print('after 2nd undo')
 print(cscl_lattice.lattice_vectors)
@@ -1087,7 +2046,7 @@ cscl_lattice.redo_rotation(cmpnd = cscl_crystal)
 #     dum.append([part.name, part.pos])
 # print(dum)
 # dum = []
-# cscl_crystal.save('cscl_crystal_redo1.mol2', overwrite = True)
+#cscl_crystal.save('cscl_crystal_redo1.mol2', overwrite = True)
 # print("redo 1")
 print('after first redo')
 print(cscl_lattice.lattice_vectors)
@@ -1104,7 +2063,7 @@ cscl_lattice.redo_rotation(cmpnd = cscl_crystal)
 #     dum.append([part.name, part.pos])
 # print(dum)
 # dum = []
-# cscl_crystal.save('cscl_crystal_redo2.mol2', overwrite = True)
+#cscl_crystal.save('cscl_crystal_redo2.mol2', overwrite = True)
 # print("redo 2")
 print('after second redo')
 print(cscl_lattice.lattice_vectors)
@@ -1120,7 +2079,7 @@ cscl_lattice.undo_rotation(cmpnd = cscl_crystal, OG= True)
 #     dum.append([part.name, part.pos])
 # print(dum)
 # dum = []
-# cscl_crystal.save('cscl_crystal_undoall.mol2', overwrite = True)
+#cscl_crystal.save('cscl_crystal_undoall.mol2', overwrite = True)
 # print("undo all")
 print('after undo all')
 print(cscl_lattice.lattice_vectors)
@@ -1136,7 +2095,7 @@ cscl_lattice.redo_rotation(cmpnd = cscl_crystal, redo_all = True)
 #     dum.append([part.name, part.pos])
 # print(dum)
 # dum = []
-# cscl_crystal.save('cscl_crystal_redoall.mol2', overwrite = True)
+#cscl_crystal.save('cscl_crystal_redoall.mol2', overwrite = True)
 # print("redo all")
 print('after redo all')
 print(cscl_lattice.lattice_vectors)
@@ -1154,13 +2113,69 @@ print("redo all, rotation 2, redo 2 ")
 print("rotation 1, redo 1, undo 1")
 
 
-# In[ ]:
+# In[55]:
 
+#testing if the redo undo's work
+print(' rot2 & redoall')
 for part1, part2 in zip(rot2_crystal, redoall_crystal):
     print(part1.pos)
     print(part2.pos)
     assert(np.allclose(part1.pos, part2.pos, atol=1e-15))
     print(' ')
+print(" rot2 & redo2")
+for part1, part2 in zip(rot2_crystal, redo2_crystal):
+    print(part1.pos)
+    print(part2.pos)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-15))
+    print(' ')
+print(" redoall & redo2")
+for part1, part2 in zip(redoall_crystal, redo2_crystal):
+    print(part1.pos)
+    print(part2.pos)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-15))
+    print(' ')
+    #### these above all seem to always work 
+
+# print('undo2 & undoall')
+# for part1, part2 in zip(undo2_crystal, undoall_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-15))
+#     print(' ')
+# print('undo2 & OG')
+# for part1, part2 in zip(undo2_crystal, OG_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-15))
+#     print(' ')
+print('undoall & OG')
+for part1, part2 in zip(undoall_crystal, OG_crystal):
+    print(part1.pos)
+    print(part2.pos)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-15))
+    print(' ')
+    ####this one actually works every time for whatever situation
+    
+# print('rot1 & redo1')
+# for part1, part2 in zip(rot1_crystal, redo1_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-15))
+#     print(' ')
+# print('rot1 & undo1')
+# for part1, part2 in zip(rot1_crystal, undo1_crystal):
+#     print(part1.pos)
+#     print(part2.pos)
+#     assert(np.allclose(part1.pos, part2.pos, atol=1e-15))
+#     print(' ')
+print('redo1 & undo1')
+for part1, part2 in zip(redo1_crystal, undo1_crystal):
+    print(part1.pos)
+    print(part2.pos)
+    assert(np.allclose(part1.pos, part2.pos, atol=1e-15))
+    print(' ')
+    #### seems to always work
+    
 
 
 # In[ ]:
