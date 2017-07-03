@@ -26,7 +26,7 @@ from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
-from mbuild.coordinate_transform import _translate, _rotate
+from mbuild.coordinate_transform import _translate, _rotate, _mirror
 
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
@@ -93,7 +93,9 @@ def clone(existing_compound, clone_of=None, root_container=None):
 
     Does not resolve circular dependencies. This should be safe provided
     you never try to add the top of a Compound hierarchy to a
-    sub-Compound.
+    sub-Compound.def __init__(self, new_origin=None, point_on_x_axis=None,
+167                  point_on_xy_plane=None):
+
 
     Parameters
     ----------
@@ -114,7 +116,28 @@ def clone(existing_compound, clone_of=None, root_container=None):
     existing_compound._clone_bonds(clone_of=clone_of)
     return newone
 
+    
 
+#def deepen(cmpnd, lookin_for):
+#    """rename to sub"""
+#    for parti in cmpnd.children:
+#        if parti.name is in lookin_for:##### this may be not be kush
+#            if parti.n_particles > 0:
+#                tempo = cmpnd.center
+#                new_positions = _mirror(parti.xyz_with_ports, about= 'x')
+#                new_positions.translate_to(tempo)
+#                ### is new_positions going to be a compound object? 
+#                cmpnd.xyz_with_ports = new_positions
+#            else:
+#                raise ValueError("The user passed the name of an atom. Even though it "
+#                                "exists in the object, it cannot be mirrored because "
+#                                "atoms don't have chirality.")  
+#        else:            
+#            if parti.n_particles > 0:
+#                deepen(parti, lookin_for)
+#            else:
+#                raise ValueError("")
+                
 class Compound(object):
     """A building block in the mBuild hierarchy.
 
@@ -122,7 +145,7 @@ class Compound(object):
     hierarchy. That is, all composite building blocks must inherit from
     compound, either directly or indirectly. The design of Compound follows the
     Composite design pattern (Gamma, Erich; Richard Helm; Ralph Johnson; John
-    M. Vlissides (1995). Design Patterns: Elements of Reusable Object-Oriented
+    M. Vlissides (1995). Design Patterns Elements of Reusable Object-Oriented
     Software. Addison-Wesley. p. 395. ISBN 0-201-63361-2.), with Compound being
     the composite, and Particle playing the role of the primitive (leaf) part,
     where Particle is in fact simply an alias to the Compound class.
@@ -215,8 +238,10 @@ class Compound(object):
 
         self._rigid_id = None
         self._contains_rigid = False
+        self.made_from_lattice = False
         self._check_if_contains_rigid_bodies = False
-
+        #self.mirror = False
+ 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
             if charge:
@@ -345,16 +370,62 @@ class Compound(object):
         for particle in self.particles():
             if particle.name == name:
                 yield particle
-    def mirror(self, about):
-         """"""
-         if self.made_from_lattice:
-             warn('This compound was made from a lattice, it is recommended'
-                " that you use the corresponding lattice object's"
-                ' .mirror() method, as it is unlikely that you produced'                                                                                                                                
-                ' the desrired results.'
-                " Ex: some_lattice.mirror(some_compound, 'xy')")
+
+    def subcompounds_by_name(self, looking_for):
+        """"""
+        if not isinstance(looking_for, list):
+            raise TypeError("looking_for must be a list of str elements."
+                            " User passed: {}.".format(type(looking_for)))
+        for uu in looking_for:
+            if not isinstance(uu, str):
+                raise ValueError("looking_for must be a list of str elements.")
+        missing = deepcopy(looking_for)
+        for parti in self.children:
+            if part.name in looking_for:
+                if parti.n_particles > 0:
+                    if parti.name in missing:
+                         missing.remove(parti.name)
+                    yield parti
+                else:
+                    raise ValueError("The user passed {}, the name of an atom/ particle. "
+                                    "Please use the particles_by_name method"
+                                    " instead.".format(parti.name))
+            else:
+                if parti.n_particles > 0:
+                    subcompound_by_name(parti, looking_for)
+        if len(missing) > 0:
+            raise ValueError("One or more of the following names do not "
+                            "exist in this compound. Missing: {}.".format(missing))
+                
+    def mirror(self, about= 'xz', override= False, child_chirality= False, looking_for= []):
+        """which flip will default to the largest 
+        which flip if 
+        I need a better name for the child chirality flag"""
+        if self.made_from_lattice:
+            if child_chirality:
+                new_positions = _mirror(self.subcompounds_by_name(looking_for), about, recenter= True)
+            else:
+                if override:
+                     pass
+                else:
+                    warn('This compound was made from a lattice. It is recommended'
+                        " that you use the corresponding lattice object's .mirror()"
+                        " method, Ex: some_lattice.mirror(some_compound, 'xy')."
+                        ' If you wish to mirror each molecule making up the lattice, '
+####################################################3
+                        ' This call has not changed the object. '
+                        'If you wish to proceed with using Compound.mirror(), '
+                        'include the optional parameter override= True when calling'
+                        ' Compound.mirror().')
+                    return
                 ### you should see if calling mirror again undoes it
-        new_positions = _mirror(self.xyz_with_ports, )
+        elif child_chirality:
+            new_positions = _mirror(self.subcompounds_by_name(looking_for), about, recenter= True)
+            ######iffy on dis
+            return
+            ### should I make the following an else statement?
+        new_positions = _mirror(self, about, recenter= False)
+        self.xyz_with_ports = new_positions
 
     @property
     def charge(self):
@@ -494,7 +565,7 @@ class Compound(object):
         a rigid body
 
         >>> import mbuild as mb
-        >>> from mbuild.utils.io import get_fn
+        >>> from mbuild.utils.io import                                 
         >>> benzene = mb.load(get_fn('benzene.mol2'))
         >>> benzene.label_rigid_bodies(rigid_particles='C')
 
@@ -1383,7 +1454,7 @@ class Compound(object):
         """
         self.translate(pos - self.center)
 
-    def rotate(self, theta, around):
+    def rotate(self, theta, around, override= False):
         """Rotate Compound around an arbitrary vector.
 
         Parameters
@@ -1394,7 +1465,19 @@ class Compound(object):
             The vector about which to rotate the Compound.
 
         """
-        if self.
+        if self.made_from_lattice:
+            if override:
+                pass
+            else:
+                warn('This compound was made from a lattice. It is recommended'
+                    " that you use the corresponding lattice object's .rotate_lattice()"
+                    " method, Ex: some_lattice.rotate_lattice(some_compound, "
+                    "new_view= [[1,1,1], np.pi], degrees= False, by_angles= False)."
+                    ' This call has not changed the object. '
+                    'If you wish to proceed with Compound.rotate_lattice(), '
+                    'include the optional parameter override= True when calling'
+                    ' Compound.rotate_lattice().')
+                return
         new_positions = _rotate(self.xyz_with_ports, theta, around)
         self.xyz_with_ports = new_positions
 
@@ -1409,6 +1492,7 @@ class Compound(object):
             The axis about which to spin the Compound.
 
         """
+        ###### consider placing a warning message here. revist
         around = np.asarray(around).reshape(3)
         center_pos = self.center
         self.translate(-center_pos)

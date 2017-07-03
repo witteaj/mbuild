@@ -245,6 +245,37 @@ class RigidTransform(CoordinateTransform):
 
         super(RigidTransform, self).__init__(T)
 
+#class Mirror(CoordinateTransform):
+#    """"""
+#    def __init__(self, about):
+#        """"""
+#        ### worry about errors later, besides these ones are fitted for lattice 
+#        ### consider dimensions i think the dimensions checks are actually useless
+#        if len(about) != (self.dimension - 1):
+#            raise ValueError('about must be a string of length {} when dimensions are {}'
+#                            'User passed string of length {}.'
+#                             .format((self.dimension - 1), self.dimension, len(about)))
+#        about = about.lower()
+#        if self.dimension == 2 and about == 'z':
+#            raise ValueError('This lattice is 2D this it cannot be reflected about the z-axis')
+#        str_dict = {'x' : 0, 'y' : 1, 'z' : 2}
+#        w = np.ones(self.dimension).tolist()
+#        for letta in about:
+#            if letta not in str_dict.keys():
+#                raise ValueError('String not recognized. For {}D lattices, only{} (not case '
+#                                 'or order sensitive) are valid arguments for about '
+#                                 'parameter.'.format(self.dimension,
+#                                                     ' x, y, z'[:(3*self.dimension)]))
+#            else:
+#                w[str_dict[letta]] = 0
+#        which_flip = w.index(1)
+#        for parti in cmpnd:
+#            ### need to identify the compound I will be flipping thru
+#            #parti.pos =
+#            pass
+#    super(Mirror, self).__init__(T)
+    
+
 
 def unit_vector(v):
     """Returns the unit vector of the vector. """
@@ -258,6 +289,10 @@ def angle(u, v, w=None):
         v = w - v
     c = np.dot(u, v) / norm(u) / norm(v)
     return np.arccos(np.clip(c, -1, 1))
+
+
+
+
 
 
 def _create_equivalence_transform(equiv):
@@ -441,6 +476,40 @@ def _translate(coordinates, by):
 
     """
     return Translation(by).apply_to(coordinates)
+
+
+def _mirror(parti, about, recenter= True):
+    """"""
+    if not isinstance(about, str):
+        raise TypeError("about must be of type str. User passed type: {}".format(type(about)))
+    about = about.lower()
+    str_dict = {'x': 0, 'y': 1, 'z': 2}
+    if len(about) == 1:
+        if about == 'z':
+            warn("")
+        else:
+            about = about+'z'
+    elif len(about) != 2:
+        raise ValueError("bout must be a 2 letter combination of  "
+                        "'x', 'y', and 'z', unless the object is 2D, in which case "
+                        "about must be either 'x' or 'y'. Strings are not case or order "
+                        "sensitive.")
+    w = np.ones(3)
+    centi = parti.center
+    for letta in about:
+        if letta not in str_dict.keys():
+            raise ValueError("String not recognized. about must be a 2 letter combination of  "
+                            "'x', 'y', and 'z', unless the object is 2D, in which case "
+                            "about must be either 'x' or 'y'. Strings are not case or order "
+                            "sensitive.")
+        else:
+            w[str_dict[letta]] = 0
+    which_flip = w.index(1)
+    parti.xyz_with_ports[:, which_flip] *= -1
+    if recenter:
+        parti.translate_to(centi)    
+        
+           
 
 
 def _translate_to(coordinates, to):
