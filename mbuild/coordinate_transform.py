@@ -306,68 +306,6 @@ def angle(u, v, w=None):
     return np.arccos(np.clip(c, -1, 1))
 
 
-def _mirror(parti, anchor= None, align_position= None):
-        """"""
-        #make sure to modify this in a way so that the
-        if not isinstance(about, str):
-            raise TypeError("about must be of type str. User passed type: {}".format(type(about)))
-        about = about.lower()
-        str_dict = {'x': 0, 'y': 1, 'z': 2}
-        if len(about) == 1:
-            if about == 'z':
-                warn("")
-                #revisit
-            else:
-                about = about+'z'
-        elif len(about) != 2:
-            raise ValueError("about must be a 2 letter combination of  "
-                            "'x', 'y', and 'z', unless the object is 2D, in which case "
-                            "about must be either 'x' or 'y'. Strings are not case or order "
-                            "sensitive.")
-        w = np.ones(3).tolist() # is this efficient enough?
-        if anchor_pt is None:
-            anchor_pt = deepcopy(parti.center)
-        moving_anchor = deepcopy(anchor_pt)
-        if align_position:
-            align_position = np.array(align_position)
-            moving_align = deepcopy(align_position)
-        for letta in about:
-            if letta not in str_dict.keys():
-                raise ValueError("String not recognized. about must be a 2 letter combination of  "
-                                "'x', 'y', and 'z', unless the object is 2D, in which case "
-                                "about must be either 'x' or 'y'. Strings are not case or order "
-                                "sensitive.")
-            else:
-                w[str_dict[letta]] = 0
-        which_flip = w.index(1)
-        # this is a clunky way to do it but i don't know how to thwart getters and setters
-        #parti.xyz_with_ports[:, which_flip] *= -1
-        new_xyz = deepcopy(parti.xyz_with_ports)
-        new_xyz[:, which_flip] *= -1
-        parti.xyz_with_ports = new_xyz
-        moving_anchor[which_flip]*= -1
-        if align_position:
-            moving_align[:, which_flip] *= -1
-            parti.translate(-moving_anchor)
-            moving_anchor = _translate(moving_anchor, -moving_anchor)
-            for aligner in moving_align:
-                aligner = _translate(aligner, -moving_anchor)
-            pass
-            # should probably call align here. a possible approach would be to store
-            # values to align with before the mirroring. still unsure how to carry out
-            # align and what values to pass in.
-        else:
-            if recenter:
-                # this may all be incorrect
-                v = np.zeros(3)
-                v[str_dict[about[0]]] = 1
-                parti.translate(-moving_anchor)
-                if not lat_obj:
-                    parti.rotate(np.pi, v)
-                else:
-                    lat_obj.rotate_lattice(parti, new_view= [v, np.pi])
-                parti.translate(anchor_pt)
-
 
 def _create_equivalence_transform(equiv):
     """Compute an equivalence transformation that transforms this compound
