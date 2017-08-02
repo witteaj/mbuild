@@ -278,7 +278,7 @@ class RigidTransform(CoordinateTransform):
     
 def normalized_matrix(m):
     """
-
+    Returns a normalized array
     :param m: an array-like object (tuple of tuples, list of lists, np.ndarrays
             list of tuples, and similar variations)
     :return: normalized array
@@ -294,7 +294,8 @@ def normalized_matrix(m):
 
 def unit_vector(v):
     """Returns the unit vector of the vector. """
-    return v / norm(v)
+    return v /norm(v)
+    #return np.divide(v, norm(v))
 
 
 def angle(u, v, w=None):

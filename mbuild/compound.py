@@ -27,7 +27,7 @@ from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
-from mbuild.coordinate_transform import _translate, _rotate, normalized_matrix
+from mbuild.coordinate_transform import _translate, _rotate, normalized_matrix, angle, unit_vector
 import mbuild as mb
 
 
@@ -298,8 +298,15 @@ class Compound(object):
             for subpart in part.successors():
                 yield subpart
 
+    @property
     def my_label(self):
-        """Returns the label of the current compound, as seen by the compound's parent"""
+        """Returns the label of the current compound, as seen by the compound's
+        parent.
+
+        The default MBuild labeling convention when building compounds
+        is label = "name[{}]".format(ii) where ii is the order (zero indexed)
+        which that kind of that compound/particle is added.
+        """
         if self.parent:
             for lab in self.parent.labels:
                 if isinstance(lab, list):
@@ -308,7 +315,8 @@ class Compound(object):
                     return lab
                     break
             else:
-                print("developer error")
+                raise AttributeError("Developer Error")
+                # revisit this error an also should I make this a property?
         else:
             warn ("Object {} is at the top of its hierarchy and thus has no label."
                   " Returning None.".format(self))
@@ -391,19 +399,56 @@ class Compound(object):
 
     def find_particle_in_path(self, within_path):
         """"
-        within_path: accepts list or tuple, optional, defaults to searching within the entire compound.
+        Yields all particles that exist within the hierarchal pathway description provided
+         in the parameter 'within_path'.
 
-            EX: within=["particle","subsubsubcompound", "subsubcompound", "subcompound"]
-            # update description
+        A hierarchal pathway is a list or tuple containing any combination of strings,
+        list/tuples, or mb.Compounds. Each element of the list/tuple describes a subcompound
+        (or even IS a subcompound, in the instance where a mb.Compound object is passed) or
+        a series of compounds, in the instance where a list/tuple is passed. Strings correspond
+        to either the names or labels of subcompounds and list/tuples hold multiple strings that
+        correspond to names and/or labels. The order of the list/tuple elements correspond
+        to their position in the hierarchal pathway, where the first index is the lowest level
+        and the last is the highest specified. The number of subcompounds the user can
+        specify is unlimited so long as each subcompound specified lies within the hierarchy
+        of the list/tuple element that follows. In the context of this function, the first
+        index is a particle.
+
+        EX: within_path =["target",
+                          ["subsubsubcompound[0]",
+                           "subsubsubcompound[3]",
+                           "subsubsubcompound[4]"],
+                         "subsubcompound",
+                         "subcompound[6]"]
+
+        :param within_path: accepts list, tuple, or mb.particle
+            If a mb.particle is provided, the function will return within_path.
+            The a list/tuple is specified, each element is either a str, mb.Compound,
+            list/tuple (containing any combination of strs and mb.Compounds). If
+            a mb.Compound is provided the function skips to that index and ignores
+            all data beyond that index. For example, given
+            ["a0", "a1", <mb.Compound>, "a3"], the function would ignore the value "a3"
+             and skip straight to the mb.Compound. See
+            above description for more information on pathways.
+
+        :yields
+            All particles that match the hierarchal description provided.
+
         """
-        # revisit
-        #error catch
+        # revisit bc of the list option. i'm worried it won't return any errors. maybe track which ones
+        # it doesnt find. That would probably need to be done in find_subc_in_path
         if not isinstance(within_path, (list,tuple)):
             if not isinstance(within_path, mb.Particle):
                 raise TypeError("within_path must be of type list or tuple. "
-                                "User passed type: {}.".format(type(within_path)))
+                                "User passed type: {}. within_path can also "
+                                "accept a mb.Particle but in this instance "
+                                "find_particle_in_path just returns within_path"
+                                ".".format(type(within_path)))
             else:
                 return within_path
+        if not within_path:
+            raise ValueError("within_path cannot be empty.")
+        within_path = list(within_path)
         no_yield = True
         parti = within_path[0]
         if len(within_path) ==1:
@@ -411,50 +456,79 @@ class Compound(object):
                 return parti
             elif isinstance(parti, str):
                 for parts in self:
-                    if parts.name == parti or parts.my_label() == parti:
+                    if parts.name == parti or parts.my_label == parti:
+                        if no_yield:
+                            no_yield = False
+                        yield parts
+            elif isinstance(parti, (list, tuple)):
+                for parts in self:
+                    if parts.name in parti or parts.my_label in parti:
                         if no_yield:
                             no_yield = False
                         yield parts
             else:
-                raise TypeError("")
+                raise TypeError("The object contained in within_path is not of "
+                                "an acceptable type. Acceptable types are str, tuple,"
+                                "list, mb.Particle (for only the first index), "
+                                "and mb.Compound (valid for any index except the first)."
+                                " User passed object of type: {}.".format(type(parti)))
+        elif isinstance(parti, (list,tuple)):
+            for subc in self.find_subcompounds_in_path(pathway=within_path[1:]):
+                if subc:
+                    for parts in subc:
+                        if parts.name in parti or parts.my_label in parti:
+                            if no_yield:
+                                no_yield = False
+                            yield parts
         else:
             for subc in self.find_subcompounds_in_path(pathway= within_path[1:]):
                 if subc:
                     for parts in subc:
-                        if parts.name == parti or parts.my_label() == parti:
+                        if parts.name == parti or parts.my_label == parti:
                             if no_yield:
                                 no_yield = False
                             yield parts
         if no_yield:
-            raise ValueError("Particle in path {} not found. Verify if "
+            raise ValueError("Particle in path {} not found. Verify that "
                              "this is the correct path.".format(within_path))
 
 
     def subcompounds_by_name_or_label(self, looking_for):
-        """Whenever calling this function within a function make sure to add in a method to track
-        if anything in looking_for was not found"""
-        if not isinstance(looking_for, str):
-            raise TypeError("looking_for must be of type str."
+        """
+        Yields all the subcompounds that exhibit the specified name or label.
+
+        Parameters:
+
+        looking_for: accepts str
+            This string will specify the name or label of the particle(s) the user wishes
+            to find.
+
+        Editors note:
+        Whenever calling this function within a function make sure to add in a method to track
+        if anything in looking_for was not found
+        """
+        if isinstance(looking_for, str):
+            for parti in self.children:
+                if parti.name == looking_for or parti.my_label == looking_for:
+                    if parti.n_particles > 1:
+                        yield parti
+                    else:
+                        raise ValueError("The user passed {}, the name of an atom/ particle within this "
+                                        "object. Please use particles_by_name, find_particle_in_path,"
+                                         "or a similar method instead.".format(parti.name))
+                else:
+                    if parti.n_particles > 1:
+                        yield from parti.subcompounds_by_name_or_label(looking_for)
+                    else:
+                        yield None
+                        #print("too short")
+        elif isinstance(looking_for, (list, tuple)) and all(looking_for):
+            for l in looking_for:
+                yield from self.subcompounds_by_name_or_label(looking_for=l)
+        else:
+            raise TypeError("looking_for must be of type str or a list/tuple of strs."
                             " User passed: {}.".format(type(looking_for)))
-        for parti in self.children:
-            #print(parti)
-            if parti.name == looking_for or parti.my_label() == looking_for:
-                if parti.n_particles > 1:
-                    yield parti
-                else:
-                    raise ValueError("The user passed {}, the name of an atom/ particle within this "
-                                    "object. Please use the particles_by_name method"
-                                    " instead.".format(parti.name))
-            else:
-                if parti.n_particles > 1:
-                    #print('1deeper')
-                    # print('looking_for')
-                    # print(looking_for)
-                    yield from parti.subcompounds_by_name_or_label(looking_for)
-                else:
-                    yield None
-                    #print("too short")
-        #print('exit')
+            #print('exit')
     def find_subcompounds_in_path(self, pathway):
         """
         yield all subcompounds that are in the specified hierarchal pathway
@@ -469,63 +543,63 @@ class Compound(object):
                 the user can specify is unlimited so long as each subcompound specified
                 lies within the hierarchy of the list/tuple element that follows.
 
-                EX: pathway=["target_subsubsubcompound", "subsubcompound", "subcompound"]
+                EX: pathway=["target", "subsubsubcompound", "subsubcompound", "subcompound"]
 
         :return: yields all particles that match the path description.
                 yields None if the particle path specified doesn't exist
         """
-        yield from self._which_subc(looking_for=pathway, _checked=False)
 
-    def _which_subc(self, looking_for, _checked = False):
+        if not isinstance(pathway, (list, tuple)):
+            raise TypeError("Parameter pathway must be of type list or tuple. User"
+                            " passed type: {}.".format(type(pathway)))
+        if not pathway:
+            raise ValueError("Parameter 'pathway' cannot be an empty {}.".format(type(pathway)))
+        pathway = list(pathway)
+        for n, ii in enumerate(pathway):
+            if isinstance(ii, (str, list, tuple)):
+                pass
+            elif isinstance(ii, mb.Compound):
+                if pathway[:n]:
+                    yield from ii._which_subc(looking_for=pathway[:n])
+                else:
+                    yield ii
+                break
+            else:
+                raise TypeError("pathway parameter must be either a list or tuple containing"
+                                " only strings, lists, tuples or mb.Compounds. User passed {}"
+                                " containing invalid type: "
+                                "{} at index {}.".format(type(pathway), type(ii), n))
+        else:
+            yield from self._which_subc(looking_for=pathway)
+
+    def _which_subc(self, looking_for):
         """
         refer to def find_subcompounds_in_path
         """
-        if not _checked:
-            if not isinstance(looking_for, (list, tuple)):
-                raise TypeError("Parameter looking_for must be of type list or tuple. User"
-                                " passed type: {}.".format(type(looking_for)))
-            if not looking_for:
-                raise ValueError("Parameter 'looking_for' cannot be an empty {}.".format(type(looking_for)))
-            looking_for = list(looking_for)
-            for n, ii in enumerate(looking_for):
-                if isinstance(ii, str):
-                    pass
-                elif isinstance(ii, mb.Compound):
-                    if looking_for[:n]:
-                        yield from ii._which_subc(looking_for=looking_for[:n], _checked=True)
-                    else:
-                        yield ii
-                    break
-                else:
-                    raise TypeError("looking_for parameter must be either a list or tuple containing"
-                                    " only strings or mb.Compounds. User passed {} containing type: "
-                                    "{} at index {}.".format(type(looking_for), type(ii), n))
-            else:
-                yield from self._which_subc(looking_for=looking_for, _checked=True)
-        else:
-            shorten = len(looking_for)-1
-            lf = looking_for[-1]
-            if len(looking_for) > 1:
-                we_ok = False
+        shorten = len(looking_for)-1
+        lf = looking_for[-1]
+        if len(looking_for) > 1:
+            we_ok = False
+            if isinstance(lf, str):
                 for subp in self.subcompounds_by_name_or_label(looking_for=lf):
                     if subp:
                         we_ok = True
                         yield from subp._which_subc(looking_for=looking_for[:shorten])
-                if not we_ok:
-                    yield None
-                    #raise ValueError('{} was not found within {}'.format(within, self.name))
             else:
-                yield from self.subcompounds_by_name_or_label(looking_for= lf)
-        # if within:
-        #     we_ok = False
-        #     for subp in self.subcompounds_by_name_or_label(looking_for=within):
-        #         if subp:
-        #             we_ok = True
-        #             yield from subp.subcompounds_by_name_or_label(looking_for=looking_for)
-        #     if not we_ok:
-        #         raise ValueError('{} was not found within {}'.format(within, self.name))
-        # else:
-        #     yield from self.subcompounds_by_name_or_label(looking_for= looking_for)
+                for l in lf:
+                    for subp in self.subcompounds_by_name_or_label(looking_for=l):
+                        if subp:
+                            we_ok = True
+                            yield from subp._which_subc(looking_for=looking_for[:shorten])
+            if not we_ok:
+                yield None
+                #raise ValueError('{} was not found within {}'.format(within, self.name))
+        else:
+            if isinstance(lf, str):
+                yield from self.subcompounds_by_name_or_label(looking_for=lf)
+            else:
+                for l in lf:
+                    yield from self.subcompounds_by_name_or_label(looking_for=l)
 
 
 
@@ -533,7 +607,7 @@ class Compound(object):
     #     """"""""
     #     # can probably trash this function revisit
     #     if self.parent: ### check this
-    #         if self.parent is same_compound:
+    #         if self.parent is same_compound
     #             # is is always scary
     #             print('None1, from _bonds')
     #             return None
@@ -562,7 +636,7 @@ class Compound(object):
         # for eligible_twins in see:
         #     if anny.parent[eligible_twins] \
         #             and anny.parent[eligible_twins] is anny:
-        if anny.my_label() in see:
+        if anny.my_label in see:
             if anny.n_particles != self.n_particles:
                 warn("Proceed with caution, although these "
                      "subcompounds have different"
@@ -706,7 +780,7 @@ class Compound(object):
                     # is this working??
                     continue
                 else:
-                    particlepath = particlepath.my_label()
+                    particlepath = particlepath.my_label
                     print('unusual case happened')
             else:
                 raise TypeError("")
@@ -724,7 +798,7 @@ class Compound(object):
                     # is this working??
                     continue
                 else:
-                    particlepath[0] = particlepath[0].my_label()
+                    particlepath[0] = particlepath[0].my_label
                     print('unusual case happened')
                 # make sure I check this enough..... do I need to check other indices
 
@@ -774,7 +848,7 @@ class Compound(object):
                         if parti_to_find:
                             for good_parti in subc.particles(include_ports=False):
                                 # this extracts the particles
-                                if parti_to_find == good_parti.name or parti_to_find == good_parti.my_label():
+                                if parti_to_find == good_parti.name or parti_to_find == good_parti.my_label:
                                     good_partis[n].append(good_parti)
                                     if not got_one:
                                         got_one = True
@@ -784,7 +858,7 @@ class Compound(object):
                             subcs[n].append(subc)
             else:
                 for good_parti in self.particles(include_ports=False):
-                    if parti_to_find == good_parti.name or parti_to_find == good_parti.my_label():
+                    if parti_to_find == good_parti.name or parti_to_find == good_parti.my_label:
                         good_partis[n].append(good_parti)
                         if not got_one:
                             got_one = True
@@ -796,11 +870,11 @@ class Compound(object):
             #                                            subber.particles(include_ports=False)] \
             #                                           for subber in subc if subber]):
             #             # this extracts the particles
-            #             if parti_to_find == good_parti.name or parti_to_find == good_parti.my_label():
+            #             if parti_to_find == good_parti.name or parti_to_find == good_parti.my_label:
             #                 good_partis[n].append(good_parti)
             #     else:
             #         for good_parti in self.particles(include_ports=False):
-            #             if parti_to_find == good_parti.name or parti_to_find == good_parti.my_label():
+            #             if parti_to_find == good_parti.name or parti_to_find == good_parti.my_label:
             #                 good_partis[n].append(good_parti)
 
         nothing_yielded = True
@@ -986,9 +1060,10 @@ class Compound(object):
         which_flip = 1
         if align_position:
             align_position = normalized_matrix(align_position)
-            narm1 = np.cross(align_position[0],align_position[1])
-            if np.linalg.norm(narm1) < .05:
+            norm1 = np.cross(align_position[0],align_position[1])
+            if np.linalg.norm(norm1) < .045:
                 # should i do this or should i use angle i would use .055 rad (3.15 deg) as the threshold revisit
+                # use test cases to try this out
                 if hidden_helpers:
                     warn()
                     # probably first try each OG w a back up then if neither of those work out try both the back ups?
@@ -996,9 +1071,9 @@ class Compound(object):
                 else:
                     raise ValueError("The vectors passed used to describe the plane are co-linear, thus"
                                      " there are infinitely many possible planes.")
-            narm1 = unit_vector(narm1)
+            norm1 = unit_vector(norm1)
             for n, ii in enumerate(np.eye(3)):
-                if np.allclose(ii, narm1, atol= 1e-9):
+                if np.allclose(ii, abs(norm1), atol= 1e-6):
                     which_flip = n
                     align_position = None
                     break
@@ -1012,28 +1087,26 @@ class Compound(object):
         moving_anchor = deepcopy(anchor)
         moving_anchor[which_flip] *=-1
         if align_position:
-            narm2 = deepcopy(narm1)
-            narm2[which_flip]*=-1
-            narm2*=-1
+            norm2 = deepcopy(norm1)
+            norm2[which_flip]*=-1
+            norm2*=-1
             moving_align[which_flip] *= -1
-            self.translate(-moving_anchor)
-            self.align(align_these=list(moving_align, narm2),
-                       with_these=list(align_position[0],narm1))
-            self.translate(anchor)
-        else:
-            self.translate(anchor - moving_anchor)
+            self._align(align_these=list(moving_align, norm2),
+                       with_these=list(align_position[0],norm1),
+                       anchor_pt=moving_anchor)
+        self.translate(anchor - moving_anchor)
 
     def mirror(self, about_vectors=None, mirror_plane_points=None, anchor_point=None, override=False):
         """
-        This function mirrors a compound about a mirror plane an then moves it back to an
+        This function mirrors a compound about a mirror plane, then moves it back to an
         anchor point, a point that has the same coorindates before and after the mirroring
-        operation. The function defaults to mirroring across the "xz" plane, and using
-        self.center as the anchor point.
+        operation.
 
-        If no anchor point is specified and no mirror_plane_points are specified, the
-        cartesian center (self.center) of the particle will be treated as an anchor point.
-        If no anchor point is specified, but mirror_plane_points are, then all of the
-        mirror_plane_points will be treated as anchor points.
+        The function defaults to mirroring across the "xz" plane. If no anchor point is
+        specified and no mirror_plane_points are specified, the cartesian center (self.center)
+        of the particle will be treated as an anchor point. If no anchor point is specified,
+        but mirror_plane_points are, then all of the mirror_plane_points will be treated as
+        anchor points.
 
         The user can also pass parameters to specify the plane that will be treated
         as a mirror. Since 2 vectors define a plane, the user inputs information
@@ -1042,19 +1115,31 @@ class Compound(object):
         pathways (description below) of 3 particles to mirror_plane_points, or 1 vector and 2
         particles.
 
-        A hierarchal pathway is a list or tuple containing strings or mb.Compounds.
-        Each element of the list/tuple describes a subcompound (or even IS a subcompound,
-        in the instance where a mb.Compound object is passed). Strings correspond to either
-        the names or labels of subcompounds. The order of the list/tuple elements correspond
-        to their position in the hierarchal pathway, where the first index is the lowest level
-        and the last is the highest specified. The number of subcompounds the user can
-        specify is unlimited so long as each subcompound specified lies within the hierarchy
-        of the list/tuple element that follows. In the context of this function, the first
-        index is a particle.
-        EX: pathway=["target_particle", "subsubcompound", "subcompound"]
+        A hierarchal pathway is a list or tuple containing any combination of strings,
+        list/tuples, or mb.Compounds. Each element of the list/tuple describes a subcompound
+        (or even IS a subcompound, in the instance where a mb.Compound object is passed) or
+        a series of compounds, in the instance where a list/tuple is passed. Strings correspond
+        to either the names or labels of subcompounds, and list/tuples hold multiple strings that
+        correspond to names and/or labels. They are used when the user wishes to describe multiple
+        pathways, for example, path = [..., ["subcompound[1]", "subcompound[4]"], ...].
+        This example demonstrates that the user can describe some but not all of the pathways
+        that have the name "subcompound". The order of the list/tuple elements correspond to their
+        position in the hierarchal pathway, where the first index is the lowest level and the last
+        is the highest specified. The number of subcompounds the user can specify is unlimited so
+        long as each subcompound specified lies within the hierarchy of the list/tuple element that
+        follows. In the context of this function, the first index must be a subcompound, not
+        a mb.Particle.
+        # best hierarchal description
 
-        :param about_vectors: optional, accepts list-like of length 1 or 2 list-likes of
-                            length 3
+        EX: path =["target",
+                          ["subsubsubcompound[0]",
+                           "subsubsubcompound[3]",
+                           "subsubsubcompound[4]"],
+                         "subsubcompound",
+                         "subcompound[6]"]
+
+        :param about_vectors: optional, accepts list-like of length 1 or 2 containing
+                            list-likes of length 3
             The inner list-likes are 3D vectors. This/these vector(s) will help define
             the plane that will be treated as the mirror plane.
 
@@ -1064,20 +1149,20 @@ class Compound(object):
             plane. These particles will be treated as anchor points if the anchor_point
             parameter is not defined.
 
-        :param anchor_point: optional, accepts ..........
-
-            If no anchor point is specified and no mirror_plane_points are specified,
-            the cartesian center (self.center)of the particle will be treated as an anchor point,
-            a point that remains in the same position before and after the mirror.
-
+        :param anchor_point: optional, accepts list-like
+            The list-like provided to anchor_point must either be a unique hierarchal pathway
+            or a 3D cartesian coordinate anchor_point is used to define a point that remains
+            in the same position before and after the operation. If no anchor point is
+            specified and no mirror_plane_points are specified, the cartesian center
+            (self.center) of the particle will be treated as an anchor point. If
+            mirror_plane_points are provided and anchor_point is None, the mirror_plane_points
+            are treated as anchor_points.
 
         :param override:
         ######## talk w justin and christoph
-        :return: ############
         """
 
         # revisit the idea of latobj
-        ####### ugh 2d is gonna succccck
         #### revise this, finish it, then make sure all subc by name, find subc, find spec particle, etc all work in jupyter
         ##### then write tests
         alignment_vectors= []
@@ -1085,48 +1170,66 @@ class Compound(object):
         if anchor_point:
             if not isinstance(anchor_point, (tuple, list)):
                 if not isinstance(anchor_point, np.ndarray):
-                    raise TypeError('')
+                    raise TypeError('anchor_point must be of type list, tuple, or np.ndarray.'
+                                    ' User passed type: {}.'.format(type(anchor_point)))
                 elif len(anchor_point) !=3:
-                    raise ValueError("")
-                relative_to = anchor_point
+                    raise ValueError("In the instance where a 3D coorindate is described "
+                                     "by anchor_point, the coordinate system must be of "
+                                     "len 3. User passed len: {}.".format(len(anchor_point)))
+                else:
+                    relative_to = anchor_point
             else:
                 if all(isinstance(ap, (int,float)) for ap in anchor_point):
                     if len(anchor_point) != 3:
-                        raise ValueError("")
+                        raise ValueError("In the instance where a 3D coorindate is described "
+                                        "by anchor_point, the coordinate system must be of "
+                                        "len 3. User passed len: {}.".format(len(anchor_point)))
                     relative_to = np.array(anchor_point)
                 else:
+                    path_ = deepcopy(anchor_point)
                     anchor_point = list(self.find_particle_in_path(within_path=anchor_point))
                     if len(point) > 1:
-                        raise MBuildError("This is not a unique anchor point. "
-                                          "The hierarchal path {} is invalid.".format(anchor_point))
+                        raise ValueError("This is not a unique anchor point. "
+                                          "The hierarchal path {} is invalid.".format(path_))
                     relative_to = anchor_point[0].pos
 
         if mirror_plane_points:
             if not isinstance(mirror_plane_points, (list, tuple)):
-                raise TypeError("")
+                raise TypeError("mirror_plane_points must be of type list or tuple. "
+                                "User passed type: {}.".format(type(mirror_plane_points)))
             if len(mirror_plane_points)==3:
-                if about_vectors and any(about_vectors):
-                    raise ValueError("overdefined system")
-            elif len(mirror_plane_points) ==2:
+                if about_vectors:
+                    raise ValueError("Overdefined system. Three mirror_plane_points are"
+                                     " defined and about_vectors is not None. 2 vectors best"
+                                     " describe a plane. Since n-1 vectors are created when n "
+                                     "points are described, the mirror plane is overdefined.")
+            elif len(mirror_plane_points) == 2:
                 if not about_vectors:
-                    raise ValueError("underdefined system")
+                    raise ValueError("Underdefined system. 2 vectors best describe a "
+                                     "plane. Since n-1 vectors are created when n points are "
+                                     "described, when mirror_plane_points describes 2 points "
+                                     "and about_vectors is None, the mirror plane is underdefined."
+                                     " If the system is 2D, please pass (0,0,1) to about_vectors")
                 elif len(about_vectors) != 1:
-                    raise ValueError("")
+                    raise ValueError("Overdefined system. 2 vectors best describe a plane. Since n-1"
+                                     " vectors are created when n points are described, when "
+                                     "mirror_plane_points describes 2 points and about_vectors describes"
+                                     "more than 1 vector, the mirror plane is overdefined.")
             else:
                 raise ValueError("mirror_plane_points must be either None or a list/"
-                                 "tuple of length 2 or 3.")
-            ## raise all other issues
-            point = list(self.find_particle_in_path(within_path=mirror_plane_points[0]))
+                                 "tuple of length 2 or 3. User passed length {}."
+                                 "".format(len(mirror_plane_points)))
+            point = list(self.find_particles_in_path(within_path=mirror_plane_points[0]))
             if len(point) > 1:
                 raise ValueError("{} is not a unique hierarchal pathway. {} particles matched pathway"
                                  ".".format(mirror_plane_points[0], len(point)))
-            if not relative_to:
+            if relative_to:
+                to_vec = point[0].pos
+            else:
                 relative_to = point[0].pos
                 to_vec = relative_to
-            else:
-                to_vec = point[0].pos
             for path in mirror_plane_points[1:]:
-                point = list(self.find_particle_in_path(within_path=path))
+                point = list(self.find_particles_in_path(within_path=path))
                 if len(point) > 1:
                     raise ValueError("{} is not a unique hierarchal pathway.".format(path))
                 alignment_vectors.append(point[0].pos-to_vec)
@@ -1139,6 +1242,8 @@ class Compound(object):
                 raise TypeError("about_vectors must be a list or tuple of length 1 or 2 that contains any combination"
                                 " of lists, tuples, and np.ndarrays. User passed type: {} for about_vectors"
                                 ".".format(type(about_vectors)))
+            # this is all to ensure that if the user passes a 3D vector, but this could all be nixed with
+            # an error message
             it2d = False
             it3d = False
             for av in about_vectors:
@@ -1170,6 +1275,7 @@ class Compound(object):
             relative_to = self.center
         if alignment_vectors:
             l = len(alignment_vectors)
+            # these error messages should never be reached
             if l ==1:
                 raise ValueError("The system is underdefined in that it only has 1 vector to describe the "
                                  "plane which the compound will be mirrored across. Planes are best described"
@@ -1181,23 +1287,33 @@ class Compound(object):
                                  "user passed arguments which resulted in {} vectors.".format(l))
         self._mirror(anchor = relative_to, align_position = alignment_vectors)
 
-    def mirror_child_chirality(self, looking_for= None, override= False, sees_twin_label= None,
-               keep_orientation_along_vector= None, keep_orientation_with_neighbor= None, anchor_point= None, lat_obj= None):
+    def mirror_child_chirality(self, looking_for, override=False,
+                               sees_twin_label=None,
+                               mirror_plane_points=None,
+                               keep_orientation_along_vector= None,
+                               keep_orientation_with_neighbor= None,
+                               anchor_point= None, lat_obj= None):
         """
         When splitting in to 2 functions get rid of strings just use vectors for about
         consider breaking this up into 2 functions
 
+        # make sure that user is passing the path of things that lie within the specified subc
+        # for things like anchor point and mirror_plane_points
+
+        # copy+ paste a lot from regular def mirror
+
         tip:
         if user wishes to specify an orientation of a child with respect to another particle,
-        find the coordinates of that particle using find_particle_in_path and also the coordinates of the
+        find the coordinates of that particle using find_particles_in_path and also the coordinates of the
         subcompound's anchor point (default is .center) you're searching for and make a vector between the two and pass
          them as vectors to the keep_orientation_along_vector parameter
+
 
         recipe:
         modifications of this structure will allow the user to specify a way to orient the sought out subcompound
         with a series of particles that are not directly connected to the sought out subcompound
         for parti, location, ap in zip(list_of_partis_to_find, list_of_hierarchal_locations, list_of_anchor_points):
-            coors = find_particle_in_path(parti+location)
+            coors = find_particles_in_path(parti+location)
             subc.mirror_child_chirality(*args, keep_orientation_along_vector= [coors-ap])
 
 
@@ -1205,7 +1321,7 @@ class Compound(object):
         which flip if
         I need a better name for the child chirality flag
 
-        what i need to do now is to figure out how to implement the align method. i think
+        what i need to do now is to figure out how to implement the align_vectors method. i think
         what i will do is allow either 1 or 2 args, with a flag to indicate if theyre points or
         directions. if they are points, make vectors between them and find the orthagonal. upon finding the orthagonal,
 
@@ -1231,158 +1347,134 @@ class Compound(object):
         # anchor point and sees_twin_label are now default None
         # i am worried about the case where we mirror lattice objects. please look into this. revisit
 
-        if child_chirality:
-            danger_dict = {}
-            # if bonded_external:
-            #     if len(bonded_external) != len(looking_for):
-            #         raise ValueError("looking_for must be of same length as bonded_external")
-            #     else:
-            #         for ii, jj in zip(looking_for, bonded_external):
-            #             if jj:
-            #                 danger_dict.setdefault(ii,jj)
 
 
 
-            if self.made_from_lattice and not override:
-                warn("This compound was made from a lattice. If you wish to "
-                     "proceed to change the chirality of its children, pass "
-                     "override= True when calling Compound.mirror(). The "
-                     "object has not been altered by this call.")
-                return
-            if not looking_for:
-                raise InputError("If child_chirality is set to True, user must also specify the name "
-                                 "of the subcompound(s) whose chirality will be flipped in the parameter"
-                                 " looking_for.")
-            if not isinstance(looking_for, (tuple,list)):
-                raise TypeError("")
-            if not all(isinstance(x, str) for x in looking_for):
-                raise TypeError("Parameter 'looking_for' must type list or tuple containing only str elements.")
-            stablizer_count = 0
+
+        if self.made_from_lattice and not override:
+            warn("This compound was made from a lattice. If you wish to "
+                 "proceed to change the chirality of its children, pass "
+                 "override= True when calling Compound.mirror(). The "
+                 "object has not been altered by this call.")
+            # this below error message was used in the precursor, before mirror split in 2
+                        #         warn('This compound was made from a lattice. It is recommended'
+                        # " that you use the corresponding lattice object's .mirror()"
+                        # " method, Ex: some_lattice.mirror(some_compound, 'xy')."
+                        # ' If you wish to mirror each molecule making up the lattice, '
+                        # 'pass child_chirality as True and specify the name (str) of '
+                        # "the object(s) you wish to mirror in a list to the looking_for "
+                        # "parameter. This call has not changed the object. "
+                        # 'If you wish to proceed with using Compound.mirror(), '
+                        # 'include the optional parameter override= True when calling'
+                        # ' Compound.mirror().')
+            return
+        stablizer_count = 0
 
 
-            not_found = True
-            for en, subc in enumerate(self.find_subcompounds_in_path(pathway=looking_for)):
-                if not subc:
-                    continue
-                if subc.made_from_lattice and not lat_obj:
-                    raise ValueError("{} was made from a lattice but it was not passed as a key in lat_obj."
-                                     " Please pass a dict with key {} and value pair as the corresponding "
-                                     "lattice object, OR None. If value pair is None, this will treat {}"
-                                     " as a compound. The risk associated with doing this is that it "
-                                     "interferes with the lattice vectors and thus all Lattice methods that "
-                                     "operate on those (e.g. redo, undo, populate, etc)"
-                                     ".".format(subc.name, subc.name, subc.name))
-                # this error message is wrong
-                if subc.name == looking_for[0] and not_found:
-                    not_found = False
-                if not anchor_point:
-                    relative_to = deepcopy(subc.center)
+        not_found = True
+        for en, subc in enumerate(self.find_subcompounds_in_path(pathway=looking_for)):
+            if not subc:
+                continue
+            if subc.made_from_lattice and not lat_obj:
+                raise ValueError("{} was made from a lattice but it was not passed as a key in lat_obj."
+                                 " Please pass a dict with key {} and value pair as the corresponding "
+                                 "lattice object, OR None. If value pair is None, this will treat {}"
+                                 " as a compound. The risk associated with doing this is that it "
+                                 "interferes with the lattice vectors and thus all Lattice methods that "
+                                 "operate on those (e.g. redo, undo, populate, etc)"
+                                 ".".format(subc.name, subc.name, subc.name))
+            # this error message is wrong
+            if subc.name == looking_for[0] and not_found:
+                not_found = False
+            if not anchor_point:
+                relative_to = deepcopy(subc.center)
+            else:
+                # revisit this needs help
+                if isinstance(anchor_point, (tuple, list, np.ndarray)):
+                    if len(anchor_point) == 2:
+                        d = anchor_point[0]
+                    elif len(anchor_point) == 3:
+                        pass
+                            # this needs to be better organized
+                    else:
+                        raise ValueError("")
                 else:
-                    # revisit this needs help
-                    if isinstance(anchor_point, (tuple, list, np.ndarray)):
-                        if len(anchor_point) == 2:
-                            d = anchor_point[0]
-                        elif len(anchor_point) == 3:
+                    d = anchor_point
+                    if isinstance(d, str):
+                        targo = d
+                    elif isinstance(d, Particle):
+                        targo = d.name
+                    else:
+                        raise TypeError("anchor_point is a dictionary with str keys corresponding to"
+                                        " the strs passed in looking_for. The value pairs are either type "
+                                        "mb.Particles or str that indicate a particle to act as the"
+                                        " cartesian center for the corresponding subcompound (specified in the"
+                                        " corresponding key). anchor_point can also accept a list, tuple, or"
+                                        " np.ndarray of integers or floats of length 3 that specify a point that "
+                                        "will be treated as the cartesian center of the specified subcompound."
+                                        "anchor_point can also accept a list or tuple "
+                                        "of length 2, which is useful when there are multiple instances of the "
+                                        "same particle that the user wishes to use as the cartesian center."
+                                        "The first index is a str that corresponds to the "
+                                        "particle that will act as the cartesian center, while the second index "
+                                        "is an integer corresponding to the order of when the desired "
+                                        "particle was added (still zero indexed). For example, if the user"
+                                        " wants to choose the 'H' that was added third to behave as the "
+                                        "cartesian center for the subcompound 'Acetylene', the user would pass: "
+                                        "anchor_point={'Acetylene' : ['H', 2]}")
+                            # this error message is wrong
+
+                    anky = list(subc.particle_by_name(targo))
+                    if len(anky) > 1:
+                        if (len(anchor_point[subc.name]) == 2) and\
+                            isinstance(anchor_point[subc.name][1], (int, float)):
                             pass
-                                # this needs to be better organized
+
+                        # do a similar thing to specify which subcompounds to edit beyond just the within option
                         else:
-                            raise ValueError("")
-                    else:
-                        d = anchor_point
-                        if isinstance(d, str):
-                            targo = d
-                        elif isinstance(d, Particle):
-                            targo = d.name
-                        else:
-                            raise TypeError("anchor_point is a dictionary with str keys corresponding to"
-                                            " the strs passed in looking_for. The value pairs are either type "
-                                            "mb.Particles or str that indicate a particle to act as the"
-                                            " cartesian center for the corresponding subcompound (specified in the"
-                                            " corresponding key). anchor_point can also accept a list, tuple, or"
-                                            " np.ndarray of integers or floats of length 3 that specify a point that "
-                                            "will be treated as the cartesian center of the specified subcompound."
-                                            "anchor_point can also accept a list or tuple "
-                                            "of length 2, which is useful when there are multiple instances of the "
-                                            "same particle that the user wishes to use as the cartesian center."
-                                            "The first index is a str that corresponds to the "
-                                            "particle that will act as the cartesian center, while the second index "
-                                            "is an integer corresponding to the order of when the desired "
-                                            "particle was added (still zero indexed). For example, if the user"
-                                            " wants to choose the 'H' that was added third to behave as the "
-                                            "cartesian center for the subcompound 'Acetylene', the user would pass: "
-                                            "anchor_point={'Acetylene' : ['H', 2]}")
-                                # this error message is wrong
-
-                        anky = list(subc.particle_by_name(targo))
-                        if len(anky) > 1:
-                            if (len(anchor_point[subc.name]) == 2) and\
-                                isinstance(anchor_point[subc.name][1], (int, float)):
-                                pass
-
-                            # do a similar thing to specify which subcompounds to edit beyond just the within option
-                            else:
-                                raise ValueError('There are {} instances of {} in {}. User needs to specify '
-                                                 'which to use or needs to provide a point in 3D space to act'
-                                                 ' as the cartesian center within {}. Instances of {} are: '
-                                                 ''.format(len(anky), targo, subc, subc, anky))
-                            # revisit review to ensure all of this is still compatable with the 2D case
-                keeper = []
-                if keep_orientation_along_vector:
-                    # revsist to type check
-                    keeper.extend(keep_orientation_along_vector)
-                if keep_orientation_with_neighbor:
-                    nays=[]
-                    for n in tuple(subc.bonds_to_neighbors(sees_twin= sees_twin_label,
-                                                           neigh= keep_orientation_with_neighbor)):
-                        print('n')
-                        print(n)
-                        # if not n['neighbor']:
-                        #     continue
-                        # revisit commenting this out
-                        # you should append the neighbor to the hidden_helpers and the ones inside of the
-                            # subc to keeper
-                        nays.append(n['neighbor'].pos)
-                        print('nays')
-                        print(type(nays))
-                        print(nays)
-                    if anchor_point or (len(nays) == 1):
-                        keeper.extend([relative_to - nay for nay in nays])
-                    else:
-                        relative_to = np.mean(nays, axis = 0)
-                        for vec in nays[1:]:
-                            keeper.append(nays[0]-vec)
-                        # consider adding this in to ensure these have neighbors: has_neighbor = True
-                        # revisit check overdefined case
-
-                # if keep_orientation_with_coordinate:
-                #     keeper.append(relative_to - keep_orientation_with_coordinate)
-                #
-
-                self._mirror(subc, about, recenter=True, align_position=keeper, anchor_pt=relative_to)
-                        #lat_obj=lat_obj[subc.name]) #keep_position_with)
-
-            if not_found:
-                raise ValueError("{} was not found in {}.".format(looking_for[0], self.name))
-
-        elif keep_orientation_with_neighbor or keep_orientation_along_vector or looking_for or anchor_point or lat_obj:
-            warn('Overdefined system. When child_chirality is False, .mirror() only accepts arguments:'
-                 ' about, override. Too many parameters were specifed. No action was taken, the object has '
-                 'not been modified.')
-        else:
-            if self.made_from_lattice:
-                if override:
-                    _mirror(self, about, recenter= False)
+                            raise ValueError('There are {} instances of {} in {}. User needs to specify '
+                                             'which to use or needs to provide a point in 3D space to act'
+                                             ' as the cartesian center within {}. Instances of {} are: '
+                                             ''.format(len(anky), targo, subc, subc, anky))
+                        # revisit review to ensure all of this is still compatable with the 2D case
+            keeper = []
+            if keep_orientation_along_vector:
+                # revist to type check
+                keeper.extend(keep_orientation_along_vector)
+            if keep_orientation_with_neighbor:
+                nays=[]
+                for n in tuple(subc.bonds_to_neighbors(sees_twin= sees_twin_label,
+                                                       neigh= keep_orientation_with_neighbor)):
+                    print('n')
+                    print(n)
+                    # if not n['neighbor']:
+                    #     continue
+                    # revisit commenting this out
+                    # you should append the neighbor to the hidden_helpers and the ones inside of the
+                        # subc to keeper
+                    nays.append(n['neighbor'].pos)
+                    print('nays')
+                    print(type(nays))
+                    print(nays)
+                if anchor_point or (len(nays) == 1):
+                    keeper.extend([relative_to - nay for nay in nays])
                 else:
-                    warn('This compound was made from a lattice. It is recommended'
-                        " that you use the corresponding lattice object's .mirror()"
-                        " method, Ex: some_lattice.mirror(some_compound, 'xy')."
-                        ' If you wish to mirror each molecule making up the lattice, '
-                        'pass child_chirality as True and specify the name (str) of '
-                        "the object(s) you wish to mirror in a list to the looking_for "
-                        "parameter. This call has not changed the object. "
-                        'If you wish to proceed with using Compound.mirror(), '
-                        'include the optional parameter override= True when calling'
-                        ' Compound.mirror().')
+                    relative_to = np.mean(nays, axis = 0)
+                    for vec in nays[1:]:
+                        keeper.append(nays[0]-vec)
+                    # consider adding this in to ensure these have neighbors: has_neighbor = True
+                    # revisit check overdefined case
+
+            # if keep_orientation_with_coordinate:
+            #     keeper.append(relative_to - keep_orientation_with_coordinate)
+            #
+
+            self._mirror(subc, about, recenter=True, align_position=keeper, anchor_pt=relative_to)
+                    #lat_obj=lat_obj[subc.name]) #keep_position_with)
+
+        if not_found:
+            raise ValueError("{} was not found in {}.".format(looking_for[0], self.name))
+
 
     # def subcompounds_by_name(self, looking_for):
     #     """Whenever calling this function within a function make sure to add in a method to track
@@ -1494,7 +1586,7 @@ class Compound(object):
     #     which flip if
     #     I need a better name for the child chirality flag
     #
-    #     what i need to do now is to figure out how to implement the align method. i think
+    #     what i need to do now is to figure out how to implement the align_vectors method. i think
     #     what i will do is allow either 1 or 2 args, with a flag to indicate if theyre points or
     #     directions. if they are points, make vectors between them and find the orthagonal. upon finding the orthagonal,
     #
@@ -1905,7 +1997,7 @@ class Compound(object):
 
         # Add new_part to labels. Does not currently support batch add.
         if label is None:
-            label = '{0}[$]'.format(new_child.__class__.__name__)
+            label = '{0}[$]'.format(new_child.name)
 
         if label.endswith('[$]'):
             label = label[:-3]
@@ -2112,7 +2204,7 @@ class Compound(object):
                 if p2 == p1:
                     continue
                 bond_tuple = (p1, p2) if id(p1) < id(p2) else (p2, p1)
-                if _tuple in added_bonds:
+                if bond_tuple in added_bonds:
                     continue
                 min_dist = self.min_periodic_distance(p2.pos, p1.pos)
                 if (p2.name == name_b) and (dmin <= min_dist <= dmax):
@@ -2610,31 +2702,140 @@ class Compound(object):
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
 
-    def align(self, align_these, with_these, lattice_override=False):
+
+    def align_vectors(self, align_these, with_these, anchor_pt = None, lattice_override=False):
         """
+        Given 2 sets (align_these and with_these) of 2 vectors, rotate a compound
+        so that the vectors align_these point in the direction that with_these do.
 
         :param align_these: list-like
+            The vectors to be aligned. Must represent 3D cartesian coordinates.
+
         :param with_these: list-like
+            The vectors to serve as the end goal for align_these to be aligned with.
+            Must represent 3D cartesian coordinates.
+
+        :param anchor_pt: optional, accepts list-like, defaults to self.center
+            anchor_pt is used as a way to identify a point in the compound that will remain
+            unchanged after alignment. The list-like either contains 3D coordinates or the
+            hierarchal pathway to a unique particle that will serve as the anchor point.
+
         :param lattice_override:
-        :return:
+            revisit
         """
         if self.made_from_lattice and not lattice_override:
             warn("This compound was made from a lattice, please use the "
                  "Lattice.rotate(axis_align= True) or "
                  "Lattice.rotate(miller_directions=True) methods."
-                 " To proceed use the Compound.align() method  with "
-                 "this compound, pass align's optional parameter "
+                 " To proceed use the Compound.align_vectors() method  with "
+                 "this compound, pass align_vectors's optional parameter "
                  "lattice_override as True. This compound has not "
                  "been changed.")
             return
+        for aligner in list([align_these, with_these]):
+            if not isinstance(aligner, (list,tuple)):
+                if not isinstance(aligner, np.ndarry):
+                    raise TypeError("Parameters align_these and with_these must be a list-like of"
+                                    " list-like types.")
+                else:
+                    aligner = aligner.tolist
+            else:
+                aligner = list(aligner)
+            if len(aligner) !=2:
+                raise ValueError("Vector pair {} is not of length 2. Both vectors are required to "
+                                 "sufficienly and concisely describe a plane. If you are in"
+                                 " the 2D case, please pass (0,0,1) as one of your vectors.".format(aligner))
+        ang_current, ang_goal = map(lambda x: angle(x[0], x[1]),
+                                    [align_these, with_these])
+        print("check1")
+        if not np.allclose(ang_current, ang_goal, atol= 1e-2):
+            raise ValueError("The vectors specified cannot be aligned because the "
+                             "angle between the vectors specified in align_these "
+                             "is too different from the angle between the vectors "
+                             "specified in with_these. Angles were {} and {} degrees, "
+                             "respectively.".format(ang_current*180/np.pi,
+                                                    ang_goal*180/np.pi))
+        print(align_these)
+        print(with_these)
+        align_these, with_these = map(lambda x: normalized_matrix(x), [align_these, with_these])
+        print("mind ya own")
+        print(align_these)
+        print(with_these)
+        print("check2")
+        if not np.allclose(ang_goal,np.pi/2, atol= 5e-3):
+            align_these[1], with_these[1] = map(lambda x: unit_vector(np.cross(x[0], x[1])),
+                                                      [align_these, with_these])
+        print('check3')
+            # this ensures that the vector pair will be orthagonal
+        if anchor_pt is None:
+            anchor_pt = self.center
         else:
-            # do error checking
-            end_vecs =[None, None]
-            for current, goal in zip(align_these, with_these):
-                orthag = np.cross(current, goal)
-                theta = angle(current, goal)
-                end_vecs[0] = (_rotate(current, ))
-                self.rotate(theta=theta, around=orthag)
+            if isinstance(anchor_pt, np.ndarray):
+                pass
+            elif isinstance(anchor_pt, (tuple, list)):
+                if all(isinstance(ap, (int,float)) for ap in anchor_pt):
+                    anchor_pt = np.array(anchor_pt)
+                else:
+                    path = deepcopy(anchor_pt)
+                    anchor_pt = list(self.find_particle_in_path(within_path=anchor_pt))
+                    # try:
+                    #     anchor_pt = list(self.find_particle_in_path(within_path=anchor_pt))
+                    # except:
+                    #     raise TypeError("The contents, {}, of the {} passed for anchor_pt"
+                    #                     " do not contain the appropriate datatypes."
+                    #                     " anchor_pt must be either a np.ndarray, list,"
+                    #                     " or tuple. If it is a list/tuple, the contents "
+                    #                     "must either be 3D coorindates or the hierarchal "
+                    #                     "pathway of a unique particle."
+                    #                     "".format(anchor_pt, type(anchor_pt)))
+                    if len(anchor_pt) > 1:
+                        raise MBuildError("This is not a unique anchor point. "
+                                          "The hierarchal path {} is invalid."
+                                          "".format(path))
+                    else:
+                        anchor_pt = anchor_pt[0].pos
+
+            else:
+                raise TypeError("Parameter anchor_pt must be of type list, tuple, or"
+                                " np.ndarray.")
+
+        self._align(align_these=align_these, with_these=with_these,
+                    anchor_pt=anchor_pt, lattice_override=lattice_override)
+
+
+    def _align(self, align_these, with_these, anchor_pt, lattice_override=False):
+        """
+        This alignment technique assumes that all the input methods have been checked.
+        The function align_vectors() checks input and calls upon this to execute the alignment.
+        See def align_vectors() for more information.
+        """
+        current = deepcopy(np.array(align_these))
+        goal = np.array(with_these)
+        self.translate(-anchor_pt)
+        # do error checking
+        for ii in range(2):
+            if np.allclose(current[ii], goal[ii], atol=1e-3):
+                continue
+            elif np.allclose(current[ii]*-1, goal[ii], atol= 1e-3):
+                self. rotate(theta = np.pi, around= current[(ii+1)%2])
+                current[ii]*=-1
+                continue
+            orthag = np.cross(current[ii], goal[ii])
+            theta = abs(angle(current[ii], goal[ii]))
+            #current = np.array([Rotation(theta, orthag).apply_to(jj)[0] for jj in current])
+            #current = np.array([_rotate(coordinates=jj, theta=theta, around=orthag) for jj in current])
+            # current = np.array(list(map(lambda jj : _rotate(coordinates=jj, around=orthag,
+            #                                                 theta=theta), current)))
+            print("check4")
+            current = np.array(list(_rotate(coordinates=current, around=orthag, theta=theta)))
+            # look into checks here like allclose's
+            print('check5')
+            current = normalized_matrix(current)
+            self.rotate(theta=theta, around=orthag)
+            # compare the end vectors
+            print("check6")
+        self.translate(anchor_pt)
+
 
 
     def translate(self, by):
@@ -2969,7 +3170,7 @@ class Compound(object):
             atom2 = atom_mapping[bond.atom2]
             self.add_bond((atom1, atom2))
 
-        if structure.box:
+        if structure.box is not None:
             self.periodicity = structure.box[0:3]
         else:
             self.periodicity = np.array([0., 0., 0.])
