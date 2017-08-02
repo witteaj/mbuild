@@ -1,6 +1,8 @@
 import os
 
+
 #from foyer.exceptions import ValidationWarning
+
 import numpy as np
 import parmed as pmd
 import pytest
@@ -30,15 +32,12 @@ class TestCompound(BaseTest):
         box_attributes = ['mins', 'maxs', 'lengths']
         custom_box = mb.Box([.8, .8, .8])
         for ext in extensions:
-            use_mdtraj = False
-            if ext == '.hoomdxml':
-                use_mdtraj = True
             outfile_padded = 'padded_methyl' + ext
             outfile_custom = 'custom_methyl' + ext
             ch3.save(filename=outfile_padded, box=None, overwrite=True)
             ch3.save(filename=outfile_custom, box=custom_box, overwrite=True)
-            padded_ch3 = mb.load(outfile_padded, use_mdtraj=use_mdtraj)
-            custom_ch3 = mb.load(outfile_custom, use_mdtraj=use_mdtraj)
+            padded_ch3 = mb.load(outfile_padded)
+            custom_ch3 = mb.load(outfile_custom)
             for attr in box_attributes:
                 pad_attr = getattr(padded_ch3.boundingbox, attr)
                 custom_attr = getattr(custom_ch3.boundingbox, attr)
@@ -80,6 +79,18 @@ class TestCompound(BaseTest):
         methane.save('methyl.mol2', forcefield_name='oplsaa',
                      references_file='methane.bib')
         assert os.path.isfile('methane.bib')
+
+    def test_save_combining_rule(self, methane):
+        combining_rules = ['lorentz', 'geometric']
+        gmx_rules = {'lorentz': 2, 'geometric': 3}
+        for combining_rule in combining_rules:
+            methane.save('methane.top', forcefield_name='oplsaa',
+                         combining_rule=combining_rule, overwrite=True)
+            with open('methane.top') as fp:
+                for i, line in enumerate(fp):
+                    if i == 18:
+                        gmx_rule = int(line.split()[1])
+                        assert gmx_rule == gmx_rules[combining_rule]
 
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
@@ -737,5 +748,8 @@ class TestCompound(BaseTest):
 
     def test_load_mol2_mdtraj(self):
         with pytest.raises(KeyError):
-            mb.load(get_fn('benzene-nonelement.mol2'), use_mdtraj=True)
-        mb.load(get_fn('benzene-nonelement.mol2'))
+            mb.load(get_fn('benzene-nonelement.mol2'))
+        mb.load(get_fn('benzene-nonelement.mol2'), use_parmed=True)
+
+    def test_siliane_bond_number(self, silane):
+        assert silane.n_bonds == 4

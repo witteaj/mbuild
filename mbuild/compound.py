@@ -12,6 +12,7 @@ import sys
 import tempfile
 from warnings import warn
 
+import mdtraj as md
 import numpy as np
 from oset import oset as OrderedSet
 import parmed as pmd
@@ -32,7 +33,7 @@ import mbuild as mb
 
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
-         rigid=False, use_mdtraj=False, **kwargs):
+         rigid=False, use_parmed=False, **kwargs):
     """Load a file into an mbuild compound.
 
     Files are read using the MDTraj package unless the `use_parmed` argument is
@@ -55,8 +56,8 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         Only load the coordinates into an existing compoint.
     rigid : bool, optional, default=False
         Treat the compound as a rigid body
-    use_mdtraj : bool, optional, default=False
-        Use readers from MDTraj instead of Parmed.
+    use_parmed : bool, optional, default=False
+        Use readers from ParmEd instead of MDTraj.
     **kwargs : keyword arguments
         Key word arguments passed to mdTraj for loading.
 
@@ -76,14 +77,14 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
     if compound is None:
         compound = Compound()
 
-    if use_mdtraj:
-        mdtraj = import_('mdtraj')
-
-        traj = mdtraj.load(filename, **kwargs)
-        compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
-    else:
-        structure = pmd.load_file(filename, structure=True)
+    if use_parmed:
+        warn("use_parmed set to True.  Bonds may be inferred from inter-particle "
+             "distances and standard residue templates!")
+        structure = pmd.load_file(filename, structure=True, **kwargs)
         compound.from_parmed(structure, coords_only=coords_only)
+    else:
+        traj = md.load(filename, **kwargs)
+        compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
 
     if rigid:
         compound.label_rigid_bodies()
@@ -2605,7 +2606,7 @@ class Compound(object):
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, box=None, overwrite=False, residues=None,
-             references_file=None, **kwargs):
+             references_file=None, combining_rule='lorentz', **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -2635,6 +2636,11 @@ class Compound(object):
         references_file : str, optional, default=None
             Specify a filename to write references for the forcefield that is
             to be applied. References are written in BiBTeX format.
+        combining_rule : str, optional, default='lorentz'
+            Specify the combining rule for nonbonded interactions. Only relevant
+            when the `foyer` package is used to apply a forcefield. Valid
+            options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
+            and geometric combining rules respectively.
 
         Other Parameters
         ----------------
@@ -2682,6 +2688,7 @@ class Compound(object):
             ff = Forcefield(forcefield_files=forcefield_files,
                             name=forcefield_name)
             structure = ff.apply(structure, references_file=references_file)
+            structure.combining_rule = combining_rule
 
         total_charge = sum([atom.charge for atom in structure])
         if round(total_charge, 4) != 0.0:
@@ -2980,7 +2987,6 @@ class Compound(object):
         _to_topology
 
         """
-        mdtraj = import_('mdtraj')
         atom_list = [particle for particle in self.particles(show_ports)]
 
         top = self._to_topology(atom_list, chains, residues)
@@ -2999,7 +3005,7 @@ class Compound(object):
             else:
                 unitcell_lengths[dim] = box.lengths[dim]
 
-        return mdtraj.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
+        return md.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
                              unitcell_angles=np.array([90, 90, 90]))
 
     def _to_topology(self, atom_list, chains=None, residues=None):
