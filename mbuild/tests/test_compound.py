@@ -281,7 +281,7 @@ class TestCompound(BaseTest):
         assert 444 == len(list(t for t in mixed_bilayer.find_subcompounds_in_path(path) if t))
 
     def test_find_subcompound_in_path_toError(self, mixed_bilayer):
-        path = ["",""]
+        pass
 
     def test_find_subcompound_in_path_cmpnd(self, mixed_bilayer):
         parti = list(t for t in mixed_bilayer.find_subcompounds_in_path(["ALC[0]","top_leaflet"]) if t)[0]
@@ -457,11 +457,26 @@ class TestCompound(BaseTest):
         with pytest.raises(ValueError):
             mb.Compound(name=1)
 
-    def test_my_label_custom(self, sixpoints):
-        pass
+    def test_my_label_custom(self, ch3):
+        ch3["H[0]"].pos = [-.1, 0, -.07]
+        ch3["H[1]"].pos = [0,.1,.07]
+        ch3["H[2]"].pos = [0,-.1, .07]
+        ch3.add(mb.Particle(name="H", pos=[.1,0,-.07]), label="odd_one")
+        assert ch3[1].name == ch3[4].name
+        assert ch3[4].my_label == "odd_one"
+        assert ch3["odd_one"] is ch3[4]
+        assert len(ch3["H"])  == 3
 
-    def test_my_label_default(self,):
-        pass
+
+    def test_my_label_default(self,ch3):
+        ch3["H[0]"].pos = [-.1, 0, -.07]
+        ch3["H[1]"].pos = [0,.1,.07]
+        ch3["H[2]"].pos = [0,-.1, .07]
+        ch3.add(mb.Particle(name="H", pos=[.1,0,-.07]))
+        assert len(ch3["H"]) == 4
+        assert ch3["H[3]"] is ch3[4]
+        assert ch3[4].my_label == "H[3]"
+        assert ch3[1].name == ch3[4].name
 
     def test_particle_in_particle(self):
         part = mb.Particle(name='A')
