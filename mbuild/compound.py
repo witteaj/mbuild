@@ -404,23 +404,31 @@ class Compound(object):
          in the parameter 'within_path'.
 
         A hierarchal pathway is a list or tuple containing any combination of strings,
-        list/tuples, or mb.Compounds. Each element of the list/tuple describes a subcompound
-        (or even IS a subcompound, in the instance where a mb.Compound object is passed) or
-        a series of compounds, in the instance where a list/tuple is passed. Strings correspond
-        to either the names or labels of subcompounds and list/tuples hold multiple strings that
-        correspond to names and/or labels. The order of the list/tuple elements correspond
-        to their position in the hierarchal pathway, where the first index is the lowest level
-        and the last is the highest specified. The number of subcompounds the user can
-        specify is unlimited so long as each subcompound specified lies within the hierarchy
-        of the list/tuple element that follows. In the context of this function, the first
-        index is a particle.
+        list/tuples, or mb.Compounds. Each element of the list/tuple either describes a series
+        of subcompounds (this occurs in the instance where an inner list/tuple is passed), or describes
+        one subcompound or type of subcompound (when a string is passed), or even IS a subcompound
+        (in the instance where a mb.Compound object is passed). Strings correspond
+        to either the names or labels of subcompounds, and list/tuples hold multiple strings that
+        correspond to names and/or labels. They are used when the user wishes to describe multiple
+        pathways, for example, path = [..., ["subcompound[1]", "subcompound[4]"], ...].
+        This example demonstrates that the user can describe some but not all of the pathways
+        that have the name "subcompound". The order of the elements in the outer list/tuple correspond
+        to their position in the hierarchal pathway, where the first index is the lowest level and the
+        last is the highest specified. The number of subcompounds the user can specify is unlimited so
+        long as each subcompound specified lies within the hierarchy of the list/tuple element that
+        follows. In the context of this function, the first index correspond to a mb.Particle.
 
-        EX: within_path =["target",
-                          ["subsubsubcompound[0]",
-                           "subsubsubcompound[3]",
-                           "subsubsubcompound[4]"],
-                         "subsubcompound",
-                         "subcompound[6]"]
+        The idea of a pathway is similar to how one sorts through directories on a computer,
+        i.e. "C:/user/username/documents" BUT since MBuild uses hierarchal pathways from lowest
+        to highest, the MBuild style of writing it would be "documents/username/user/C:".
+        # best hierarchal description
+
+        EX: path =["target",
+                          ["SubSubSubCompound[0]",
+                           "SubSubSubCompound[3]",
+                           "SubSubSubCompound[4]"],
+                         "SubSubCompound",
+                         "SubCompound[6]"]
 
         :param within_path: accepts list, tuple, or mb.particle
             If a mb.particle is provided, the function will return within_path.
@@ -524,32 +532,50 @@ class Compound(object):
                         yield from parti.subcompounds_by_name_or_label(looking_for)
                     else:
                         yield None
-                        #print("too short")
+
         elif isinstance(looking_for, (list, tuple)) and all(looking_for):
             for l in looking_for:
                 yield from self.subcompounds_by_name_or_label(looking_for=l)
         else:
             raise TypeError("looking_for must be of type str or a list/tuple of strs."
                             " User passed: {}.".format(type(looking_for)))
-            #print('exit')
+
     def find_subcompounds_in_path(self, pathway):
         """
         yield all subcompounds that are in the specified hierarchal pathway
 
         :param pathway: list or tuple containing strings or mb.Compounds
-                Each element of the list/tuple describes a subcompound (or even IS
-                a subcompound, in the instance where a mb.Compound object is passed).
-                Strings correspond to either the names or labels of subcompounds.
-                The order of the list/tuple elements correspond to their position in
-                the hierarchal pathway, where the first index is the lowest level
-                and the last is the highest specified. The number of subcompounds
-                the user can specify is unlimited so long as each subcompound specified
-                lies within the hierarchy of the list/tuple element that follows.
-
-                EX: pathway=["target", "subsubsubcompound", "subsubcompound", "subcompound"]
+            A hierarchal pathway (see below) to the desired subcompounds.
 
         :return: yields all particles that match the path description.
                 yields None if the particle path specified doesn't exist
+
+        A hierarchal pathway is a list or tuple containing any combination of strings,
+        list/tuples, or mb.Compounds. Each element of the list/tuple either describes a series
+        of subcompounds (this occurs in the instance where an inner list/tuple is passed), or describes
+        one subcompound or type of subcompound (when a string is passed), or even IS a subcompound
+        (in the instance where a mb.Compound object is passed). Strings correspond
+        to either the names or labels of subcompounds, and list/tuples hold multiple strings that
+        correspond to names and/or labels. They are used when the user wishes to describe multiple
+        pathways, for example, path = [..., ["subcompound[1]", "subcompound[4]"], ...].
+        This example demonstrates that the user can describe some but not all of the pathways
+        that have the name "subcompound". The order of the elements in the outer list/tuple correspond
+        to their position in the hierarchal pathway, where the first index is the lowest level and the
+        last is the highest specified. The number of subcompounds the user can specify is unlimited so
+        long as each subcompound specified lies within the hierarchy of the list/tuple element that
+        follows. In the context of this function, the first index must correspond to a subcompound, not
+        a mb.Particle.
+
+        The idea of a pathway is similar to how one sorts through directories on a computer,
+        i.e. "C:/user/username/documents" BUT since MBuild uses hierarchal pathways from lowest
+        to highest, the MBuild style of writing it would be "documents/username/user/C:".
+
+        EX: path =["target",
+                          ["SubSubSubCompound[0]",
+                           "SubSubSubCompound[3]",
+                           "SubSubSubCompound[4]"],
+                         "SubSubCompound",
+                         "SubCompound[6]"]
         """
 
         if not isinstance(pathway, (list, tuple)):
@@ -1119,27 +1145,32 @@ class Compound(object):
         particles.
 
         A hierarchal pathway is a list or tuple containing any combination of strings,
-        list/tuples, or mb.Compounds. Each element of the list/tuple describes a subcompound
-        (or even IS a subcompound, in the instance where a mb.Compound object is passed) or
-        a series of compounds, in the instance where a list/tuple is passed. Strings correspond
+        list/tuples, or mb.Compounds. Each element of the list/tuple either describes a series
+        of subcompounds (this occurs in the instance where an inner list/tuple is passed), or describes
+        one subcompound or type of subcompound (when a string is passed), or even IS a subcompound
+        (in the instance where a mb.Compound object is passed). Strings correspond
         to either the names or labels of subcompounds, and list/tuples hold multiple strings that
         correspond to names and/or labels. They are used when the user wishes to describe multiple
         pathways, for example, path = [..., ["subcompound[1]", "subcompound[4]"], ...].
         This example demonstrates that the user can describe some but not all of the pathways
-        that have the name "subcompound". The order of the list/tuple elements correspond to their
-        position in the hierarchal pathway, where the first index is the lowest level and the last
-        is the highest specified. The number of subcompounds the user can specify is unlimited so
+        that have the name "subcompound". The order of the elements in the outer list/tuple correspond
+        to their position in the hierarchal pathway, where the first index is the lowest level and the
+        last is the highest specified. The number of subcompounds the user can specify is unlimited so
         long as each subcompound specified lies within the hierarchy of the list/tuple element that
         follows. In the context of this function, the first index must be a subcompound, not
         a mb.Particle.
+
+        The idea of a pathway is similar to how one sorts through directories on a computer,
+        i.e. "C:/user/username/documents" BUT since MBuild uses hierarchal pathways from lowest
+        to highest, the MBuild style of writing it would be "documents/username/user/C:".
         # best hierarchal description
 
         EX: path =["target",
-                          ["subsubsubcompound[0]",
-                           "subsubsubcompound[3]",
-                           "subsubsubcompound[4]"],
-                         "subsubcompound",
-                         "subcompound[6]"]
+                          ["SubSubSubCompound[0]",
+                           "SubSubSubCompound[3]",
+                           "SubSubSubCompound[4]"],
+                         "SubSubCompound",
+                         "SubCompound[6]"]
 
         :param about_vectors: optional, accepts list-like of length 1 or 2 containing
                             list-likes of length 3
