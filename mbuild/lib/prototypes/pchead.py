@@ -27,7 +27,7 @@ class PCHead(mb.Compound):
         mb.force_overlap(move_this=self['alkyl_body'], 
                          from_positions=self['alkyl_body']['down'],
                          to_positions=self['N4']['port_3'])
-        self.energy_minimization()
+       # self.energy_minimization()
     
         self.add(Phosphate(), label='PO4')
         mb.force_overlap(move_this=self['PO4'], from_positions=self['PO4']['down'],

@@ -446,7 +446,8 @@ class Compound(object):
                                 "find_particle_in_path just returns within_path"
                                 ".".format(type(within_path)))
             else:
-                return within_path
+                yield within_path
+                return
         if not within_path:
             raise ValueError("within_path cannot be empty.")
         within_path = list(within_path)
@@ -454,7 +455,8 @@ class Compound(object):
         parti = within_path[0]
         if len(within_path) ==1:
             if isinstance(parti,mb.Particle):
-                return parti
+                yield parti
+                return
             elif isinstance(parti, str):
                 for parts in self:
                     if parts.name == parti or parts.my_label == parti:
