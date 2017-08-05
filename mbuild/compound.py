@@ -32,6 +32,7 @@ from mbuild.coordinate_transform import _translate, _rotate, normalized_matrix, 
 import mbuild as mb
 
 
+
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
          rigid=False, use_parmed=False, **kwargs):
     """Load a file into an mbuild compound.
@@ -398,10 +399,22 @@ class Compound(object):
             if particle.name == name:
                 yield particle
 
-    def find_particle_in_path(self, within_path):
+    def find_particles_in_path(self, within_path):
         """"
         Yields all particles that exist within the hierarchal pathway description provided
          in the parameter 'within_path'.
+
+        :param within_path: accepts list, tuple, or mb.particle
+            If a mb.particle is provided, the function will return within_path.
+            The a list/tuple is specified, each element is either a str, mb.Compound,
+            list/tuple (containing any combination of strs and mb.Compounds). If
+            a mb.Compound is provided the function skips to that index and ignores
+            all data beyond that index. For example, given ["a0", "a1", <mb.Compound>, "a3"],
+            the function would ignore the value "a3" and skip straight to the mb.Compound.
+            See description below for more information on hierarchal pathways.
+
+        :yields
+            All particles that match the hierarchal description provided.
 
         A hierarchal pathway is a list or tuple containing any combination of strings,
         list/tuples, or mb.Compounds. Each element of the list/tuple either describes a series
@@ -416,7 +429,7 @@ class Compound(object):
         to their position in the hierarchal pathway, where the first index is the lowest level and the
         last is the highest specified. The number of subcompounds the user can specify is unlimited so
         long as each subcompound specified lies within the hierarchy of the list/tuple element that
-        follows. In the context of this function, the first index correspond to a mb.Particle.
+        follows. In the context of this function, the first index must be a mb.Particle.
 
         The idea of a pathway is similar to how one sorts through directories on a computer,
         i.e. "C:/user/username/documents" BUT since MBuild uses hierarchal pathways from lowest
@@ -430,19 +443,14 @@ class Compound(object):
                          "SubSubCompound",
                          "SubCompound[6]"]
 
-        :param within_path: accepts list, tuple, or mb.particle
-            If a mb.particle is provided, the function will return within_path.
-            The a list/tuple is specified, each element is either a str, mb.Compound,
-            list/tuple (containing any combination of strs and mb.Compounds). If
-            a mb.Compound is provided the function skips to that index and ignores
-            all data beyond that index. For example, given
-            ["a0", "a1", <mb.Compound>, "a3"], the function would ignore the value "a3"
-             and skip straight to the mb.Compound. See
-            above description for more information on pathways.
-
-        :yields
-            All particles that match the hierarchal description provided.
-
+        TIP:
+        The following in an example of when you would pass an inner list/tuple to within_path:
+            If you have a monolayer of Free Fatty Acids, each of len 10 and wish to yield the
+            H[0] from every other AlkylMonomer, for the pathway parameter you would pass:
+                within_path = ["H[0]",
+                            ["AlkylMonomer[{}]".format(ii) for ii in range(start=0, stop=10, step=2)], ...]
+                    *This examples assumes default labeling behaviour
+        This generator recipe can make selecting your path much easier.
         """
         # revisit bc of the list option. i'm worried it won't return any errors. maybe track which ones
         # it doesnt find. That would probably need to be done in find_subc_in_path
@@ -451,7 +459,7 @@ class Compound(object):
                 raise TypeError("within_path must be of type list or tuple. "
                                 "User passed type: {}. within_path can also "
                                 "accept a mb.Particle but in this instance "
-                                "find_particle_in_path just returns within_path"
+                                "find_particles_in_path just returns within_path"
                                 ".".format(type(within_path)))
             else:
                 yield within_path
@@ -525,8 +533,8 @@ class Compound(object):
                         yield parti
                     else:
                         raise ValueError("The user passed {}, the name of an atom/ particle within this "
-                                        "object. Please use particles_by_name, find_particle_in_path,"
-                                         "or a similar method instead.".format(parti.name))
+                                        "object. \nPlease use particles_by_name, find_particles_in_path,"
+                                         "or a similar \nmethod instead.".format(parti.name))
                 else:
                     if parti.n_particles > 1:
                         yield from parti.subcompounds_by_name_or_label(looking_for)
@@ -544,7 +552,7 @@ class Compound(object):
         """
         yield all subcompounds that are in the specified hierarchal pathway
 
-        :param pathway: list or tuple containing strings or mb.Compounds
+        :param pathway: list or tuple containing strings, list/tuples or mb.Compounds
             A hierarchal pathway (see below) to the desired subcompounds.
 
         :return: yields all particles that match the path description.
@@ -576,6 +584,14 @@ class Compound(object):
                            "SubSubSubCompound[4]"],
                          "SubSubCompound",
                          "SubCompound[6]"]
+
+        TIP:
+        The following in an example of when you would pass an inner list/tuple to pathway:
+            If you have a monolayer of Free Fatty Acids, each of len 10 and wish to yield
+            every other AlkylMonomer, for the pathway parameter you would pass:
+                pathway = [["AlkylMonomer[{}]".format(ii) for ii in range(start=0, stop=10, step=2)], ...]
+            *This examples assumes default labeling behaviour
+        This generator recipe can make selecting your path much easier.
         """
 
         if not isinstance(pathway, (list, tuple)):
@@ -1084,44 +1100,40 @@ class Compound(object):
         a2, b2 = self.find_bonds(bond2)
         #remove and make the bonds
 
-    def _mirror(self, anchor, align_position= None, hidden_helpers= None):
+    def _mirror(self, anchor, align_position,):
         """"""
         which_flip = 1
-        if align_position:
+        if len(align_position)>0:
             align_position = normalized_matrix(align_position)
             norm1 = np.cross(align_position[0],align_position[1])
             if np.linalg.norm(norm1) < .045:
                 # should i do this or should i use angle i would use .055 rad (3.15 deg) as the threshold revisit
                 # use test cases to try this out
-                if hidden_helpers:
-                    warn()
-                    # probably first try each OG w a back up then if neither of those work out try both the back ups?
-                    pass
-                else:
-                    raise ValueError("The vectors passed used to describe the plane are co-linear, thus"
+                raise ValueError("The vectors passed used to describe the plane are co-linear, thus"
                                      " there are infinitely many possible planes.")
             norm1 = unit_vector(norm1)
             for n, ii in enumerate(np.eye(3)):
                 if np.allclose(ii, abs(norm1), atol= 1e-6):
                     which_flip = n
-                    align_position = None
+                    align_position = []
                     break
             else:
                 moving_align = deepcopy(align_position[0])
         # this is a clunky way to do it but i don't know how to thwart getters and setters
-        #parti.xyz_with_ports[:, which_flip] *= -1
+        # self.xyz_with_ports[:, which_flip] *= -1
         new_xyz = deepcopy(self.xyz_with_ports)
         new_xyz[:, which_flip] *= -1
         self.xyz_with_ports = new_xyz
         moving_anchor = deepcopy(anchor)
         moving_anchor[which_flip] *=-1
-        if align_position:
+        if len(align_position) >0:
+            print(align_position)
             norm2 = deepcopy(norm1)
             norm2[which_flip]*=-1
             norm2*=-1
             moving_align[which_flip] *= -1
-            self._align(align_these=list(moving_align, norm2),
-                       with_these=list(align_position[0],norm1),
+            self._align(align_these=list([moving_align, norm2]),
+                       with_these=list([align_position[0],norm1]),
                        anchor_pt=moving_anchor)
         self.translate(anchor - moving_anchor)
 
@@ -1143,6 +1155,30 @@ class Compound(object):
         are specified, the user can either pass 2 vectors to about_vectors, the hierarchal
         pathways (description below) of 3 particles to mirror_plane_points, or 1 vector and 2
         particles.
+
+
+        :param about_vectors: optional, accepts list-like of length 1 or 2 containing
+                            list-likes of length 3
+            The inner list-likes are 3D vectors. This/these vector(s) will help define
+            the plane that will be treated as the mirror plane.
+
+        :param mirror_plane_points: optional, accepts list/tuple of length 2 or 3
+            The elements of the list/tuple are also list/tuples containing the hierarchal
+            pathways (below) to the particles that will be used to define part or all of the mirror
+            plane. These particles will be treated as anchor points if the anchor_point
+            parameter is not defined.
+
+        :param anchor_point: optional, accepts list-like
+            The list-like provided to anchor_point must either be a unique hierarchal pathway
+            (below) or a 3D cartesian coordinate anchor_point is used to define a point that remains
+            in the same position before and after the operation. If no anchor point is
+            specified and no mirror_plane_points are specified, the cartesian center
+            (self.center) of the particle will be treated as an anchor point. If
+            mirror_plane_points are provided and anchor_point is None, the mirror_plane_points
+            are treated as anchor_points.
+
+        :param override:
+        ######## talk w justin and christoph
 
         A hierarchal pathway is a list or tuple containing any combination of strings,
         list/tuples, or mb.Compounds. Each element of the list/tuple either describes a series
@@ -1172,36 +1208,22 @@ class Compound(object):
                          "SubSubCompound",
                          "SubCompound[6]"]
 
-        :param about_vectors: optional, accepts list-like of length 1 or 2 containing
-                            list-likes of length 3
-            The inner list-likes are 3D vectors. This/these vector(s) will help define
-            the plane that will be treated as the mirror plane.
-
-        :param mirror_plane_points: optional, accepts list/tuple of length 2 or 3
-            The elements of the list/tuple are also list/tuples containing the hierarchal
-            pathways to the particles that will be used to define part or all of the mirror
-            plane. These particles will be treated as anchor points if the anchor_point
-            parameter is not defined.
-
-        :param anchor_point: optional, accepts list-like
-            The list-like provided to anchor_point must either be a unique hierarchal pathway
-            or a 3D cartesian coordinate anchor_point is used to define a point that remains
-            in the same position before and after the operation. If no anchor point is
-            specified and no mirror_plane_points are specified, the cartesian center
-            (self.center) of the particle will be treated as an anchor point. If
-            mirror_plane_points are provided and anchor_point is None, the mirror_plane_points
-            are treated as anchor_points.
-
-        :param override:
-        ######## talk w justin and christoph
+        TIP:
+        The following in an example of when you would pass an inner list/tuple to looking_for:
+            If you have a monolayer of Free Fatty Acids, each of len 10 and wish to yield every other
+            AlkylMonomer, for the pathway parameter you would pass:
+                looking_for = [["AlkylMonomer[{}]".format(ii) for ii in range(start=0, stop=10, step=2)], ...]
+            *This examples assumes default labeling behaviour
+        This generator recipe can make selecting your path much easier.
         """
 
         # revisit the idea of latobj
-        #### revise this, finish it, then make sure all subc by name, find subc, find spec particle, etc all work in jupyter
-        ##### then write tests
+        # in the future try to limit flops
+
         alignment_vectors= []
         relative_to = None
-        if anchor_point:
+        print(type(anchor_point))
+        if anchor_point is not None:
             if not isinstance(anchor_point, (tuple, list)):
                 if not isinstance(anchor_point, np.ndarray):
                     raise TypeError('anchor_point must be of type list, tuple, or np.ndarray.'
@@ -1221,91 +1243,76 @@ class Compound(object):
                     relative_to = np.array(anchor_point)
                 else:
                     path_ = deepcopy(anchor_point)
-                    anchor_point = list(self.find_particle_in_path(within_path=anchor_point))
-                    if len(point) > 1:
-                        raise ValueError("This is not a unique anchor point. "
+                    anchor_point = list(self.find_particles_in_path(within_path=anchor_point))
+                    if len(anchor_point) > 1:
+                        raise MBuildError("This is not a unique anchor point. "
                                           "The hierarchal path {} is invalid.".format(path_))
                     relative_to = anchor_point[0].pos
 
-        if mirror_plane_points:
+        if mirror_plane_points is not None:
             if not isinstance(mirror_plane_points, (list, tuple)):
                 raise TypeError("mirror_plane_points must be of type list or tuple. "
                                 "User passed type: {}.".format(type(mirror_plane_points)))
             if len(mirror_plane_points)==3:
-                if about_vectors:
+                if about_vectors is not None and len(about_vectors)>0:
                     raise ValueError("Overdefined system. Three mirror_plane_points are"
                                      " defined and about_vectors is not None. 2 vectors best"
                                      " describe a plane. Since n-1 vectors are created when n "
                                      "points are described, the mirror plane is overdefined.")
             elif len(mirror_plane_points) == 2:
-                if not about_vectors:
+                if about_vectors is None or len(about_vectors) == 0:
                     raise ValueError("Underdefined system. 2 vectors best describe a "
                                      "plane. Since n-1 vectors are created when n points are "
                                      "described, when mirror_plane_points describes 2 points "
                                      "and about_vectors is None, the mirror plane is underdefined."
                                      " If the system is 2D, please pass (0,0,1) to about_vectors")
                 elif len(about_vectors) != 1:
-                    raise ValueError("Overdefined system. 2 vectors best describe a plane. Since n-1"
-                                     " vectors are created when n points are described, when "
-                                     "mirror_plane_points describes 2 points and about_vectors describes"
-                                     "more than 1 vector, the mirror plane is overdefined.")
+                    if any(isinstance(av, (list,tuple)) for av in about_vectors):
+                        raise ValueError("Overdefined system. 2 vectors best describe a plane. Since n-1"
+                                         "\nvectors are created when n points are described, when "
+                                         "mirror_plane_points describes 2 points and about_vectors describes"
+                                         "\nmore than 1 vector, the mirror plane is overdefined.")
+                    else:
+                        raise TypeError("Parameter about_vectors contains unacceptable types. \n"
+                                        "about_vectors must be a list-like of list-likes.")
             else:
                 raise ValueError("mirror_plane_points must be either None or a list/"
                                  "tuple of length 2 or 3. User passed length {}."
                                  "".format(len(mirror_plane_points)))
             point = list(self.find_particles_in_path(within_path=mirror_plane_points[0]))
             if len(point) > 1:
-                raise ValueError("{} is not a unique hierarchal pathway. {} particles matched pathway"
+                raise MBuildError("{} is not a unique hierarchal pathway. {} particles matched pathway"
                                  ".".format(mirror_plane_points[0], len(point)))
-            if relative_to:
+            if relative_to is not None:
                 to_vec = point[0].pos
             else:
                 relative_to = point[0].pos
+                print("pee'in")
                 to_vec = relative_to
             for path in mirror_plane_points[1:]:
                 point = list(self.find_particles_in_path(within_path=path))
                 if len(point) > 1:
-                    raise ValueError("{} is not a unique hierarchal pathway.".format(path))
+                    raise MBuildError("{} is not a unique hierarchal pathway.".format(path))
                 alignment_vectors.append(point[0].pos-to_vec)
-                # record all of them if you want to check how close these all are, akin to update_lat_vecs
         if about_vectors:
+            if not isinstance(about_vectors, (list, tuple, np.ndarray)):
+                raise TypeError("\nabout_vectors must be a list, tuple, or np.ndarray of length 1 "
+                                "or 2 that contains any combination\n"
+                                " of lists, tuples, and np.ndarrays. User passed type: {} for about_vectors"
+                                ".".format(type(about_vectors)))
             if not (1 <= len(about_vectors) <= 2):
                 raise ValueError("about_vectors must be of length 1 or 2. Length of {} was passed"
                                  ".".format(len(about_vectors)))
-            if not isinstance(about_vectors, (list, tuple)):
-                raise TypeError("about_vectors must be a list or tuple of length 1 or 2 that contains any combination"
-                                " of lists, tuples, and np.ndarrays. User passed type: {} for about_vectors"
-                                ".".format(type(about_vectors)))
-            # this is all to ensure that if the user passes a 3D vector, but this could all be nixed with
-            # an error message
-            it2d = False
-            it3d = False
             for av in about_vectors:
                 if not isinstance(av, (np.ndarray, tuple, list)):
                     raise TypeError("about_vectors must a list or tuple of any combination of tuples, lists, and"
                                     " np.ndarrays. User passed type: {}.".format(type(av)))
-                np.array(av)
-                if len(av) == 3:
-                    if np.allclose(av[2], 0, atol=1e-9):
-                        pass
-                    elif not it3d:
-                        it3d = True
-                else:
-                    if len(av) == 2:
-                        if not it2d:
-                            it2d=True
-                        av = av.tolist()
-                        av.append(0)
-                        av = np.array(av)
-                    else:
-                        raise ValueError("The inner list-likes of about_vectors are of incorrect length. Expected "
-                                         "length 3, recieved length {}.".format(len(av)))
-                if it2d and it3d:
-                    raise ValueError("Inconsistent lengths of vectors passed for about_vectors. One descibed a 2D"
-                                     " compound while the other described a 3D compound")
-
+                av = np.array(av)
+                if len(av) != 3:
+                    raise ValueError("The inner list-likes of about_vectors are of incorrect length. Expected "
+                                     "length 3, recieved length {}.".format(len(av)))
                 alignment_vectors.append(av)
-        if not relative_to:
+        if relative_to is None:
             relative_to = self.center
         if alignment_vectors:
             l = len(alignment_vectors)
@@ -2787,7 +2794,6 @@ class Compound(object):
                                  " the 2D case, please pass (0,0,1) as one of your vectors.".format(aligner))
         ang_current, ang_goal = map(lambda x: angle(x[0], x[1]),
                                     [align_these, with_these])
-        print("check1")
         if not np.allclose(ang_current, ang_goal, atol= 1e-2):
             raise ValueError("The vectors specified cannot be aligned because the "
                              "angle between the vectors specified in align_these "
@@ -2795,17 +2801,10 @@ class Compound(object):
                              "specified in with_these. Angles were {} and {} degrees, "
                              "respectively.".format(ang_current*180/np.pi,
                                                     ang_goal*180/np.pi))
-        print(align_these)
-        print(with_these)
         align_these, with_these = map(lambda x: normalized_matrix(x), [align_these, with_these])
-        print("mind ya own")
-        print(align_these)
-        print(with_these)
-        print("check2")
         if not np.allclose(ang_goal,np.pi/2, atol= 5e-3):
             align_these[1], with_these[1] = map(lambda x: unit_vector(np.cross(x[0], x[1])),
                                                       [align_these, with_these])
-        print('check3')
             # this ensures that the vector pair will be orthagonal
         if anchor_pt is None:
             anchor_pt = self.center
@@ -2817,9 +2816,9 @@ class Compound(object):
                     anchor_pt = np.array(anchor_pt)
                 else:
                     path = deepcopy(anchor_pt)
-                    anchor_pt = list(self.find_particle_in_path(within_path=anchor_pt))
+                    anchor_pt = list(self.find_particles_in_path(within_path=anchor_pt))
                     # try:
-                    #     anchor_pt = list(self.find_particle_in_path(within_path=anchor_pt))
+                    #     anchor_pt = list(self.find_particles_in_path(within_path=anchor_pt))
                     # except:
                     #     raise TypeError("The contents, {}, of the {} passed for anchor_pt"
                     #                     " do not contain the appropriate datatypes."
@@ -2866,14 +2865,10 @@ class Compound(object):
             #current = np.array([_rotate(coordinates=jj, theta=theta, around=orthag) for jj in current])
             # current = np.array(list(map(lambda jj : _rotate(coordinates=jj, around=orthag,
             #                                                 theta=theta), current)))
-            print("check4")
             current = np.array(list(_rotate(coordinates=current, around=orthag, theta=theta)))
-            # look into checks here like allclose's
-            print('check5')
             current = normalized_matrix(current)
             self.rotate(theta=theta, around=orthag)
             # compare the end vectors
-            print("check6")
         self.translate(anchor_pt)
 
 
