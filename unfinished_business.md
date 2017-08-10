@@ -13,3 +13,10 @@
 - Limit the number of flops in functions like mirror and mirror_child_chirality.
 - Utilize the .made_from_lattice attribute and add an attribute to track the location of lattices witin a compound hierarchy (have them contain something like a pointer to the corresponding lattice object since they will be very difficult to keep track of in instance where there are many operatations being done on them) so that when they undergoe operations like mirror and rotate, the lattice vectors are updated. By doing this, if at a later time the user wishes to access that lattice object and either utilize the lattice class' .populate or .undo/.redo functions, they will easily and accurately be able to do so.
 - When using bonds_to_neighbors, there is no way to ensure that you yield the bonds in a certain order. For example, if you yield the bonds *A-B* and *B-C*, there is no way to ensure that when you unpack them, *a,b=subcompound.bonds_to_neighbors(args)*, that *a* will point to *A-B* and *b* to *B-C*. This is because in bond_graph.py the datatype of _adj is defaultdict(set()), which does not ensure that the order which ._adj is unpacked will be the same everytime, this causing an issue when bonds_to_neighbors executes a for loop using self.root.bond_graph.neighbors as the iterable.
+- The code for mirror_child_chirality complete (I think) except it has no test cases.
+
+## Things I will do
+
+- Write doc strings
+- Finish explaining what is unfinished
+- *If I come back*, I will write unit tests for mirror_child_chirality
