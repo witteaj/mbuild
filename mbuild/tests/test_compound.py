@@ -145,6 +145,135 @@ class TestCompound(BaseTest):
         xyz = ethane.xyz_with_ports
         assert xyz.shape == (24, 3)
 
+    def test_bonds_to_neighbors_subc_stnd_case(self, alkylsilane):
+        A, B = alkylsilane.children[1].bonds_to_neighbors()
+        assert A["twin"]^B["twin"]
+        if A["twin"]:
+            a,b = A,B
+        else:
+            a,b = B,A
+        assert np.allclose(a["neighbor"].pos, (0,0,0), atol=1e-6)
+        assert np.allclose(b["neighbor"].pos, (0,-.2458, -.0040), atol=5e-5)
+        assert a["you"] is b["you"]
+        assert a["neighbor"].parent.my_label == "AlkylMonomer[0]"
+        assert b["neighbor"].parent.my_label == "Silane[0]"
+
+
+    def test_bonds_to_neighbors_subc_neighbor(self, alkylsilane):
+        S1 = tuple(alkylsilane.children[1].bonds_to_neighbors(neigh=["Silane"], sees_twin=False))
+        S2 = tuple(alkylsilane.children[1].bonds_to_neighbors(neigh=["Silane[0]"], sees_twin=False))
+        assert S1==S2
+        assert len(S1)==1
+        assert np.allclose(S1[0]["neighbor"].pos, (0,-.245809108, -.00404001633))
+
+    def test_bonds_to_neighbors_subc_twin_only(self,alkylsilane):
+        A = tuple(alkylsilane.children[1].bonds_to_neighbors(neigh=[],
+                                                             sees_twin=True))
+        assert len(A) == 1
+        assert np.allclose(A[0]["neighbor"].pos, (0,0,0), atol=5e-5)
+
+    def test_bonds_to_neighbors_subc_twin_specific(self, alkylsilane):
+        A1 = tuple(alkylsilane.children[1].bonds_to_neighbors(neigh=["Knicks"],
+                                                             sees_twin=[0]))
+        A2 = tuple(alkylsilane.children[1].bonds_to_neighbors(neigh=[],
+                                                             sees_twin=["AlkylMonomer[0]"]))
+        assert A1==A2
+
+    def test_bonds_to_neighbors_subc_twin_False(self,alkylsilane):
+        A = tuple(alkylsilane.children[1].bonds_to_neighbors(sees_twin=False))
+        assert len(A) == 1
+        assert np.allclose(A[0]["neighbor"].pos, (0,-.2458, -.0040), atol=5e-5)
+
+    def test_bonds_to_neighbors_poor_inputs(self, alkylsilane):
+        with pytest.raises(ValueError):
+            A = tuple(alkylsilane.children[1].bonds_to_neighbors(neigh=[], sees_twin=False))
+
+    def test_bonds_to_neighbors_not_found(self,alkylsilane):
+        with pytest.raises(ValueError):
+            A = list(alkylsilane.children[1].bonds_to_neighbors(neigh=[],sees_twin=[10]))
+
+    def test_bonds_to_neighbors_not_found(self, FFA):
+        with pytest.raises(ValueError):
+            f = list(FFA.children[1].children[3].bonds_to_neighbors(sees_twin=False))
+
+    def test_bonds_to_neighbors_bad_neighbors(self,FFA):
+        with pytest.raises(ValueError):
+            f = list(FFA.children[1].children[3].bonds_to_neighbors(neigh="Silane",
+                                                                    sees_twin=False))
+    def test_bonds_to_neighbors_no_neighbors_no_twins(self,FFA):
+        with pytest.raises(ValueError):
+            f = list(FFA.children[1].children[3].bonds_to_neighbors(sees_twin=False))
+
+    def test_bonds_to_neighbors_no_neighbors_bad_twin(self, FFA):
+        with pytest.raises(ValueError):
+            f = list(FFA.children[1].children[3].bonds_to_neighbors(sees_twin=[20]))
+
+    def test_bonds_to_neighbor_particle_just_twins(self, alkylsilane):
+        a = list(alkylsilane[6].bonds_to_neighbors(neigh=[], sees_twin=True))
+        assert len(a) == 1
+        assert np.allclose(a[0]["neighbor"].pos, (0,-.3601, .0768), atol=5e-5)
+        assert a[0]["twin"]
+
+    def test_bonds_to_neighbor_particle_no_neighbors(self,alkylsilane):
+        a = list(alkylsilane[6].bonds_to_neighbors(sees_twin=True))
+        assert len(a) == 4
+        assert len([1 for t in a if t["twin"]]) == 1
+        assert all([a[0]["you"] is t['you'] for t in a[1:]])
+        o,c,si = 0,0,0
+        for ii in a:
+            if ii["neighbor"].name == "O":
+                o+=1
+            elif ii["neighbor"].name == "Si":
+                si+=1
+            elif ii["neighbor"].name == "C":
+                c+=1
+        assert o == 2
+        assert c==1
+        assert si==1
+
+    def test_bonds_to_neighbor_particle_no_neighbors_sees_twin_False(self, alkylsilane):
+        a = list(alkylsilane[6].bonds_to_neighbors(sees_twin=False))
+        assert len(a) == 3
+        assert len([1 for t in a if t["twin"]])==0
+        assert all([a[0]["you"] is t["you"] for t in a[1:]])
+        o,c,si = 0,0,0
+        for ii in a:
+            if ii["neighbor"].name == "O":
+                o+=1
+            elif ii["neighbor"].name == "Si":
+                si+=1
+            elif ii["neighbor"].name == "C":
+                c+=1
+        assert o == 2
+        assert c==1
+        assert si==0
+
+    def test_bonds_to_neighbors_particle_not_found(self,alkylsilane):
+        with pytest.raises(ValueError):
+            a = list(alkylsilane[9].bonds_to_neighbors(neigh="nice", sees_twin=False))
+
+    def test_bonds_to_neighbors_particle_bad_neighbors(self,methane):
+        with pytest.raises(ValueError):
+            m = list(methane["C[0]"].bonds_to_neighbors(neigh="nice", sees_twin=True))
+
+    def test_bonds_to_neighbors_1goodtwin_1badtwin(self,FFA):
+        f = list(FFA.children[1].children[3].bonds_to_neighbors(sees_twin=[4,10]))
+        assert len(f) == 1
+        assert f[0]["twin"] == True
+        assert np.allclose(f[0]["neighbor"].pos, [-.3589, 0,.8121],atol=5e-5)
+        assert np.allclose(f[0]["you"].pos, [-.4847,-.0726,.8634], atol=5e-5)
+
+    def test_bonds_to_neighbors_1goodtwin_1badtwin_and_bad_neigh(self,FFA):
+        f = list(FFA.children[1].children[3].bonds_to_neighbors(sees_twin=[4,10], neigh=[]))
+        assert len(f) == 1
+        assert f[0]["twin"] == True
+        assert np.allclose(f[0]["neighbor"].pos, [-.3589, 0,.8121],atol=5e-5)
+        assert np.allclose(f[0]["you"].pos, [-.4847,-.0726,.8634], atol=5e-5)
+
+
+    def test_chirality_(self):
+       pass
+
     def test_mirror_std_axis(self, labeled_tetrahedral):
         origdict = {piece.my_label: piece.pos for piece in labeled_tetrahedral}
         labeled_tetrahedral.mirror(about_vectors=[(-1,6,0),(1,1,0)])
@@ -669,9 +798,9 @@ class TestCompound(BaseTest):
 
         assert brush1['pmpc'].n_particles == 164
         assert brush1['pmpc'].n_bonds == 163
-        assert len(brush1['pmpc']['monomer']) == 4
-        assert brush1['pmpc']['monomer'][0].n_particles == 41
-        assert brush1['pmpc']['monomer'][0].n_bonds == 40
+        assert len(brush1['pmpc'].children) == 4
+        assert brush1['pmpc']['MPC[0]'].n_particles == 41
+        assert brush1['pmpc']['MPC[0]'].n_bonds == 40
 
     def test_to_trajectory(self, ethane, c3, n4):
         traj = ethane.to_trajectory()

@@ -188,3 +188,52 @@ class BaseTest:
     def alc(self):
        from mbuild.lib.prototypes import ALC
        return ALC(10)
+
+    @pytest.fixture
+    def alkylsilane(self):
+        # I MADE A CHANGE TO POLYMER IN ORDER TO ALLOW FOR ANY OF THIS TO WORK
+        from mbuild.lib.moieties import Silane
+        from mbuild.lib.prototypes.alkyl_monomer import AlkylMonomer
+        #from mbuild.examples.labeled_tetrahedral.labeled_tetrahedral import Labeled_tetrahedral
+        from mbuild.recipes.polymer import Polymer
+        #new_comp = mb.Compound(name="")
+        return Polymer(monomers=[AlkylMonomer(),Silane()],sequence="AABB", n=5)
+
+    @pytest.fixture
+    def FFA(self):
+        from mbuild.lib.prototypes import FFA
+        f = FFA(16)
+        f.name="FFA"
+        return f
+    #
+    # @pytest.fixture
+    # def simple_cubic(self):
+    #     from mbuild.lattice import Lattice
+    #     dim=3
+    #     edge_lengths = [.3359, .3359, .3359]
+    #     lattice_vecs = [[1,0,0], [0,1,0], [0,0,1]]
+    #     basis = {'origin':[[0,0,0]]}
+    #     simple_cubic = Lattice(edge_lengths,
+    #                               lattice_vectors=lattice_vecs, dimension=dim,
+    #                               basis_atoms=basis)
+    #     po = mb.Compound(name='Po')
+    #     compound_dictionary = {'origin':po}
+    #     crystal_polonium = simple_cubic.populate(compound_dict=compound_dictionary, x=2, y=2, z=2)
+    #     return crystal_polonium
+    # @pytest.fixture
+    # def polonium_hierarchy(self):
+    #     from mbuild.lattice import Lattice
+    #     dim=3
+    #     edge_lengths = [.3359, .3359, .3359]
+    #     lattice_vecs = [[1,0,0], [0,1,0], [0,0,1]]
+    #     basis = {'origin':[[0,0,0]]}
+    #     simple_cubic = Lattice(edge_lengths,
+    #                               lattice_vectors=lattice_vecs, dimension=dim,
+    #                               basis_atoms=basis)
+    #     po = mb.Compound(name='Po')
+    #     compound_dictionary = {'origin':po}
+    #     crystal_polonium = simple_cubic.populate(compound_dict=compound_dictionary, x=2, y=2, z=2)
+    #     big_cube = Lattice([1,1,1], basis_atoms={"O":[[0,0,0]]})
+    #     cmpddict = {"O":crystal_polonium}
+    #     polonium_hierarchy = big_cube.populate(cmpddict, x=2,y=2,z=2)
+    #     return polonium_hierarchy

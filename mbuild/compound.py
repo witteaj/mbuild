@@ -6,7 +6,6 @@ import collections
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 import itertools
-from itertools import product
 import os
 import sys
 import tempfile
@@ -242,7 +241,7 @@ class Compound(object):
 
         self._rigid_id = None
         self._contains_rigid = False
-        self.made_from_lattice = False
+        self._made_from_lattice = False
         self._check_if_contains_rigid_bodies = False
  
         # self.add() must be called after labels and children are initialized.
@@ -462,8 +461,15 @@ class Compound(object):
                                 "find_particles_in_path just returns within_path"
                                 ".".format(type(within_path)))
             else:
-                yield within_path
-                return
+                if within_path._contains_only_ports():
+                    yield within_path
+                    return
+                else:
+                    raise TypeError("User passed a subcompound to the parameter within_path. "
+                                    "within_path must be of type list or tuple. "
+                                    "within_path can also "
+                                    "accept a mb.Particle but in this instance "
+                                    "find_particles_in_path just returns within_path.")
         if not within_path:
             raise ValueError("within_path cannot be empty.")
         within_path = list(within_path)
@@ -471,8 +477,15 @@ class Compound(object):
         parti = within_path[0]
         if len(within_path) ==1:
             if isinstance(parti,mb.Particle):
-                yield parti
-                return
+                if parti._contains_only_ports():
+                    yield parti
+                    return
+                else:
+                     raise TypeError("User passed a subcompound within the parameter within_path. "
+                                     "within_path must be of type list or tuple and "
+                                     "contain a hierarchal pathway. Although subcompounds "
+                                     "are accepted in hierarchal pathways, they cannot be "
+                                     "the first index in this instance.")
             elif isinstance(parti, str):
                 for parts in self:
                     if parts.name == parti or parts.my_label == parti:
@@ -529,14 +542,15 @@ class Compound(object):
         if isinstance(looking_for, str):
             for parti in self.children:
                 if parti.name == looking_for or parti.my_label == looking_for:
-                    if parti.n_particles > 1:
+                    if not parti._contains_only_ports():
                         yield parti
                     else:
                         raise ValueError("The user passed {}, the name of an atom/ particle within this "
                                         "object. \nPlease use particles_by_name, find_particles_in_path,"
-                                         "or a similar \nmethod instead.".format(parti.name))
+                                         "or a similar \nmethod instead. subcompounds_by_name_or_label "
+                                         "is designed to \nyield subcompounds, not particles.".format(parti.name))
                 else:
-                    if parti.n_particles > 1:
+                    if not parti._contains_only_ports():
                         yield from parti.subcompounds_by_name_or_label(looking_for)
                     else:
                         yield None
@@ -669,49 +683,75 @@ class Compound(object):
 
     def _desired_twins(self, anny, sees_twin):
         """"""
-        see = []
-        for ii in sees_twin:
-            if isinstance(ii, str):
-                see.append(ii)
-            elif isinstance(ii, int):
-                see.append(self.name+"[{}]".format(ii))
-            else:
-                raise TypeError("")
-
-        # for eligible_twins in see:
-        #     if anny.parent[eligible_twins] \
-        #             and anny.parent[eligible_twins] is anny:
-        if anny.my_label in see:
+        if anny.my_label in sees_twin:
             if anny.n_particles != self.n_particles:
                 warn("Proceed with caution, although these "
-                     "subcompounds have different"
+                     "subcompounds ({} and {}) have different"
                      " ID's and have the same name, "
                      "they do not have"
-                     " the same number of particles.")
-                     # revisit consider doing an allclose
+                     " the same number of particles."
+                     "".format(self, anny))
             return True
         else:
             return False
-            # raise ValueError("{} neighbors a compound with the same name, but it's "
-            #                  "label was not one of those specified in sees_twin"
-            #                  ".".format(self))
-            # # revisit improve this error message
 
-    def bonds_to_neighbors(self, sees_twin= None, neigh=None):
+    def bonds_to_neighbors(self, sees_twin= True, neigh=None):
         """
         sees_twin: a list of numbers or strs
 
 
         :yields: returns the neighboring particles
-        """
-        # revisit this needs polishing because this could be too redundant w find_bonds
 
-        if (isinstance(self, mb.Particle)) and (not neigh):
-                raise ValueError("If user passes a particle rather than a compound, "
-                                 "user must also pass the parameter 'neigh'.")
+        recipe:
+        if you wish to only yield twins (or specific twins) pass either True (or the
+        list/tuple containing the names or labels for the appropriate particles) for
+        sees_twin and neigh=[]
+        """
+        if not isinstance(sees_twin, bool):
+            if not isinstance(sees_twin,(list,tuple)):
+                raise TypeError("sees_twin must be of type list, tuple, "
+                                "or bool. User passed type: "
+                                "{}.".format(type(sees_twin)))
+            see = []
+            for en, ii in enumerate(sees_twin):
+                if isinstance(ii, str):
+                    see.append(ii)
+                elif isinstance(ii, int):
+                    see.append(self.name+"[{}]".format(ii))
+                else:
+                    raise TypeError("If sees_twin is of type list or tuple "
+                                    "the contents must be either strings or "
+                                    "integers corresponding to the labels of the"
+                                    " twins that are treated as neighbors. "
+                                    "User passed {} of type: {} at index {}"
+                                    ".".format(ii, type(ii), en))
+            sees_twin=deepcopy(see)
+        if neigh is not None:
+            if not isinstance(neigh, (list, tuple)):
+                # raise TypeError("When the parameter neigh is specified"
+                #                 " it must be of type list or tuple. User "
+                #                 "passed type: {}.".format(type(neigh)))
+                neigh = (neigh,)
+            if not all(isinstance(n, str) for n in neigh):
+                raise TypeError("All objects within neigh must be of type str.")
+            if self._contains_only_ports():
+                yield from self._bonds_to_neighbors_using_particle_with_neighbors(neigh=neigh, sees_twin=sees_twin)
+            else:
+                yield from self._bonds_to_neighbors_with_neighbors(sees_twin=sees_twin, neigh=neigh)
+        else:
+            if self._contains_only_ports():
+                # raise ValueError("If user passes a particle rather than a compound, "
+                #                  "user must also pass the parameter 'neigh'.")
+                yield from self._bonds_to_neighbors_using_particle_no_neighbors(sees_twin=sees_twin)
+            else:
+                yield from self._bonds_to_neighbors_no_neighbors(sees_twin=sees_twin)
+
+    def _bonds_to_neighbors_no_neighbors(self, sees_twin):
+        """ see bonds_to_neighbors """
         no_yield = True
         for ii in self:
             for bonded_to in self.root.bond_graph.neighbors(ii):
+                print(bonded_to)
                 # try to figure out a way that i dont double count them
                 # or a way that i dont have to go down to the particle level
                 # revisit
@@ -728,71 +768,152 @@ class Compound(object):
                 #         yield {'neighbor' : bonded_to, 'you' : ii, 'twin' : twin}
                 #     else:
                 #         yield {'neighbor' : None, 'you' : ii, 'twin' : twin}
-                if not neigh:
-                    # this is the non filtering case
-                    for anny in bonded_to.ancestors():
-                        if anny is self:
-                            # revisit
-                            # yield {'neighbor' : None, 'you' : ii, 'twin' : twin}
-                            break
-                        elif sees_twin:
-                            if anny.name == self.name:
+                for anny in bonded_to.ancestors():
+                    if anny is self:
+                        # revisit
+                        # yield {'neighbor' : None, 'you' : ii, 'twin' : twin}
+                        break
+                    elif anny.name == self.name:
+                        if sees_twin:
+                            if not isinstance(sees_twin, bool):
                                 twin = self._desired_twins(anny= anny, sees_twin=sees_twin)
+                                if twin:
+                                    if no_yield:
+                                        no_yield = False
+                                    if anny.n_particles != self.n_particles:
+                                        warn("Proceed with caution. Although these"
+                                             " {} and {} are bonded to eachother and "
+                                             "have the same name, they have a different"
+                                             " number of particles.".format(anny, self))
+                                    yield {'neighbor' : bonded_to, 'you' : ii, 'twin' : twin}
+                                    break
+                            else:
+                                twin = True
                                 if no_yield:
                                     no_yield = False
+                                if anny.n_particles != self.n_particles:
+                                    warn("Proceed with caution. Although these"
+                                         " {} and {} are bonded to eachother and "
+                                         "have the same name, they have a different"
+                                         " number of particles.".format(anny, self))
                                 yield {'neighbor' : bonded_to, 'you' : ii, 'twin' : twin}
-                                break
-                    else:
+                        break
+                else:
+                    if no_yield:
+                        no_yield = False
+                    yield {'neighbor' : bonded_to, 'you' : ii, 'twin' : twin}
+
+        if no_yield:
+            raise ValueError("Found no neighbors or indicated twins to {}.".format(self))
+
+    def _bonds_to_neighbors_with_neighbors(self, neigh, sees_twin):
+        """ see bonds_to_neighbors """
+        no_yield = True
+        for ii in self:
+            for bonded_to in self.root.bond_graph.neighbors(ii):
+                twin=False
+                for anny in bonded_to.ancestors():
+                #     print("anny")
+                #     print(type(anny))
+                #     print(anny)
+                #     print(anny.name)
+                #     print("self")
+                #     print(self)
+                #     print(self.name)
+                    if anny is self:
+                        break
+                    elif anny.name == self.name:
+                        print("we are in")
+                        if sees_twin:
+                            print("are we in?")
+                            if not isinstance(sees_twin, bool):
+                                twin = self._desired_twins(anny=anny, sees_twin=sees_twin)
+                                if twin:
+                                    if no_yield:
+                                        no_yield = False
+                                    if anny.n_particles != self.n_particles:
+                                        warn("Proceed with caution. Although these"
+                                             " {} and {} are bonded to eachother and "
+                                             "have the same name, they have a different"
+                                             " number of particles.".format(anny, self))
+                                    yield {'neighbor' : bonded_to, 'you' : ii, 'twin' : twin}
+                                    break
+                            else:
+                                twin=True
+                                if no_yield:
+                                    no_yield = False
+                                if anny.n_particles != self.n_particles:
+                                    warn("Proceed with caution. Although these"
+                                         " {} and {} are bonded to eachother and "
+                                         "have the same name, they have a different"
+                                         " number of particles.".format(anny, self))
+                                yield {'neighbor' : bonded_to, 'you' : ii, 'twin' : twin}
+                        break
+                    elif anny.name in neigh or anny.my_label in neigh:
                         if no_yield:
                             no_yield = False
                         yield {'neighbor' : bonded_to, 'you' : ii, 'twin' : twin}
-                else:
-                    for ee, anny in enumerate(bonded_to.ancestors()):
-                        print(ee)
-                        print("anny")
-                        print(type(anny))
-                        print(anny)
-                        print(anny.name)
-                        print("self")
-                        print(self)
-                        print(self.name)
-                        if anny is self:
-                            # revisit
-                            # yield {'neighbor' : None, 'you' : ii, 'twin' : twin}
-                            break
-                        elif anny.name == self.name:
-                            print("we are in")
-                            if not sees_twin:
-                                raise ValueError("")
-                            else:
-                                print("are we in?")
-                                twin = self._desired_twins(anny=anny, sees_twin=sees_twin)
-                                if no_yield:
-                                    no_yield = False
-                                yield {'neighbor' : bonded_to, 'you' : ii, 'twin' : twin}
-                                break
-                            # this ifelse needs to be checked w andrew revisit soon
-                        elif anny in neigh or anny.name in neigh:
-                            if no_yield:
-                                no_yield = False
-                            yield {'neighbor' : bonded_to, 'you' : ii, 'twin' : twin}
-                            break
-                    else:
-                        if ii is self:
-                            # revisit
-                            #yield {'neighbor' : None, 'you' : ii, 'twin' : twin}
-                            pass
-                        else:
-                            warn("the particle {} neighbors {} but was not specified to in"
-                                 "parameter 'neigh'. Yielding None for 'neighbor' "
-                                 "key of dict.".format(bonded_to, self))
-                            # revisit
-                            #yield {'neighbor' : None, 'you' : ii, 'twin' : twin}
+                        break
         if no_yield:
-            if neigh:
-                raise ValueError("Found none of the specified neighbors or twins to {}.".format(self))
+            raise ValueError("Found none of the specified neighbors or twins to {}.".format(self))
+
+    def _bonds_to_neighbors_using_particle_no_neighbors(self, sees_twin):
+        """see bonds_to_neighbors"""
+        no_yield = True
+        for bonded_to in self.root.bond_graph.neighbors(self):
+            twin = False
+            if bonded_to.name==self.name:
+                if sees_twin:
+                    if isinstance(sees_twin,bool):
+                        twin=True
+                        if no_yield:
+                            no_yield=False
+                        yield {"neighbor":bonded_to, "you":self, "twin":twin}
+                    else:
+                        twin = self._desired_twins(anny=bonded_to, sees_twin=sees_twin)
+                        if twin:
+                            if no_yield:
+                                no_yield=False
+                            yield {"neighbor":bonded_to, "you":self, "twin":twin}
             else:
-                raise ValueError("Found no neighbors to {}.".format(self))
+                if no_yield:
+                    no_yield=False
+                yield {"neighbor":bonded_to, "you":self, "twin":twin}
+        if no_yield:
+            raise ValueError("Found no neighbors or indicated twins to {}.".format(self))
+
+
+    def _bonds_to_neighbors_using_particle_with_neighbors(self, neigh, sees_twin):
+        """see bonds_to_neighbors"""
+        no_yield = True
+        for bonded_to in self.root.bond_graph.neighbors(self):
+            twin = False
+            if bonded_to.name==self.name:
+                if sees_twin:
+                    if isinstance(sees_twin,bool):
+                        twin=True
+                        if no_yield:
+                            no_yield=False
+                        yield {"neighbor":bonded_to, "you":self, "twin":twin}
+                    else:
+                        twin = self._desired_twins(anny=bonded_to, sees_twin=sees_twin)
+                        if twin:
+                            if no_yield:
+                                no_yield=False
+                            yield {"neighbor":bonded_to, "you":self, "twin":twin}
+            elif bonded_to.name in neigh or bonded_to.my_label in neigh:
+                if no_yield:
+                    no_yield=False
+                yield {"neighbor":bonded_to, "you":self, "twin":twin}
+            else:
+                for anny in bonded_to.ancestors():
+                    if anny.name in neigh or anny.my_label in neigh:
+                        if no_yield:
+                            no_yield=False
+                        yield {"neighbor":bonded_to, "you":self, "twin":twin}
+                        break
+        if no_yield:
+            raise ValueError("Found none of the specified neighbors or twins to {}.".format(self))
 
     def find_bonds(self, particle1path= None, particle2path= None):
         """
@@ -818,7 +939,7 @@ class Compound(object):
                 if not (0 < len(particlepath) < 3):
                     raise ValueError("")
             elif isinstance(particlepath, mb.Particle):
-                if particlepath.n_particles == 1:
+                if particlepath._contains_only_ports():
                     print('roof')
                     non_nones[n].append(0)
                     good_partis[n].append(particlepath)
@@ -836,7 +957,7 @@ class Compound(object):
             print("isinstance(participant[0], mb.Particle)")
             print(isinstance(particlepath[0], mb.Particle))
             if isinstance(particlepath[0], mb.Particle):
-                if particlepath[0].n_particles == 1:
+                if particlepath[0]._contains_only_ports():
                     print('roof')
                     non_nones[n].append(0)
                     good_partis[n].append(particlepath[0])
@@ -1100,25 +1221,44 @@ class Compound(object):
         a2, b2 = self.find_bonds(bond2)
         #remove and make the bonds
 
-    def _mirror(self, anchor, align_position,):
+    # def _mirror(self, anchor, align_position, which_flip):
+    #     """"""
+    #     which_flip = 1
+    #     if len(align_position)>0:
+    #         align_position = normalized_matrix(align_position)
+    #         norm1 = np.cross(align_position[0],align_position[1])
+    #         if np.linalg.norm(norm1) < .045:
+    #             # should i do this or should i use angle i would use .055 rad (3.15 deg) as the threshold revisit
+    #             # use test cases to try this out
+    #             raise ValueError("The vectors passed used to describe the plane are co-linear, thus"
+    #                                  " there are infinitely many possible planes.")
+    #         norm1 = unit_vector(norm1)
+    #         for n, ii in enumerate(np.eye(3)):
+    #             if np.allclose(ii, abs(norm1), atol= 1e-6):
+    #                 which_flip = n
+    #                 align_position = []
+    #                 break
+    #         else:
+    #             moving_align = deepcopy(align_position[0])
+    #     # this is a clunky way to do it but i don't know how to thwart getters and setters
+    #     # self.xyz_with_ports[:, which_flip] *= -1
+    #     new_xyz = deepcopy(self.xyz_with_ports)
+    #     new_xyz[:, which_flip] *= -1
+    #     self.xyz_with_ports = new_xyz
+    #     moving_anchor = deepcopy(anchor)
+    #     moving_anchor[which_flip] *=-1
+    #     if len(align_position) >0:
+    #         print(align_position)
+    #         norm2 = deepcopy(norm1)
+    #         norm2[which_flip]*=-1
+    #         norm2*=-1
+    #         moving_align[which_flip] *= -1
+    #         self._align(align_these=list([moving_align, norm2]),
+    #                    with_these=list([align_position[0],norm1]),
+    #                    anchor_pt=moving_anchor)
+    #     self.translate(anchor - moving_anchor)
+    def _mirror(self, anchor, align_position, which_flip):
         """"""
-        which_flip = 1
-        if len(align_position)>0:
-            align_position = normalized_matrix(align_position)
-            norm1 = np.cross(align_position[0],align_position[1])
-            if np.linalg.norm(norm1) < .045:
-                # should i do this or should i use angle i would use .055 rad (3.15 deg) as the threshold revisit
-                # use test cases to try this out
-                raise ValueError("The vectors passed used to describe the plane are co-linear, thus"
-                                     " there are infinitely many possible planes.")
-            norm1 = unit_vector(norm1)
-            for n, ii in enumerate(np.eye(3)):
-                if np.allclose(ii, abs(norm1), atol= 1e-6):
-                    which_flip = n
-                    align_position = []
-                    break
-            else:
-                moving_align = deepcopy(align_position[0])
         # this is a clunky way to do it but i don't know how to thwart getters and setters
         # self.xyz_with_ports[:, which_flip] *= -1
         new_xyz = deepcopy(self.xyz_with_ports)
@@ -1127,15 +1267,17 @@ class Compound(object):
         moving_anchor = deepcopy(anchor)
         moving_anchor[which_flip] *=-1
         if len(align_position) >0:
+            moving_align = deepcopy(align_position[0])
             print(align_position)
-            norm2 = deepcopy(norm1)
+            norm2 = deepcopy(align_position[1])
             norm2[which_flip]*=-1
             norm2*=-1
             moving_align[which_flip] *= -1
             self._align(align_these=list([moving_align, norm2]),
-                       with_these=list([align_position[0],norm1]),
+                       with_these=align_position,
                        anchor_pt=moving_anchor)
         self.translate(anchor - moving_anchor)
+
 
     def mirror(self, about_vectors=None, mirror_plane_points=None, anchor_point=None, override=False):
         """
@@ -1287,7 +1429,6 @@ class Compound(object):
                 to_vec = point[0].pos
             else:
                 relative_to = point[0].pos
-                print("pee'in")
                 to_vec = relative_to
             for path in mirror_plane_points[1:]:
                 point = list(self.find_particles_in_path(within_path=path))
@@ -1314,6 +1455,7 @@ class Compound(object):
                 alignment_vectors.append(av)
         if relative_to is None:
             relative_to = self.center
+        which_flip = 1
         if alignment_vectors:
             l = len(alignment_vectors)
             # these error messages should never be reached
@@ -1326,18 +1468,30 @@ class Compound(object):
                 raise ValueError("The system is overdefined in that has too many vectors that describe the"
                                  " plane it will be mirrored about. Planes are best defined by 2 vectors, "
                                  "user passed arguments which resulted in {} vectors.".format(l))
-        self._mirror(anchor = relative_to, align_position = alignment_vectors)
+            alignment_vectors = normalized_matrix(alignment_vectors)
+            norm1 = np.cross(alignment_vectors[0],alignment_vectors[1])
+            if np.linalg.norm(norm1) < .045:
+                # should i do this or should i use angle i would use .055 rad (3.15 deg) as the threshold revisit
+                # use test cases to try this out
+                raise ValueError("The vectors passed used to describe the plane are co-linear, thus"
+                                     " there are infinitely many possible planes.")
+            norm1 = unit_vector(norm1)
+            for n, ii in enumerate(np.eye(3)):
+                if np.allclose(ii, abs(norm1), atol= 5e-4):
+                    which_flip = n
+                    alignment_vectors = []
+                    break
+            else:
+                alignment_vectors[1] = norm1
+        self._mirror(anchor = relative_to, align_position = alignment_vectors, which_flip=which_flip)
 
-    def mirror_child_chirality(self, looking_for, override=False,
-                               sees_twin_label=None,
+    def mirror_child_chirality(self, looking_for,
                                mirror_plane_points=None,
                                keep_orientation_along_vector= None,
                                keep_orientation_with_neighbor= None,
-                               anchor_point= None, lat_obj= None):
+                               anchor_point= None,
+                               only_these_twins=True):
         """
-        When splitting in to 2 functions get rid of strings just use vectors for about
-        consider breaking this up into 2 functions
-
         # make sure that user is passing the path of things that lie within the specified subc
         # for things like anchor point and mirror_plane_points
 
@@ -1357,15 +1511,6 @@ class Compound(object):
             coors = find_particles_in_path(parti+location)
             subc.mirror_child_chirality(*args, keep_orientation_along_vector= [coors-ap])
 
-
-        which flip will default to the largest
-        which flip if
-        I need a better name for the child chirality flag
-
-        what i need to do now is to figure out how to implement the align_vectors method. i think
-        what i will do is allow either 1 or 2 args, with a flag to indicate if theyre points or
-        directions. if they are points, make vectors between them and find the orthagonal. upon finding the orthagonal,
-
         keep_orientation_with_neighbor: dict, optional
                         The keys are strings. Valid strings are those listed in the looking_for parameter.
                         If the key is not in looking_for, an error will be raised. The value pairs are a list
@@ -1381,137 +1526,302 @@ class Compound(object):
                 but they have different parents. If the user only wishes to modify the instances within a certain
                 parent, the user passes the strings of the parents where mirroring is desired
         """
+        # look into support for passing a 3d coordinate to either anchor_point or
+        # mirror_plane_points
 
         # expand the neighbor search so that it only occurs once. do this my making a dictionary of all the bonds
         # you are searching for!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        # anchor point and sees_twin_label are now default None
         # i am worried about the case where we mirror lattice objects. please look into this. revisit
 
-
-
-
-
-        if self.made_from_lattice and not override:
-            warn("This compound was made from a lattice. If you wish to "
-                 "proceed to change the chirality of its children, pass "
-                 "override= True when calling Compound.mirror(). The "
-                 "object has not been altered by this call.")
-            # this below error message was used in the precursor, before mirror split in 2
-                        #         warn('This compound was made from a lattice. It is recommended'
-                        # " that you use the corresponding lattice object's .mirror()"
-                        # " method, Ex: some_lattice.mirror(some_compound, 'xy')."
-                        # ' If you wish to mirror each molecule making up the lattice, '
-                        # 'pass child_chirality as True and specify the name (str) of '
-                        # "the object(s) you wish to mirror in a list to the looking_for "
-                        # "parameter. This call has not changed the object. "
-                        # 'If you wish to proceed with using Compound.mirror(), '
-                        # 'include the optional parameter override= True when calling'
-                        # ' Compound.mirror().')
-            return
-        stablizer_count = 0
-
+        # if self._made_from_lattice and not override:
+        #     warn("This compound was made from a lattice. If you wish to "
+        #          "proceed to change the chirality of its children, pass "
+        #          "override= True when calling Compound.mirror(). The "
+        #          "object has not been altered by this call.")
+        #     # this below error message was used in the precursor, before mirror split in 2
+        #                 #         warn('This compound was made from a lattice. It is recommended'
+        #                 # " that you use the corresponding lattice object's .mirror()"
+        #                 # " method, Ex: some_lattice.mirror(some_compound, 'xy')."
+        #                 # ' If you wish to mirror each molecule making up the lattice, '
+        #                 # 'pass child_chirality as True and specify the name (str) of '
+        #                 # "the object(s) you wish to mirror in a list to the looking_for "
+        #                 # "parameter. This call has not changed the object. "
+        #                 # 'If you wish to proceed with using Compound.mirror(), '
+        #                 # 'include the optional parameter override= True when calling'
+        #                 # ' Compound.mirror().')
+        #     return
 
         not_found = True
-        for en, subc in enumerate(self.find_subcompounds_in_path(pathway=looking_for)):
+        if anchor_point is not None:
+            if not isinstance(anchor_point, (tuple, list)):
+                raise TypeError('anchor_point must be of type list or tuple.'
+                                ' User passed type: {}.'.format(type(anchor_point)))
+            if not all(isinstance(ap, str) for ap in anchor_point):
+                raise TypeError("anchor_point must be a list/tuple of strings that "
+                                 "serve as a hierarchal pathway to a unique particle within"
+                                 " the subcompound specified in the parameter looking_for.")
+
+        if mirror_plane_points is not None:
+            if not isinstance(mirror_plane_points, (list, tuple)):
+                raise TypeError("mirror_plane_points must be of type list or tuple. "
+                                "User passed type: {}.".format(type(mirror_plane_points)))
+            if 2 > len(mirror_plane_points):
+                if not keep_orientation_with_neighbor:
+                    raise ValueError("mirror_plane_points must be either None or a list/"
+                                     "tuple of length between 1 and 3, inclusive. User passed length 1. "
+                                     "If user passes length 1, user must also pass arguments "
+                                     "to keep_orientation_with_neighbor to describe at least "
+                                     "one more point that will be used to create the vectors "
+                                     "to make the mirror plane.")
+            elif 3 < len(mirror_plane_points):
+                raise ValueError("mirror_plane_points must be either None or a list/"
+                                 "tuple of length between 1 and 3, inclusive. User passed length {}."
+                                 "".format(len(mirror_plane_points)))
+
+        if keep_orientation_with_neighbor is not None:
+            if not isinstance(only_these_twins, bool):
+                if not isinstance(only_these_twins,(list,tuple)):
+                    raise TypeError("only_these_twins must be of type list, tuple, "
+                                    "or bool. User passed type: "
+                                    "{}.".format(type(only_these_twins)))
+                see = []
+                for en, ii in enumerate(only_these_twins):
+                    if isinstance(ii, str):
+                        see.append(ii)
+                    elif isinstance(ii, int):
+                        see.append(self.name+"[{}]".format(ii))
+                    else:
+                        raise TypeError("If only_these_twins is of type list or tuple "
+                                        "the contents must be either strings or "
+                                        "integers corresponding to the labels of the"
+                                        " twins that are treated as neighbors. "
+                                        "User passed {} of type: {} at index {}"
+                                        ".".format(ii, type(ii), en))
+                only_these_twins=deepcopy(see)
+            if not isinstance(keep_orientation_with_neighbor, (list, tuple)):
+                raise TypeError("When the parameter keep_orientation_with_neighbor is specified"
+                                " it must be of type list or tuple. User "
+                                "passed type: {}.".format(type(keep_orientation_with_neighbor)))
+            if not all(isinstance(n, str) for n in keep_orientation_with_neighbor):
+                raise TypeError("All objects within keep_orientation_with_neighbor must be of type str.")
+
+
+        if keep_orientation_along_vector is not None:
+            if not isinstance(keep_orientation_along_vector, (list, tuple, np.ndarray)):
+                raise TypeError("Parameter keep_orientation_along_vector must be list-like. "
+                                "User passed type: {}.".format(type(keep_orientation_along_vector)))
+            if not (1<=len(keep_orientation_along_vector)<=2):
+                raise ValueError("Parameter keep_orientation_along_vector must be of length 1 or 2."
+                                 " User passed length: {}.".format(len(keep_orientation_along_vector)))
+        else:
+            keep_orientation_along_vector=[]
+
+
+        for subc in self.find_subcompounds_in_path(pathway=looking_for):
             if not subc:
                 continue
-            if subc.made_from_lattice and not lat_obj:
-                raise ValueError("{} was made from a lattice but it was not passed as a key in lat_obj."
-                                 " Please pass a dict with key {} and value pair as the corresponding "
-                                 "lattice object, OR None. If value pair is None, this will treat {}"
-                                 " as a compound. The risk associated with doing this is that it "
-                                 "interferes with the lattice vectors and thus all Lattice methods that "
-                                 "operate on those (e.g. redo, undo, populate, etc)"
-                                 ".".format(subc.name, subc.name, subc.name))
-            # this error message is wrong
-            if subc.name == looking_for[0] and not_found:
+            # if subc._made_from_lattice and not lat_obj:
+            #     raise ValueError("{} was made from a lattice but it was not passed as a key in lat_obj."
+            #                      " Please pass a dict with key {} and value pair as the corresponding "
+            #                      "lattice object, OR None. If value pair is None, this will treat {}"
+            #                      " as a compound. The risk associated with doing this is that it "
+            #                      "interferes with the lattice vectors and thus all Lattice methods that "
+            #                      "operate on those (e.g. redo, undo, populate, etc)"
+            #                      ".".format(subc.name, subc.name, subc.name))
+            # this error message is REEEEAAALly wrong
+            if not_found:
                 not_found = False
-            if not anchor_point:
-                relative_to = deepcopy(subc.center)
-            else:
-                # revisit this needs help
-                if isinstance(anchor_point, (tuple, list, np.ndarray)):
-                    if len(anchor_point) == 2:
-                        d = anchor_point[0]
-                    elif len(anchor_point) == 3:
-                        pass
-                            # this needs to be better organized
-                    else:
-                        raise ValueError("")
-                else:
-                    d = anchor_point
-                    if isinstance(d, str):
-                        targo = d
-                    elif isinstance(d, Particle):
-                        targo = d.name
-                    else:
-                        raise TypeError("anchor_point is a dictionary with str keys corresponding to"
-                                        " the strs passed in looking_for. The value pairs are either type "
-                                        "mb.Particles or str that indicate a particle to act as the"
-                                        " cartesian center for the corresponding subcompound (specified in the"
-                                        " corresponding key). anchor_point can also accept a list, tuple, or"
-                                        " np.ndarray of integers or floats of length 3 that specify a point that "
-                                        "will be treated as the cartesian center of the specified subcompound."
-                                        "anchor_point can also accept a list or tuple "
-                                        "of length 2, which is useful when there are multiple instances of the "
-                                        "same particle that the user wishes to use as the cartesian center."
-                                        "The first index is a str that corresponds to the "
-                                        "particle that will act as the cartesian center, while the second index "
-                                        "is an integer corresponding to the order of when the desired "
-                                        "particle was added (still zero indexed). For example, if the user"
-                                        " wants to choose the 'H' that was added third to behave as the "
-                                        "cartesian center for the subcompound 'Acetylene', the user would pass: "
-                                        "anchor_point={'Acetylene' : ['H', 2]}")
-                            # this error message is wrong
-
-                    anky = list(subc.particle_by_name(targo))
-                    if len(anky) > 1:
-                        if (len(anchor_point[subc.name]) == 2) and\
-                            isinstance(anchor_point[subc.name][1], (int, float)):
-                            pass
-
-                        # do a similar thing to specify which subcompounds to edit beyond just the within option
-                        else:
-                            raise ValueError('There are {} instances of {} in {}. User needs to specify '
-                                             'which to use or needs to provide a point in 3D space to act'
-                                             ' as the cartesian center within {}. Instances of {} are: '
-                                             ''.format(len(anky), targo, subc, subc, anky))
-                        # revisit review to ensure all of this is still compatable with the 2D case
+            relative_to = None
+            if anchor_point is not None:
+                path_ = list(self.find_particles_in_path(within_path=anchor_point))
+                if len(path_) > 1:
+                    raise MBuildError("This is not a unique anchor point. "
+                                      "The hierarchal path {} is invalid.".format(anchor_point))
+                relative_to = path__[0].pos
             keeper = []
-            if keep_orientation_along_vector:
-                # revist to type check
-                keeper.extend(keep_orientation_along_vector)
-            if keep_orientation_with_neighbor:
-                nays=[]
-                for n in tuple(subc.bonds_to_neighbors(sees_twin= sees_twin_label,
-                                                       neigh= keep_orientation_with_neighbor)):
-                    print('n')
-                    print(n)
-                    # if not n['neighbor']:
-                    #     continue
-                    # revisit commenting this out
-                    # you should append the neighbor to the hidden_helpers and the ones inside of the
-                        # subc to keeper
-                    nays.append(n['neighbor'].pos)
-                    print('nays')
-                    print(type(nays))
-                    print(nays)
-                if anchor_point or (len(nays) == 1):
-                    keeper.extend([relative_to - nay for nay in nays])
+            keeper.extend(keep_orientation_along_vector)
+            mirror_points = []
+            if mirror_plane_points is not None:
+                if len(keeper)==2:
+                    raise MBuildError("Overdefined system. mirror_child_chirality requires data "
+                                      "that will sufficiently describe a mirror plane. This is "
+                                      "done by 2 vectors. Since the user has already supplied 2"
+                                      " vectors in keep_orientation_along_vector, this system is "
+                                      "overdefined.")
+                for path in mirror_plane_points:
+                    point = list(self.find_particles_in_path(within_path=path))
+                    if len(point) > 1:
+                        raise MBuildError("{} is not a unique hierarchal pathway.".format(path))
+                    mirror_points.append(point[0].pos)
+
+            bords=[]
+            nays=[]
+            if keep_orientation_with_neighbor is not None:
+                if len(keeper)==2 or (len(keeper) + len(mirror_points))>=3:
+                    raise MBuildError("Overdefined system. mirror_child_chirality requires data "
+                                      "that will sufficiently describe a mirror plane. This is "
+                                      "done by 2 vectors. Since the user has already supplied "
+                                      "information to describe 2 or more vectors in "
+                                      "keep_orientation_along_vector and mirror_plane_points")
+                if isinstance(keep_orientation_with_neighbor, bool):
+                    for n in tuple(subc._bonds_to_neighbors_no_neighbors(sees_twin= only_these_twins)):
+                        bords.append(n["you"].pos)
+                        nays.append(n['neighbor'].pos)
+                    if len(bords)>3:
+                        raise MBuildError("Overdefined system. The subcompound "
+                                          "{} has too many neighbors ({}), since "
+                                          "a plane is best described by 3 points"
+                                          ".".format(subc, len(bords)))
                 else:
-                    relative_to = np.mean(nays, axis = 0)
-                    for vec in nays[1:]:
-                        keeper.append(nays[0]-vec)
-                    # consider adding this in to ensure these have neighbors: has_neighbor = True
-                    # revisit check overdefined case
+                    for n in tuple(subc._bonds_to_neighbors_with_neighbors(sees_twin= only_these_twins,
+                                                           neigh= keep_orientation_with_neighbor)):
+                        bords.append(n["you"].pos)
+                        nays.append(n['neighbor'].pos)
+                    if len(bords)>3:
+                        raise MBuildError("Overdefined system. The subcompound "
+                                          "{} has too many neighbors ({}), since "
+                                          "a plane is best described by 3 points"
+                                          ".".format(subc, len(bords)))
+                # for n in tuple(subc.bonds_to_neighbors(sees_twin= only_these_twins,
+                #                                        neigh= keep_orientation_with_neighbor)):
+                #     # if not n['neighbor']:
+                #     #     continue
+                #     # revisit commenting this out
+                #     # you should append the neighbor to the hidden_helpers and the ones inside of the
+                #         # subc to keeper
+                #     bords.append(n["you"].pos)
+                #     nays.append(n['neighbor'].pos)
+                # if len(bords)>3:
+                #     raise MBuildError("Overdefined system. The subcompound "
+                #                       "{} has too many neighbors ({}), since "
+                #                       "a plane is best described by 3 points"
+                #                       ".".format(subc, len(bords)))
+                #### probably nix everything below
+                # if len(bords) ==1:
+                #     if potential_relative_to is not None:
+                #         keeper.append(potential_relative_to-bords[0])
+                #     elif len(keeper) == 1:
+                #         if relative_to:
+                #             keeper.append(relative_to-bords[0])
+                #         else:
+                #             raise MBuildError("Underdefined system.")
+                # elif len(bords) == 2:
+                #     if len(keeper) == 1:
+                #         keeper.append(bords[0]-bords[1])
+                #     elif relative_to############################# start here tomorrow
+                # elif len(bords) == 3:
+                #     pass
+                # else:
+                #     raise MBuildError()
+                # if anchor_point or (len(nays) == 1):
+                #     keeper.extend([relative_to - nay for nay in nays])
+                # else:
+                #     relative_to = np.mean(nays, axis = 0)
+                #     for vec in nays[1:]:
+                #         keeper.append(nays[0]-vec)
+                #     # consider adding this in to ensure these have neighbors: has_neighbor = True
+                #     # revisit check overdefined case
+            which_flip=1
+            s = len(bords) + len(mirror_points)
+            check_please = True
+            if s == 1:
+                raise MBuildError("The vectors used to describe the orientation of the mirror plane.......")
+            if len(keeper) == 0:
+                if s > 3:
+                    raise MBuildError("Overdefined system.")
+                elif s < 3:
+                    raise MBuildError("Underdefined system")
+                elif len(bords) == 0:
+                    keeper.extend([mirror_points[0]-mirror_points[1], mirror_points[0]-mirror_points[2]])
+                else:
+                    for ii in product(range(2), repeat=len(nays)):
+                        p = list(compress(bords, map(lambda x: x^1, ii)))+list(compress(nays, ii))+mirror_points
+                        k = [p[0] - x for x in p[1:]]
+                        k = normalized_matrix(k)
+                        norm1 = np.cross(k[0],k[1])
+                        if np.linalg.norm(norm1) < .045:
+                            continue
+                        norm1 = unit_vector(norm1)
+                        for n, jj in enumerate(np.eye(3)):
+                            if np.allclose(jj, abs(norm1), atol= 5e-4):
+                                which_flip = n
+                                k = []
+                                break
+                        else:
+                            k[1] = norm1
+                        break
+                    else:
+                        # revisit improve this error message
+                        raise MBuildError("The vectors passed used to describe the plane are co-linear, thus"
+                                          " there are infinitely many possible planes.")
+                    keeper = deepcopy(k)
+                    check_please=False
 
-            # if keep_orientation_with_coordinate:
-            #     keeper.append(relative_to - keep_orientation_with_coordinate)
-            #
+            elif len(keeper) ==1:
+                if s > 2:
+                    raise MBuildError("Overdefined system.")
+                elif s < 2:
+                    raise MBuildError("Underdefined system")
+                elif len(bords) ==0:
+                    keeper.append(mirror_points[0]-mirror_points[1])
+                else:
+                    for ii in product(range(2), repeat=len(nays)):
+                        p = list(compress(bords, map(lambda x: x^1, ii)))+list(compress(nays, ii))+mirror_points
+                        k = p[0] - p[1]
+                        k.extend(keeper)
+                        k = normalized_matrix(k)
+                        norm1 = np.cross(k[0],k[1])
+                        if np.linalg.norm(norm1) < .045:
+                            continue
+                        norm1 = unit_vector(norm1)
+                        for n, jj in enumerate(np.eye(3)):
+                            if np.allclose(jj, abs(norm1), atol= 5e-4):
+                                which_flip = n
+                                k = []
+                                break
+                        else:
+                            k[1] = norm1
+                        break
+                    else:
+                        # revisit improve this error message
+                        raise MBuildError("The vectors passed used to describe the plane are co-linear, thus"
+                                          " there are infinitely many possible planes.")
+                    keeper = deepcopy(k)
+                    check_please=False
+            elif s != 0:
+                raise MBuildError("Overdefined system.")
 
-            self._mirror(subc, about, recenter=True, align_position=keeper, anchor_pt=relative_to)
-                    #lat_obj=lat_obj[subc.name]) #keep_position_with)
+            if len(keeper) !=2 and which_flip==1:
+                raise MBuildError("mirror_child_chirality mirrors a subcompound across a mirror plane. "
+                                  "2 vectors best describe a plane but the user has supplied "
+                                  "information to describe {} vectors. The compound has not been "
+                                  "modified. Please pass information for 2 vectors not {}. "
+                                  "Refer to docstring for more information on describing mirror planes"
+                                  ".".format(len(keeper), len(keeper)))
+            elif check_please:
+                keeper = normalized_matrix(keeper)
+                norm1 = np.cross(keeper[0],keeper[1])
+                if np.linalg.norm(norm1) < .045:
+                    # revisit improve this error message
+                    raise MBuildError("The vectors passed used to describe the plane are co-linear, thus"
+                                      " there are infinitely many possible planes.")
+                norm1 = unit_vector(norm1)
+                for n, ii in enumerate(np.eye(3)):
+                    if np.allclose(ii, abs(norm1), atol= 5e-4):
+                        which_flip = n
+                        keeper = []
+                        break
+                else:
+                    keeper[1] = norm1
+            if relative_to is None:
+                if len(bords) > 0:
+                    relative_to = bords[0]
+                elif len(mirror_points)>0:
+                    relative_to = mirror_points[0]
+                else:
+                    relative_to = subc.center
+            subc._mirror(align_position=keeper, anchor=relative_to, which_flip=which_flip)
 
         if not_found:
             raise ValueError("{} was not found in {}.".format(looking_for[0], self.name))
@@ -2770,7 +3080,7 @@ class Compound(object):
         :param lattice_override:
             revisit
         """
-        if self.made_from_lattice and not lattice_override:
+        if self._made_from_lattice and not lattice_override:
             warn("This compound was made from a lattice, please use the "
                  "Lattice.rotate(axis_align= True) or "
                  "Lattice.rotate(miller_directions=True) methods."
@@ -2907,7 +3217,7 @@ class Compound(object):
             The vector about which to rotate the Compound.
 
         """
-        if self.made_from_lattice:
+        if self._made_from_lattice:
             if override:
                 pass
             else:
@@ -3436,7 +3746,7 @@ class Compound(object):
         newone._contains_rigid = deepcopy(self._contains_rigid)
         newone._rigid_id = deepcopy(self._rigid_id)
         newone._charge = deepcopy(self._charge)
-        newone.made_from_lattice = deepcopy(self.made_from_lattice)
+        newone._made_from_lattice = deepcopy(self._made_from_lattice)
         #### look into getter and setter and underscore for the made_from_lattice. revisit
         if hasattr(self, 'index'):
             newone.index = deepcopy(self.index)

@@ -49,7 +49,7 @@ class Polymer(Compound):
         last_part = None
         for n_added, seq_item in enumerate(it.cycle(sequence)):
             this_part = clone(seq_map[seq_item])
-            self.add(this_part, 'monomer[$]')
+            self.add(this_part)
             if last_part is None:
                 first_part = this_part
             else:
