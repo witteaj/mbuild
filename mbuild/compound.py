@@ -3166,7 +3166,7 @@ class Compound(object):
             if np.allclose(current[ii], goal[ii], atol=1e-3):
                 continue
             elif np.allclose(current[ii]*-1, goal[ii], atol= 1e-3):
-                self. rotate(theta = np.pi, around= current[(ii+1)%2])
+                self.rotate(theta = np.pi, around= current[(ii+1)%2])
                 current[ii]*=-1
                 continue
             orthag = np.cross(current[ii], goal[ii])
