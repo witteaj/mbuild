@@ -72,6 +72,23 @@ class TestCompound(BaseTest):
         assert struct.residues[0].number ==  1
         assert struct.residues[1].number ==  2
 
+    def test_save_references(self, methane):
+        methane.save('methyl.mol2', forcefield_name='oplsaa',
+                     references_file='methane.bib')
+        assert os.path.isfile('methane.bib')
+
+    def test_save_combining_rule(self, methane):
+        combining_rules = ['lorentz', 'geometric']
+        gmx_rules = {'lorentz': 2, 'geometric': 3}
+        for combining_rule in combining_rules:
+            methane.save('methane.top', forcefield_name='oplsaa',
+                         combining_rule=combining_rule, overwrite=True)
+            with open('methane.top') as fp:
+                for i, line in enumerate(fp):
+                    if i == 18:
+                        gmx_rule = int(line.split()[1])
+                        assert gmx_rule == gmx_rules[combining_rule]
+
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
         compound.add([ethane, h2o])
@@ -553,11 +570,6 @@ class TestCompound(BaseTest):
         with pytest.warns(UserWarning):
             benzene.save('charge-test.mol2')
 
-        with pytest.warns(None) as record_warnings:
-            benzene.save('charge-test.mol2', forcefield_name='oplsaa', 
-                         overwrite=True)
-        assert len(record_warnings) == 0
-
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_energy_minimization(self, octane):
         octane.energy_minimization()
@@ -613,7 +625,10 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             ch3_clone = mb.clone(ch3)
 
-    def test_load_mol2_parmed(self):
+    def test_load_mol2_mdtraj(self):
         with pytest.raises(KeyError):
             mb.load(get_fn('benzene-nonelement.mol2'))
         mb.load(get_fn('benzene-nonelement.mol2'), use_parmed=True)
+
+    def test_siliane_bond_number(self, silane):
+        assert silane.n_bonds == 4
