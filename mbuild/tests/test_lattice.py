@@ -169,3 +169,23 @@ class TestLattice(BaseTest):
                     is_true.append(True)
 
         assert len(is_true) == len(values_to_check)
+
+
+    def test_miller_normal_safe_typeError(self):
+        test_lattice = mb.Lattice(lattice_spacing=[1, 1, 1])
+        with pytest.raises(TypeError):
+            test_lattice.miller_normal_vector("111")
+
+    def test_miller_edges_ValueError(self):
+        test_lattice = mb.Lattice(lattice_spacing=[1, 1, 1])
+        with pytest.raises(ValueError):
+            test_lattice.miller_plane_edges([0,0,0])
+
+    def test_miller_edges_safe_ValueError(self):
+        test_lattice = mb.Lattice(lattice_spacing=[1, 1, 1])
+        with pytest.raises(ValueError):
+            test_lattice.miller_plane_edges([0,0,0])
+
+
+
+

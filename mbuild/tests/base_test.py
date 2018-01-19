@@ -167,3 +167,13 @@ class BaseTest:
     def silane(self):
         from mbuild.lib.moieties import Silane
         return Silane()
+
+    @pytest.fixture
+    def simple_cube(self):
+        import mbuild.Lattice as L
+        lil_lat = L(lattice_spacing = [1,1,1])
+        Po = mb.Compound(name="Po")
+        lil_dict = {"Po":Po}
+        lil_comp = lil_lat.populate(x = 1, y=1, z = 1, compound_dict=lil_dict)
+        return lil_comp
+

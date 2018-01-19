@@ -632,3 +632,42 @@ class TestCompound(BaseTest):
 
     def test_siliane_bond_number(self, silane):
         assert silane.n_bonds == 4
+
+    def test_align_v_w_v_warn(self, ch3):
+        vec1 = [1,0,0]
+        vec2 = [0,0,1]
+        ch3.align_vector_with_vector(vec1, vec2)
+        ### is there a way to ensure that the warning is raised?
+        # this can be deleted upon making the
+
+    def test_align_vwv_bad_input1(self, ch3):
+        vec1 = [1,0,0]
+        badvec2=[5, "rrr"]
+        for ii in badvec2:
+            with pytest.raises(TypeError):
+                ch3.align_vector_with_vector(vec1, ii)
+
+    def test_align_vwv_bad_input2(self, ch3):
+        vec1 = [1,0,0]
+        badvec2=[[[8,0,0]], np.array([1,1,1,1])]
+        for ii in badvec2:
+            with pytest.raises(ValueError):
+                ch3.align_vector_with_vector(vec1, ii)
+
+    def test_align_vwv_bad_anchor(self, ch3):
+        vec1 = [1,1,1]
+        vec2 = [1,0,0]
+        anchor_pt = [.5,.5,.5, .5]
+        with pytest.raises(ValueError):
+            ch3.align_vector_with_vector(vec1,vec2,anchor_pt)
+
+    def test_align_v_w_v_moot_anchor_pt(self, simple_cube):
+        vec1 = [1,1,1]
+        vec2 = [1,0,0]
+        anchor_pt = [.5,.5,.5]
+        cop= deepcopy(simple_cube)
+        simple_cube.align_vector_with_vector(vec1, vec2)
+        cop.align_vector_with_vector(vec1,vec2,anchor_pt)
+        for ii, jj in zip(simple_cube.particles(), cop.particles()):
+            assert ii.pos() == jj.pos()
+        #### check this and do a better one
