@@ -12,16 +12,15 @@ import tempfile
 from warnings import warn
 
 import mdtraj as md
+from mdtraj.core.element import get_by_symbol
 import numpy as np
 from oset import oset as OrderedSet
 import parmed as pmd
 from parmed.periodic_table import AtomicNum, element_by_name, Mass
-import simtk.openmm.app.element as elem
 from six import integer_types, string_types
 
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
-from mbuild.coordinate_transform import translate
 from mbuild.exceptions import MBuildError
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
@@ -77,8 +76,10 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         compound = Compound()
 
     if use_parmed:
-        structure = pmd.load_file(filename, structure=True)
-        compound.from_parmed(structure)
+        warn("use_parmed set to True.  Bonds may be inferred from inter-particle "
+             "distances and standard residue templates!")
+        structure = pmd.load_file(filename, structure=True, **kwargs)
+        compound.from_parmed(structure, coords_only=coords_only)
     else:
         traj = md.load(filename, **kwargs)
         compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
@@ -713,6 +714,8 @@ class Compound(object):
                 for ancestor in removed_part.ancestors():
                     ancestor._check_if_contains_rigid_bodies = True
             if self.root.bond_graph and self.root.bond_graph.has_node(removed_part):
+                for neighbor in self.root.bond_graph.neighbors(removed_part):
+                    self.root.remove_bond((removed_part, neighbor))
                 self.root.bond_graph.remove_node(removed_part)
             self._remove_references(removed_part)
 
@@ -881,10 +884,23 @@ class Compound(object):
             The pair of Particles to remove the bond between
 
         """
+        from mbuild.port import Port
         if self.root.bond_graph is None or not self.root.bond_graph.has_edge(*particle_pair):
             warn("Bond between {} and {} doesn't exist!".format(*particle_pair))
             return
         self.root.bond_graph.remove_edge(*particle_pair)
+        bond_vector = particle_pair[0].pos - particle_pair[1].pos
+        if np.allclose(bond_vector, np.zeros(3)):
+            warn("Particles {} and {} overlap! Ports will not be added."
+                 "".format(*particle_pair))
+            return
+        distance = np.linalg.norm(bond_vector)
+        particle_pair[0].parent.add(Port(anchor=particle_pair[0],
+                                         orientation=-bond_vector,
+                                         separation=distance/2), 'port[$]')
+        particle_pair[1].parent.add(Port(anchor=particle_pair[1],
+                                         orientation=bond_vector,
+                                         separation=distance/2), 'port[$]')
 
     @property
     def pos(self):
@@ -994,7 +1010,8 @@ class Compound(object):
             The cartesian center of the Compound based on its Particles
 
         """
-        if self.xyz.any():
+
+        if np.all(np.isfinite(self.xyz)):
             return np.mean(self.xyz, axis=0)
 
     @property
@@ -1224,7 +1241,7 @@ class Compound(object):
 
         for particle in self.particles():
             try:
-                elem.get_by_symbol(particle.name)
+                get_by_symbol(particle.name)
             except KeyError:
                 raise MBuildError("Element name {} not recognized. Cannot "
                                   "perform minimization."
@@ -1265,8 +1282,9 @@ class Compound(object):
         self.update_coordinates(os.path.join(tmp_dir, 'minimized.mol2'))
 
     def save(self, filename, show_ports=False, forcefield_name=None,
-             forcefield_files=None, box=None, overwrite=False, residues=None,
-             **kwargs):
+             forcefield_files=None, forcefield_debug=False, box=None,
+             overwrite=False, residues=None, references_file=None,
+             combining_rule='lorentz', **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1284,12 +1302,27 @@ class Compound(object):
             Apply a named forcefield to the output file using the `foyer`
             package, e.g. 'oplsaa'. Forcefields listed here:
             https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields
+        forcefield_debug : bool, optional, default=False
+            Choose level of verbosity when applying a forcefield through `foyer`.
+            Specifically, when missing atom types in the forcefield xml file,
+            determine if the warning is condensed or verbose.
         box : mb.Box, optional, default=self.boundingbox (with buffer)
             Box information to be written to the output file. If 'None', a
             bounding box is used with 0.25nm buffers at each face to avoid
             overlapping atoms.
         overwrite : bool, optional, default=False
             Overwrite if the filename already exists
+        residues : str of list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
+        references_file : str, optional, default=None
+            Specify a filename to write references for the forcefield that is
+            to be applied. References are written in BiBTeX format.
+        combining_rule : str, optional, default='lorentz'
+            Specify the combining rule for nonbonded interactions. Only relevant
+            when the `foyer` package is used to apply a forcefield. Valid
+            options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
+            and geometric combining rules respectively.
 
         Other Parameters
         ----------------
@@ -1335,8 +1368,9 @@ class Compound(object):
         if forcefield_name or forcefield_files:
             from foyer import Forcefield
             ff = Forcefield(forcefield_files=forcefield_files,
-                            name=forcefield_name)
-            structure = ff.apply(structure)
+                            name=forcefield_name, debug=forcefield_debug)
+            structure = ff.apply(structure, references_file=references_file)
+            structure.combining_rule = combining_rule
 
         total_charge = sum([atom.charge for atom in structure])
         if round(total_charge, 4) != 0.0:
@@ -1470,8 +1504,9 @@ class Compound(object):
             Include all port atoms when converting to trajectory.
         chains : mb.Compound or list of mb.Compound
             Chain types to add to the topology
-        residues : mb.Compound or list of mb.Compound
-            Residue types to add to the topology
+        residues : str of list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
 
         Returns
         -------
@@ -1512,8 +1547,9 @@ class Compound(object):
             Atoms to include in the topology
         chains : mb.Compound or list of mb.Compound
             Chain types to add to the topology
-        residues : mb.Compound or list of mb.Compound
-            Residue types to add to the topology
+        residues : str of list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
 
         Returns
         -------
@@ -1524,7 +1560,6 @@ class Compound(object):
         mdtraj.Topology : Details on the mdtraj Topology object
 
         """
-        from mdtraj.core.element import get_by_symbol
         from mdtraj.core.topology import Topology
 
         if isinstance(chains, string_types):
@@ -1643,7 +1678,7 @@ class Compound(object):
             for parmed_atom, particle in atoms_particles:
                 particle.pos = np.array([parmed_atom.xx,
                                          parmed_atom.xy,
-                                         parmed_atom.xz])
+                                         parmed_atom.xz]) / 10
             return
 
         atom_mapping = dict()
@@ -1660,7 +1695,7 @@ class Compound(object):
                 chain_compound = self
             for residue in residues:
                 for atom in residue.atoms:
-                    pos = np.array([atom.xx, atom.xy, atom.xz])
+                    pos = np.array([atom.xx, atom.xy, atom.xz]) / 10
                     new_atom = Particle(name=str(atom.name), pos=pos)
                     chain_compound.add(new_atom, label='{0}[$]'.format(atom.name))
                     atom_mapping[atom] = new_atom
@@ -1671,7 +1706,8 @@ class Compound(object):
             self.add_bond((atom1, atom2))
 
         if structure.box is not None:
-            self.periodicity = structure.box[0:3]
+            # Convert from A to nm
+            self.periodicity = 0.1 * structure.box[0:3]
         else:
             self.periodicity = np.array([0., 0., 0.])
 
@@ -1682,6 +1718,9 @@ class Compound(object):
         ----------
         title : str, optional, default=self.name
             Title/name of the ParmEd Structure
+        residues : str of list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
 
         Returns
         -------
