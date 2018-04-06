@@ -27,7 +27,7 @@ from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
-from mbuild.coordinate_transform import _translate, _rotate
+from mbuild.coordinate_transform import _translate, _rotate, unit_vector, angle, normalized_matrix
 
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
@@ -222,6 +222,8 @@ class Compound(object):
         self._warned_already = False # this is a temporary attribute that will be here until rotations check
                                     # lattice vector preservation.
 
+        ############ if adding new attributes, also add them in the clone method at the VERY bottom
+
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
             if charge:
@@ -240,11 +242,12 @@ class Compound(object):
         """
         if isinstance(self.lattice_vecs, bool) and not self.lattice_vecs:
             pass
-        else:
+        elif not self._warned_already:
             warn("This function is operating on an object with lattice vectors.\n"
-                 "This operatiom has not been thoroughly checked for robustness yet.\n"
+                 "This operation has not been thoroughly checked for robustness yet.\n"
                  "The lattice_vecs attribute may no longer be accurate after this\n"
-                 "operation.")
+                 "operation.", UserWarning)
+            self._warned_already = True
 
     def particles(self, include_ports=False):
         """Return all Particles of the Compound.
@@ -1413,9 +1416,9 @@ class Compound(object):
             pass
         elif not self._warned_already:
             warn("This function is operating on an object with lattice vectors.\n"
-                 "This operatiom has not been thoroughly checked for robustness yet.\n"
+                 "This operation has not been thoroughly checked for robustness yet.\n"
                  "The lattice_vecs attribute may no longer be accurate after this\n"
-                 "operation.")
+                 "operation.", UserWarning)
             self._warned_already = True
         new_positions = _rotate(self.xyz_with_ports, theta, around)
         self.xyz_with_ports = new_positions
@@ -1437,105 +1440,161 @@ class Compound(object):
         self.rotate(theta, around)
         self.translate(center_pos)
 
-    def align_vector_with_vector(self, vec1, vec2, anchor_pt = None):
-        """"""
-        if isinstance(self.lattice_vecs, bool) and not self.lattice_vecs:
-            pass
-        elif not self._warned_already:
-            warn("This function is operating on an object with lattice vectors.\n"
-                 "This operation has not been thoroughly checked for robustness yet.\n"
-                 "The lattice_vecs attribute may no longer be accurate after this\n"
-                 "operation.")
-            # i am a bit worried about the user forgetting that the vectors are no longer robust
-            self._warned_already = True
-        for aligner in [vec1, vec2]:
+    def align_vector_with_vector(self, align_this, with_this, anchor_pt = None):
+        """
+        Given vectors, align_this and with_this, rotate a compound so that the vector align_this
+        is aligned with the vector with_this. After this operation the two vectors will point in
+        the same direction.
+
+        Parameters
+        ----------
+        align_this : list-like
+           The vectors to be aligned. Must represent 3D cartesian coordinates. Angle between these
+           two vectors must be equal to the angle between with_these.
+        with_this : list-like
+           The vectors to serve as the end goal for align_these to be aligned with. Must
+           represent 3D cartesian coordinates. Angle between these two vectors must be
+           equal to the angle between align_these.
+        anchor_pt : optional, accepts list-like, defaults to self.center
+           anchor_pt is used as a way to identify a point in the compound that will remain
+           in the same cartesian coorindates after alignment as it was before. The list-like
+           either contains 3D coordinates or the hierarchical pathway to a unique particle
+           that will serve as the anchor point. Hierarchical pathway functionality is not yet
+           available in this version of mBuild.
+        """
+        for aligner in [align_this, with_this]:
             if not isinstance(aligner, (list,tuple)):
-                if not isinstance(aligner, np.ndarry):
-                    raise TypeError("Parameters vec1 and vec2 must be a list-like of length 3.\n"
+                if not isinstance(aligner, np.ndarray):
+                    raise TypeError("Parameters align_this and with_this must be a list-like of length 3.\n"
                                     "User passed {} type.".format(type(aligner)))
-                else:
-                    aligner = unit_vector(aligner)
-            else:
-               aligner = unit_vector(aligner)
             if len(aligner) != 3:
-                raise ValueError("Parameters vec1 and vec2 must be list-like of length 3.\n"
+                raise ValueError("Parameters align_this and with_this must be list-like of length 3.\n"
                                  "User passed list-like of length {}.".format(len(aligner)))
+            if np.isnan(aligner).any():
+                raise ValueError("Vector {} contains a NaN value. This function does not handle NaNs."
+                                 .format(aligner))
         if anchor_pt is None:
             anchor_pt = self.center
         else:
             if isinstance(anchor_pt, np.ndarray):
-                pass
+                if len(anchor_pt) != 3:
+                       raise ValueError("When describing the anchor_pt parameter as a set of"
+                                        "coordinates, must be done in 3 dimensions: an x, y, and z. "
+                                        "User supplied {} dimension(s).".format(len(anchor_pt)))
             elif isinstance(anchor_pt, (tuple, list)):
                if all(isinstance(ap, (int,float)) for ap in anchor_pt):
                    anchor_pt = np.array(anchor_pt)
                    if len(anchor_pt) != 3:
-                       raise ValueError("When describing the anchor point parameter as a set of\n"
-                                        "coordinates, must be done in 3 dimensions: an x, y, and z.\n"
+                       raise ValueError("When describing the anchor_pt parameter as a set of "
+                                        "coordinates, must be done in 3 dimensions: an x, y, and z. "
                                         "User supplied {} dimension(s).".format(len(anchor_pt)))
                else:
-                   path = deepcopy(anchor_pt)
-                   anchor_pt = list(self.find_particles_in_path(within_path=anchor_pt))
-                   if len(anchor_pt) > 1:
-                       raise MBuildError("This is not a unique anchor point. "
-                                         "The hierarchal path {} is invalid."
-                                         "".format(path))
-                   else:
-                       anchor_pt = anchor_pt[0].pos
-        self._align_vector_with_vector(vec1=vec1, vec2=vec2, anchor_pt=anchor_pt)
+                   raise TypeError("When describing the anchor_pt parameter as a set of cartesian"
+                                   " coordinates, it must be done by specifying a list-like of length 3"
+                                   " that contains exclusively numbers. User passed {} of length 3, but"
+                                   " the user supplied non numerical values.".format(type(anchor_pt)))
+
+               ## this is the code for when mBuild gains pathway functionality
+               # elif any(isinstance(ap, (int,float)) for ap in anchor_pt):
+               #     raise ValueError("When describing the parameter anchor_pt it must either contain\n"
+               #                      "a hierarchal pathway or a cartesian coordinate, described by\n"
+               #                      "exclusively numerical values (int, float). User passed a value\n"
+               #                      "containing both numerical and non numerical values.")
+               # else:
+               #     path = deepcopy(anchor_pt)
+               #     anchor_pt = list(self.find_particles_in_path(within_path=anchor_pt))
+               #     if len(anchor_pt) > 1:
+               #         raise MBuildError("This is not a unique anchor point. "
+               #                           "The hierarchal path {} is invalid."
+               #                           "".format(path))
+               #     else:
+               #         anchor_pt = anchor_pt[0].pos
+            else:
+                raise ValueError("The anchor_pt parameter is incorrectly defined. It must be a list-like of "
+                                 "length 3 containing numbers describing the cartesian location of the "
+                                 "anchor.")
+
+        if isinstance(self.lattice_vecs, bool) and not self.lattice_vecs:
+            pass
+        elif not self._warned_already:
+            warn("This function is operating on an object with lattice vectors."
+                 "This operation has not been thoroughly checked for robustness yet."
+                 "The lattice_vecs attribute may no longer be accurate after this"
+                 "operation.", UserWarning)
+            self._warned_already = True
+        self._align_vector_with_vector(vec1=align_this, vec2=with_this, anchor_pt=anchor_pt)
 
     def _align_vector_with_vector(self, vec1, vec2, anchor_pt):
-        """"""
+        """
+        This alignment technique assumes that all the input methods have been checked.
+        The function align_vector_with_vector() checks input and calls upon this to execute
+        the alignment. See def align_vector_with_vector() for more information.
+        """
         self.translate(-anchor_pt)
-        goal = deepcopy(vec2)
-        current = deepcopy(vec1)
-        if np.allclose(goal,current, atol=1e-3):
+        goal = unit_vector(np.array(deepcopy(vec2)))
+        current = unit_vector(np.array(deepcopy(vec1)))
+        if np.allclose(goal,current, atol=1e-4):
+            warn("The vectors {} and {} are already aligned. "
+                 "No operation has been performed on the object."
+                 .format(vec1,vec2), UserWarning)
+            pass
+        elif np.allclose(goal, -1*current, atol=1e-4):
+            warn("The vectors {} and {} are parallel but point in opposite directions. No alignment performed."
+                 .format(vec1, vec2), UserWarning)
             pass
         else:
-            orthag = np.cross(current, goal)
-            theta = angle(current, goal)
-            current = list(_rotate(coordinates=current, around=orthag, theta=theta))
-            current = unit_vector(current)
-            self.rotate(theta=theta, around=orthag)
-            if not np.allclose(goal,current, atol=1e-3):
-                raise MBuildError("The alignment technique was unsuccesful.")
+            for passes in range(3):
+                orthag = np.cross(current, goal)
+                theta = angle(current, goal)
+                current = list(_rotate(coordinates=current, around=orthag, theta=theta))[0]
+                self.rotate(theta=theta, around=orthag)
+                if not np.allclose(goal,current, atol=1e-3):
+                    if passes > 5:
+                        raise MBuildError("The alignment technique was unsuccesful.")
+                else:
+                    break
         self.translate(anchor_pt)
 
     def align_vector_pairs(self, align_these, with_these, anchor_pt = None):
        """
-       Given 2 sets (align_these and with_these) of 2 vectors, rotate a compound
+       Given 2 sets (align_these and with_these) of 2 vectors each, rotate a compound
        so that the vectors align_these point in the direction that with_these do.
-       :param align_these: list-like
-           The vectors to be aligned. Must represent 3D cartesian coordinates.
-       :param with_these: list-like
-           The vectors to serve as the end goal for align_these to be aligned with.
-           Must represent 3D cartesian coordinates.
-       :param anchor_pt: optional, accepts list-like, defaults to self.center
-           anchor_pt is used as a way to identify a point in the compound that will remain
-           unchanged after alignment. The list-like either contains 3D coordinates or the
-           hierarchal pathway to a unique particle that will serve as the anchor point.
-       """
-       if isinstance(self.lattice_vecs, bool) and not self.lattice_vecs:
-           pass
-       elif not self._warned_already:
-           warn("This function is operating on an object with lattice vectors.\n"
-                 "This operatiom has not been thoroughly checked for robustness yet.\n"
-                 "The lattice_vecs attribute may no longer be accurate after this\n"
-                 "operation.")
-           self._warned_already = True
 
+       Parameters
+        ----------
+       align_these : array-like
+           The vectors to be aligned. Must represent 3D cartesian coordinates. Angle between these
+           two vectors must be equal to the angle between with_these.
+       with_these : array-like
+           The vectors to serve as the end goal for align_these to be aligned with. Must
+           represent 3D cartesian coordinates. Angle between these two vectors must be
+           equal to the angle between align_these.
+       anchor_pt : optional, accepts list-like, defaults to self.center
+           anchor_pt is used as a way to identify a point in the compound that will remain
+           in the same cartesian coorindates after alignment as it was before. The list-like
+           either contains 3D coordinates or the hierarchical pathway to a unique particle
+           that will serve as the anchor point. Hierarchical pathway functionality is not yet
+           available in this version of mBuild.
+       """
        for aligner in list([align_these, with_these]):
            if not isinstance(aligner, (list,tuple)):
-               if not isinstance(aligner, np.ndarry):
+               if not isinstance(aligner, np.ndarray):
                    raise TypeError("Parameters align_these and with_these must be a list-like of"
                                    " list-like types.")
                else:
                    aligner = aligner.tolist
            else:
                aligner = list(aligner)
-           if len(aligner) !=2:
+           if len(aligner) != 2:
                raise ValueError("Vector pair {} is not of length 2. Both vectors are required to "
                                 "sufficienly and concisely describe a plane. If you are in"
                                 " the 2D case, please pass (0,0,1) as one of your vectors.".format(aligner))
+           for x in aligner:
+               if np.isnan(x).any():
+                   raise ValueError("Vector {} invalid because it contains nan.".format(x))
+               if np.allclose(np.linalg.norm(x), 0, atol=1e-7):
+                   raise ValueError("Vector {} invalid because it has magnitude zero.".format(x))
+
        ang_current, ang_goal = map(lambda x: angle(x[0], x[1]),
                                    [align_these, with_these])
        if not np.allclose(ang_current, ang_goal, atol= 1e-2):
@@ -1559,8 +1618,10 @@ class Compound(object):
                if all(isinstance(ap, (int,float)) for ap in anchor_pt):
                    anchor_pt = np.array(anchor_pt)
                else:
-                   path = deepcopy(anchor_pt)
-                   anchor_pt = list(self.find_particles_in_path(within_path=anchor_pt))
+                   warn("Hierarchical pathway functionality has not been added in this version of mBuild.\n"
+                        "Please use a different method to describe the anchor point.")
+                   ## this is the code for when the pathway functionality is added
+                   # path = deepcopy(anchor_pt)
                    # try:
                    #     anchor_pt = list(self.find_particles_in_path(within_path=anchor_pt))
                    # except:
@@ -1571,186 +1632,75 @@ class Compound(object):
                    #                     "must either be 3D coorindates or the hierarchal "
                    #                     "pathway of a unique particle."
                    #                     "".format(anchor_pt, type(anchor_pt)))
-                   if len(anchor_pt) > 1:
-                       raise MBuildError("This is not a unique anchor point. "
-                                         "The hierarchal path {} is invalid."
-                                         "".format(path))
-                   else:
-                       anchor_pt = anchor_pt[0].pos
+                   # if len(anchor_pt) > 1:
+                   #     raise MBuildError("This is not a unique anchor point. "
+                   #                       "The hierarchal path {} is invalid."
+                   #                       "".format(path))
+                   # else:
+                   #     anchor_pt = anchor_pt[0].pos
 
            else:
                raise TypeError("Parameter anchor_pt must be of type list, tuple, or"
                                " np.ndarray.")
-
+       if isinstance(self.lattice_vecs, bool) and not self.lattice_vecs:
+           pass
+       elif not self._warned_already:
+            warn("This function is operating on an object with lattice vectors.\n"
+                 "This operatiom has not been thoroughly checked for robustness yet.\n"
+                 "The lattice_vecs attribute may no longer be accurate after this\n"
+                 "operation.", UserWarning)
+            self._warned_already = True
        self._align(align_these=align_these, with_these=with_these,
                    anchor_pt=anchor_pt)
 
 
     def _align(self, align_these, with_these, anchor_pt):
-       """
-       This alignment technique assumes that all the input methods have been checked.
-       The function align_vector_pairs() checks input and calls upon this to execute
-       the alignment. See def align_vector_pairs() for more information.
-       """
-       current = deepcopy(np.array(align_these))
-       goal = np.array(with_these)
-       self.translate(-anchor_pt)
-       for ii in range(2):
-           if np.allclose(current[ii], goal[ii], atol=1e-3):
+        """
+        This alignment technique assumes that all the input methods have been checked.
+        The function align_vector_pairs() checks input and calls upon this to execute
+        the alignment. See def align_vector_pairs() for more information.
+        """
+        current = normalized_matrix(deepcopy(np.array(align_these)))
+        goal = normalized_matrix(np.array(with_these))
+        self.translate(-anchor_pt)
+        for ii in range(2):
+            if np.allclose(current[ii], goal[ii], atol=1e-3):
                continue
-           elif np.allclose(current[ii]*-1, goal[ii], atol= 1e-3):
+            elif np.allclose(current[ii]*-1, goal[ii], atol= 1e-3):
                self.rotate(theta = np.pi, around= current[(ii+1)%2])
                current[ii]*=-1
                continue
-           orthag = np.cross(current[ii], goal[ii])
-           theta = abs(angle(current[ii], goal[ii]))
-           current = np.array(list(_rotate(coordinates=current, around=orthag, theta=theta)))
-           current = normalized_matrix(current)
-           self.rotate(theta=theta, around=orthag) # compare the end vectors
-       self.translate(anchor_pt)
+            orthag = np.cross(current[ii], goal[ii])
+            theta = abs(angle(current[ii], goal[ii]))
+            current = normalized_matrix(np.array(list(_rotate(coordinates=current, around=orthag, theta=theta))))
+            self.rotate(theta=theta, around=orthag) # compare the end vector
+        self.translate(anchor_pt)
 
-
-
-    def miller_flush_vectors(self, miller, tol1=1e-2, tol2=np.pi/60):
-        """
-        Returns plane vectors that cross the YZ, ZX, and XY, in that order. The order was decided upon
-        since when each of these are crossed they return X, Y, and Z respectively. If the plane does not
-        pass through a face, an array of zeroes will be returned at the corresponding index. There cannot
-        be more than 1 row of zeros.
-        :param miller:
-        :return:
-        """
-        # is the default tol1&2 good enough
-        compo = self.miller_normal_vector(miller) # this will be a unit vector
-        try:
-            float(tol1)
-        except (ValueError, TypeError):
-            raise ValueError("Optional parameter 'tol1' must be a number. \n"
-                            "User passed {}.".format(tol1))
-        else:
-            if tol1 < 0:
-                raise ValueError("Optional parameter 'tol1' cannot be a negative number.")
-        try:
-            float(tol2)
-        except (ValueError, TypeError):
-            raise ValueError("Optional parameter 'tol2' must be a number. \n"
-                            "User passed {}.".format(tol2))
-        else:
-            if tol2 < 0:
-                raise ValueError("Optional parameter 'tol2' cannot be a negative number.")
-        f= deepcopy(self.lattice_vecs)
-        XYZfaces= np.array([unit_vector(np.cross(f[(ii+1)%3], f[(ii+2)%3])) for ii in range(3)])
-        XYZcrosses = np.array([np.cross(ii, compo) for ii in XYZfaces])
-        crossmag = list(map(lambda x: np.linalg.norm(x), XYZcrosses))
-        safety = 0
-        for en, ob in enumerate(crossmag):
-            if ob < tol1:
-                safety+=1
-                zero_line = en
-                if safety > 1:
-                    raise MBuildError("The program has failed. MBuild indicated that the plane\n"
-                                      "passes through only 1 of the faces, which violates all\n"
-                                      "principles of traditional 3D math. This could be a result\n"
-                                      "of the optional parameter 'tol1' having an inappropriate value.")
-                XYZcrosses[en]*=0
-            else:
-                pass
-
-        if safety ==1:
-            T = angle(np.cross(XYZcrosses[(zero_line+1)%3], XYZcrosses[(zero_line+2)%3]), compo)
-            if 0 <= T < tol2 or ( np.pi-tol2< T <= np.pi):
-                pass
-            else:
-                raise MBuildError("The vector normal to the miller plane is not parallel to\n"
-                                      "the back calculated normal from the intersecting faces.\n"
-                                      "Angle between the two vary by {} degrees ({} radians).\n"
-                                      "Consider changing the tol2. A tol2 of {} was supplied."
-                                      .format(T*180/np.pi,T,tol2))
-        else:
-            for ii in range(3):
-                T = angle(np.cross(XYZcrosses[(ii+1)%3], XYZcrosses[(ii+2)%3]), compo)
-                if 0 <= T < tol2 or ( np.pi-tol2< T <= np.pi):
-                    pass
-                else:
-                    raise MBuildError("The vector normal to the miller plane is not parallel to\n"
-                                      "the back calculated normal from the intersecting faces.\n"
-                                      "Angle between the two vary by {} degrees ({} radians).\n"
-                                      "Consider changing the tol2. A tol2 of {} was supplied."
-                                      .format(T*180/np.pi,T,tol2))
-        return XYZcrosses
-
-    # this is what i have been running in the console to test it
-# import numpy as np
+#######good script to test this fxn
 # import mbuild as mb
-# from mbuild.coordinate_transform import angle, normalized_matrix, unit_vector
-#
-# boi = mb.Compound(name = "Cl")
-# spacing = [1, .5, 4]
-# basis = {"Cl" : [[0,0,0]]}
-# lvec = normalized_matrix([[1,0,0],[.3,.7,0],[.15,.15,.7]])
-# lat = mb.Lattice(spacing, lattice_points = basis, lattice_vectors =lvec)
-# lat.miller_plane_edges([1,0,1])
+# from mbuild import Lattice as L
+# lil_basis = {"Po": [[0., 0., 0.]]}
+# lil_lat = L(lattice_spacing=[1, 1, 1], lattice_points=lil_basis)
+# Po = mb.Compound(name="Po")
+# lil_dict = {"Po":Po}
+# lil_comp = lil_lat.populate(x=2, y=2, z=2, compound_dict=lil_dict)
+# pts = {(0., 0., 0.) : "c", (1., 0., 0.) : "b", (1., 1., 0.) : "a",
+#        (0., 1., 1.) : "d", (0., 1., 0.) : "e"}
+# for ii in lil_comp:
+#     if tuple(ii.pos) in pts.keys():
+#         ii.name = pts[tuple(ii.pos)]
+# from copy import deepcopy
+# cop = deepcopy(lil_comp)
+# cop.align_vector_pairs(align_these= [[1, 0,0], [0,0,1]], with_these=[[0,0,1], [1,0,0]])
+# for ii in cop:
+#     if ii.name in "abcde":
+#         print(ii.pos, ii.name)
+# print("\n")
+# for ii in lil_comp:
+#     if ii.name in "abcde":
+#         print(ii.pos, ii.name)
+# print("\n")
 
-# ####
-#     import matplotlib.pyplot as plt
-#     from mpl_toolkits.mplot3d import Axes3D
-#
-#     fig = plt.figure()
-#     ax = fig.add_subplot(111,projection="3d")
-#     ax.plot([0,b[0]],[0,b[1]],[0,b[2]],"k")
-#     ax.plot([0,a[0][0]],[0,a[0][1]],[0,a[0][2]],'g')
-#     ax.plot([0,a[1][0]],[0,a[1][1]],[0,a[1][2]])
-#     from copy import deepcopy
-#     depth = deepcopy(lat.lattice_spacing[0])
-#     direction = deepcopy(lat.lattice_vectors)
-#     #ey = self.lattice_spacing[0]*normalized_matrix(deepcopy(self.lattice_vectors))
-#     ey = np.array([depth[ii]*unit_vector(direction[ii]) for ii in range(3)])
-#     ax.plot([0,ey[1][0]],[0,ey[1][1]],[0,ey[1][2]], "r-")
-#     ax.plot([0,ey[0][0]],[0,ey[0][1]],[0,ey[0][2]], "r-")
-#     ax.plot([0,ey[2][0]],[0,ey[2][1]],[0,ey[2][2]], "r-")
-#     c = np.cross(a[0],a[1])
-#     ax.plot([0,c[0]],[0,c[1]],[0,c[2]])
-#     ax.plot([0,c[0]],[0,c[1]],[0,c[2]], "o")
-#     from mbuild.coordinate_transform import angle, unit_vector, normalized_matrix
-
-
-
-    def miller_normal_vector(self, miller):
-        """
-        Returns the normal vector to the Miller plane.
-        :param miller: list-like of len 3
-                Miller indices
-        :return: numpy array of len 3
-        """
-        self._safe_miller(miller)
-        f= deepcopy(self.lattice_vecs)
-        depth = deepcopy(self.lattice_spacing[0])
-        ey = np.array([depth[ii]*unit_vector(np.cross(f[(ii+1)%3], f[(ii+2)%3])) for ii in range(3)])
-        return unit_vector(reduce(lambda x,y: x+y, [(1/m)*e for m, e in zip(miller,ey) if m != 0]))
-        # in the commented section above, i recieve the error that the normals dont align
-        # this makes some sense to me. please look into redoing it.
-
-    def _safe_miller(self,miller):
-        if isinstance(self.lattice_vecs, bool) and not self.lattice_vecs:
-            pass
-        else:
-            raise ProcessLookupError("This object does not have associated lattice\n"
-                                     "vectors (found in the lattice_vecs attribute)\n"
-                                     "therefore, miller calculations cannot be performed.")
-        if not isinstance(miller, (np.ndarray, list, tuple)):
-            raise TypeError("{} is invalid type for parameter miller. Must\n"
-                            "be of list-like (numpy array, list, tuple)."
-                            .format(type(miller)))
-        if len(miller) != 3:
-            raise ValueError("Supplied value for miller of invalid length {}.\n"
-                             "Must be length 3.".format(len(miller)))
-        if not all(isinstance(item, (int, float)) for item in miller):
-            # try except may be a better route
-            raise TypeError("")
-        if len(([1 for ii in miller if ii == 0])) == 3:
-            raise ValueError("Invalid Miller index specified.\n"
-                             "Miller index cannot be all zeros.\n"
-                             "User passed {}.".format(miller))
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
@@ -2247,6 +2197,9 @@ class Compound(object):
         newone._contains_rigid = deepcopy(self._contains_rigid)
         newone._rigid_id = deepcopy(self._rigid_id)
         newone._charge = deepcopy(self._charge)
+        newone.modified_lattice = deepcopy(self.modified_lattice)
+        newone.lattice_vecs = deepcopy(self.lattice_vecs)
+        newone._warned_already = deepcopy(self._warned_already)
         if hasattr(self, 'index'):
             newone.index = deepcopy(self.index)
 

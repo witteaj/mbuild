@@ -170,10 +170,20 @@ class BaseTest:
 
     @pytest.fixture
     def simple_cube(self):
-        import mbuild.Lattice as L
-        lil_lat = L(lattice_spacing = [1,1,1])
+        from mbuild import Lattice as L
+        lil_basis = {"Po": [[0., 0., 0.]]}
+        lil_lat = L(lattice_spacing=[1, 1, 1], lattice_points=lil_basis)
         Po = mb.Compound(name="Po")
         lil_dict = {"Po":Po}
-        lil_comp = lil_lat.populate(x = 1, y=1, z = 1, compound_dict=lil_dict)
+        lil_comp = lil_lat.populate(x=2, y=2, z=2, compound_dict=lil_dict)
         return lil_comp
 
+    @pytest.fixture
+    def longx_cube(self):
+        from mbuild import Lattice as L
+        lil_basis = {"Po": [[0., 0., 0.]]}
+        lil_lat = L(lattice_spacing=[1, 1, 1], lattice_points=lil_basis)
+        Po = mb.Compound(name="Po")
+        lil_dict = {"Po":Po}
+        lil_comp = lil_lat.populate(x=3, y=2, z=2, compound_dict=lil_dict)
+        return lil_comp
