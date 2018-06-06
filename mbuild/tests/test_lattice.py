@@ -19,7 +19,7 @@ class TestLattice(BaseTest):
                              )
     def test_spacing_success(self, spacing):
         spacing = np.asarray(spacing, dtype=np.float64)
-        spacing = np.reshape(spacing, (1, 3), order='C')
+        spacing = np.reshape(spacing, (3,))
         test_lattice = mb.Lattice(lattice_spacing=spacing)
         np.testing.assert_allclose(spacing, test_lattice.lattice_spacing,
                                    rtol=1e-7, atol=0, equal_nan=True)
@@ -40,7 +40,9 @@ class TestLattice(BaseTest):
                                 (1),
                                 ([1, 1]),
                                 ([-1, 1, 1]),
+                                ([1, 1, 1, 1]),
                                 ([1, 'a']),
+                                (None),
                                 ([]),
                                 ([None, None, None]),
                              ])
@@ -88,16 +90,45 @@ class TestLattice(BaseTest):
             mb.Lattice(lattice_spacing=space, lattice_vectors=vectors,
                        angles=angles)
 
-    @pytest.mark.parametrize("type",
+    @pytest.mark.parametrize("the_type",
                              [
-                                 ([1, 1, 1], 3, list()),
-                                 ([1, 1, 1], 3, tuple()),
-                                 ([1, 1, 1], 3, str())
+                                 (list()),
+                                 (tuple()),
+                                 (str()),
+                                 ([])
                              ]
                              )
-    def test_basis_atoms_input_type(self, type):
+    def test_lattice_points_input_type(self, the_type):
         with pytest.raises(TypeError):
-            mb.Lattice(lattice_spacing=[1, 1, 1], basis_atoms=type)
+            mb.Lattice(lattice_spacing=[1, 1, 1], lattice_points=the_type)
+
+    @pytest.mark.parametrize("incorrect",
+                             [
+                                 ({'A' : [[.2, .3, .2, .1]]}),
+                                 ({'A' : [[None]]}),
+                                 ({'A' : [[.2, .3, None]]}),
+                                 ({'A' : [[.2, .3, -.5]]}),
+                                 ({'A' : [[.2, .3, 1]]}),
+                                 ({'A' : [[.2, .3, .1], [.2, .3, .1]]})
+                             ]
+                             )
+    def test_lattice_points_input_type(self, incorrect):
+        with pytest.raises(ValueError):
+            mb.Lattice(lattice_spacing=[1, 1, 1], lattice_points=incorrect)
+
+    @pytest.mark.parametrize("angles",
+                             [
+                                ([150, 150, 150]),
+                                ([90, 90, -90]),
+                                ([90, 90, 180]),
+                                ([90, 90, 0]),
+                                ([90, 90, 90, 90]),
+                                ([97, 3, 120])
+                             ]
+                             )
+    def test_proper_angles(self, angles):
+        with pytest.raises(ValueError):
+            mb.Lattice(lattice_spacing=[1, 1, 1], angles=angles)
 
     @pytest.mark.parametrize("vectors, angles",
                              [
@@ -115,6 +146,8 @@ class TestLattice(BaseTest):
     @pytest.mark.parametrize("x, y, z",
                               [
                                 (None, 1, 0),
+                                (1, None, 1),
+                                (1, 1, None),
                                 (-1, 1, 1),
                                 (1, -1, 1),
                                 (1, 1, -1),
@@ -189,3 +222,13 @@ class TestLattice(BaseTest):
 
 
 
+    def test_set_periodicity(self):
+        lattice = mb.Lattice(lattice_spacing=[1, 1, 1], angles=[90, 90, 90],
+                             lattice_points={'A' : [[0, 0, 0]]})
+
+        compound_test = lattice.populate(compound_dict={'A' : mb.Compound()},
+                                         x=2, y=5, z=9)
+
+        replication=[2, 5, 9]
+        np.testing.assert_allclose(compound_test.periodicity,
+                                   np.asarray([x*y for x,y in zip(replication, lattice.lattice_spacing)]))

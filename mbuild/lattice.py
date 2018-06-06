@@ -1,5 +1,6 @@
 from collections import defaultdict
 import itertools as it
+from warnings import warn
 
 import numpy as np
 
@@ -28,33 +29,33 @@ class Lattice(object):
 
     Parameters
     ----------
-    lattice_spacing : numpy array, shape=(1, 3), required, dtype=float
+    lattice_spacing : array-like, shape=(3,), required, dtype=float
         Array of lattice spacings a,b,c for the cell.
-    lattice_vectors : numpy array, shape=(3, 3), optional
+    lattice_vectors : array-like, shape=(3, 3), optional
                       default=[[1,0,0], [0,1,0], [0,0,1]]
-        Vectors that define edges of unit cell corresponding to dimension. Will
+        Vectors that encase the unit cell corresponding to dimension. Will
         only default to these values if no angles were defined as well.
     lattice_points : dictionary, shape={'id': [[nested list of positions]]
         optional, default={'default': [[0.,0.,0.]]}
         Locations of all lattice points in cell using fractional coordinates.
-    angles : numpy array, shape=(1,3), optional, dtype=float
-        Array of inter-planar Bravais angles
+    angles : array-like, shape=(3,), optional, dtype=float
+        Array of inter-planar Bravais angles in degrees.
 
     Attributes
     ----------
     dimension : int, 3
         Default dimensionality within mBuild. If choosing a lower dimension,
         pad the relevant arrays with zeroes.
-    lattice_spacing : numpy array, shape=(1, 3), required, dtype=float
+    lattice_spacing : numpy array, shape=(3,), required, dtype=float
         Array of lattice spacings a,b,c for the cell.
     lattice_vectors : numpy array, shape=(3, 3), optional
                       default=[[1,0,0], [0,1,0], [0,0,1]]
-        Vectors that define edges of unit cell corresponding to dimension. Will
+        Vectors that encase the unit cell corresponding to dimension. Will
         only default to these values if no angles were defined as well.
     lattice_points : dictionary, shape={'id': [[nested list of positions]]
         optional, default={'default': [[0.,0.,0.]]}
         Locations of all lattice points in cell using fractional coordinates.
-    angles : numpy array, shape=(1,3), optional, dtype=float
+    angles : numpy array, shape=(3,), optional, dtype=float
         Array of inter-planar Bravais angles
 
     Examples
@@ -147,7 +148,6 @@ class Lattice(object):
         self.dimension = 3
         self.lattice_spacing = None
         self.lattice_vectors = None
-        # self._OGlat = deepcopy(self.lattice_vectors)
         self.lattice_points = dict()
         self.angles = None
         self._sanitize_inputs(lattice_spacing=lattice_spacing,
@@ -181,7 +181,6 @@ class Lattice(object):
                              'provided. Only one of these should be passed.')
 
         self._validate_lattice_spacing(lattice_spacing)
-
         if angles is not None:
             self._validate_angles(angles)
             self.lattice_vectors = self._from_lattice_parameters(self.angles)
@@ -207,18 +206,17 @@ class Lattice(object):
 
         if lattice_spacing is not None:
             lattice_spacing = np.asarray(lattice_spacing, dtype=dataType)
-            lattice_spacing = lattice_spacing.reshape((1, self.dimension),
-                                                      order='C')
-            if np.shape(lattice_spacing) != (1, self.dimension):
+            lattice_spacing = lattice_spacing.reshape((3,))
+            if np.shape(lattice_spacing) != (self.dimension,):
                 raise ValueError('Lattice spacing should be a vector of '
-                                 'size:(1,{}). Please include lattice spacing '
+                                 'size:({},). Please include lattice spacing '
                                  'of size >= 0 depending on desired '
                                  'dimensionality.'
                                  .format(self.dimension))
         else:
             raise ValueError('No lattice_spacing provided. Please provide '
-                             'lattice spacing\'s that are >= 0. with size {}'
-                             .format((1, self.dimension)))
+                             'lattice spacing\'s that are >= 0. with size ({},)'
+                             .format((self.dimension)))
 
         if np.any(np.isnan(lattice_spacing)):
             raise ValueError('None type or NaN type values present in '
@@ -235,9 +233,9 @@ class Lattice(object):
 
         dataType = np.float64
         tempAngles = np.asarray(angles, dtype=dataType)
-        tempAngles = tempAngles.reshape((1, self.dimension), order='C')
+        tempAngles = tempAngles.reshape((3,))
 
-        if np.shape(tempAngles) == (1, self.dimension):
+        if np.shape(tempAngles) == (self.dimension,):
             if np.sum(tempAngles) < 360.0 or np.sum(tempAngles) > -360.0:
                 if (np.all(tempAngles != 180.0)
                         and np.all(tempAngles != 0.0)):
@@ -249,7 +247,7 @@ class Lattice(object):
                                  '360.0 or less than -360.0'
                                  .format(np.sum(tempAngles)))
 
-            for subset in it.permutations(tempAngles[0], r=self.dimension):
+            for subset in it.permutations(tempAngles, r=self.dimension):
                 if not subset[0] < np.sum(tempAngles) - subset[0]:
                     raise ValueError('Each angle provided must be less'
                                      'than the sum of the other angles. '
@@ -258,7 +256,7 @@ class Lattice(object):
             raise ValueError('Incorrect array size. When converted to a '
                              'Numpy array, the shape is: {}, expected {}.'
                              .format(np.shape(tempAngles),
-                                     (1, self.dimension)))
+                                     (3,)))
         self.angles = tempAngles
 
     def _validate_lattice_vectors(self, lattice_vectors):
@@ -300,8 +298,7 @@ class Lattice(object):
             raise TypeError('Incorrect type, lattice_points is of type {}, '
                             'Expected dict.'.format(type(lattice_points)))
 
-        for name in lattice_points.keys():
-            positions = lattice_points[name]
+        for name, positions in lattice_points.items():
             for pos in positions:
                 if len(pos) != self.dimension:
                     raise ValueError("Incorrect lattice point position size. "
@@ -314,13 +311,7 @@ class Lattice(object):
                                      "None was passed in as position for {}."
                                      .format(name))
                 for coord in pos:
-                    try:
-                            coord = float(coord)
-                    except (ValueError, TypeError) as e:
-                        raise TypeError('Connot convert coordinate {} in {} '
-                                        'to type float.'.format(coord, pos))
-
-                    if (coord is None) or (coord >= 1.) or (coord < 0.):
+                    if (coord is None) or (0 > coord) or (coord >=1):
                         raise ValueError('Incorrect lattice point fractional '
                                          'coordinates. Coordinates cannot be '
                                          '{}, {}, or {}. You passed {}.'
@@ -333,8 +324,7 @@ class Lattice(object):
         overlap_dict = defaultdict(list)
         num_iter = 3
         dim = self.dimension
-        for name in lattice_points.keys():
-            positions = lattice_points[name]
+        for name, positions in lattice_points.items():
             for pos in positions:
                 for offsets in it.product(range(num_iter), repeat=dim):
                     offset_vector = tuple((v + offset for v, offset in zip(pos, offsets)))
@@ -370,7 +360,7 @@ class Lattice(object):
         """
 
         dataType = np.float64
-        (alpha, beta, gamma) = angles[0]
+        (alpha, beta, gamma) = angles
 
         radianConversion = np.pi / 180.0
         cosa = np.cos(alpha * radianConversion)
@@ -478,32 +468,35 @@ class Lattice(object):
                             '{} was passed.'.format(type(compound_dict)))
 
         cell = defaultdict(list)
-        [a, b, c] = self.lattice_spacing[0]
+        [a, b, c] = self.lattice_spacing
 
-        transformMat = self.lattice_vectors
-        transformMat = np.asarray(transformMat, dtype=np.float64)
-        transformMat = np.transpose(transformMat, axes=None)
+        transform_mat = self.lattice_vectors
+        # unit vectors
+        transform_mat = np.asarray(transform_mat, dtype=np.float64)
+        transform_mat = np.reshape(transform_mat, newshape=(3,3))
+        norms = np.linalg.norm(transform_mat, axis=1)
+
+        # normalized vectors for change of basis
+        unit_vecs = np.divide(transform_mat.transpose(), norms)
 
         for key, locations in self.lattice_points.items():
             for coords in locations:
                 for replication in it.product(range(x), range(y), range(z)):
                     temp_location = list()
-                    temp_location.append((a * replication[0]))
-                    temp_location.append((b * replication[1]))
-                    temp_location.append((c * replication[2]))
-                    # why would you not use an element-wise multiplication
-                    # like np.multiply or a generator with a zip?
 
                     new_coords = np.asarray(coords, dtype=np.float64)
                     new_coords = np.reshape(new_coords, (1, 3), order='C')
 
-                    new_coords[0][0] = new_coords[0][0] + temp_location[0]
-                    new_coords[0][1] = new_coords[0][1] + temp_location[1]
-                    new_coords[0][2] = new_coords[0][2] + temp_location[2]
-                    # could you use += here? also I think this could be done
-                    # really fast w a generator or mapping fct?
+                    new_coords[0][0] = new_coords[0][0] + replication[0]
+                    new_coords[0][1] = new_coords[0][1] + replication[1]
+                    new_coords[0][2] = new_coords[0][2] + replication[2]
 
-                    new_coords = transformMat.dot(np.transpose(new_coords))
+                    # change of basis to cartesian
+                    new_coords = np.dot(unit_vecs, new_coords.transpose())
+
+                    new_coords[0] = new_coords[0] * a
+                    new_coords[1] = new_coords[1] * b
+                    new_coords[2] = new_coords[2] * c
                     new_coords = np.reshape(new_coords, (1, 3), order='C')
 
                     tuple_of_coords = tuple(new_coords.flatten())
@@ -516,8 +509,6 @@ class Lattice(object):
                 particle = mb.Compound(name=key_id, pos=[0, 0, 0])
                 for pos in all_pos:
                     particle_to_add = mb.clone(particle)
-                    print(particle.center)
-                    print(particle.xyz)
                     particle_to_add.translate_to(list(pos))
                     ret_lattice.add(particle_to_add)
         else:
@@ -534,7 +525,16 @@ class Lattice(object):
                                     'dictionary. For key {}, type: {} was '
                                     'provided, not mbuild.Compound.'
                                     .format(key_id, err_type))
-        ret_lattice.lattice_vecs = deepcopy(self.lattice_vectors)
+        # set periodicity
+        ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)
+        warn('Periodicity of non-rectangular lattices are not valid with '
+                    'default boxes. Only rectangular lattices are valid '
+                    'at this time.')
+
+        # if coordinates are below a certain threshold, set to 0
+        tolerance = 1e-12
+        ret_lattice.xyz_with_ports[ret_lattice.xyz_with_ports <= tolerance] = 0.
+
         return ret_lattice
 
     def miller_plane_edges(self, miller, tol = 3):
