@@ -209,6 +209,11 @@ class Compound(object):
         (the bottom of the containment hierarchy) can have integer values for
         `rigid_id`. Compounds containing rigid particles will always have
         `rigid_id == None`. See also `contains_rigid`.
+    lattice_vectors : None or 3x3 array
+        None, unless the Compound was instantiated from the Lattice class. Pending
+        a PR to create a moving set of rigid particles to accompany lattices,
+        when the Compound is created from a Lattice the call will return the
+        current location of the lattice vectors.
     boundingbox
     center
     contains_rigid
@@ -244,23 +249,22 @@ class Compound(object):
         else:
             self._pos = np.zeros(3)
 
+        self._rigid_id = None
+        self._contains_rigid = False
+        self._check_if_contains_rigid_bodies = False
+        self._lattice_vectors = None
+
         self.parent = None
         self.children = OrderedSet()
         self.labels = OrderedDict()
         self.referrers = set()
+        self.lattice_vectors = deepcopy(self._lattice_vectors)
 
         self.bond_graph = None
         self.port_particle = port_particle
 
-        self._rigid_id = None
-        self._contains_rigid = False
-        self._check_if_contains_rigid_bodies = False
-        self.lattice_vecs = False
-        self.modified_lattice = False # should I property these ?
-        self._warned_already = False # this is a temporary attribute that will be here until rotations check
-                                    # lattice vector preservation.
 
-        ############ if adding new attributes, also add them in the clone method at the VERY bottom
+        # CAVEAT: When adding new attributes, also add them in the clone method
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
@@ -272,20 +276,6 @@ class Compound(object):
         else:
             self._charge = charge
 
-    def mirror(self, *args):
-        """
-        The code has already been written but is dependent upon bilayer builder.
-        :param args:
-        :return:
-        """
-        if isinstance(self.lattice_vecs, bool) and not self.lattice_vecs:
-            pass
-        elif not self._warned_already:
-            warn("This function is operating on an object with lattice vectors.\n"
-                 "This operation has not been thoroughly checked for robustness yet.\n"
-                 "The lattice_vecs attribute may no longer be accurate after this\n"
-                 "operation.", UserWarning)
-            self._warned_already = True
 
     def particles(self, include_ports=False):
         """Return all Particles of the Compound.
@@ -1476,14 +1466,6 @@ class Compound(object):
             The vector about which to rotate the Compound.
 
         """
-        if isinstance(self.lattice_vecs, bool) and not self.lattice_vecs:
-            pass
-        elif not self._warned_already:
-            warn("This function is operating on an object with lattice vectors.\n"
-                 "This operation has not been thoroughly checked for robustness yet.\n"
-                 "The lattice_vecs attribute may no longer be accurate after this\n"
-                 "operation.", UserWarning)
-            self._warned_already = True
         new_positions = _rotate(self.xyz_with_ports, theta, around)
         self.xyz_with_ports = new_positions
 
@@ -1513,79 +1495,52 @@ class Compound(object):
         Parameters
         ----------
         align_this : list-like
-           The vectors to be aligned. Must represent 3D cartesian coordinates. Angle between these
-           two vectors must be equal to the angle between with_these.
+            The vector to be aligned. Must represent vector in 3D cartesian coordinates.
         with_this : list-like
-           The vectors to serve as the end goal for align_these to be aligned with. Must
-           represent 3D cartesian coordinates. Angle between these two vectors must be
-           equal to the angle between align_these.
+           The vector serves as the end goal for align_this to be aligned with. Must
+           represent vector in 3D cartesian coordinates.
         anchor_pt : optional, accepts list-like, defaults to self.center
            anchor_pt is used as a way to identify a point in the compound that will remain
-           in the same cartesian coorindates after alignment as it was before. The list-like
-           either contains 3D coordinates or the hierarchical pathway to a unique particle
-           that will serve as the anchor point. Hierarchical pathway functionality is not yet
-           available in this version of mBuild.
+           in the same cartesian coordinates after alignment as it was before. The list-like
+           must contain XYZ coordinates.
         """
         for aligner in [align_this, with_this]:
-            if not isinstance(aligner, (list,tuple)):
-                if not isinstance(aligner, np.ndarray):
-                    raise TypeError("Parameters align_this and with_this must be a list-like of length 3.\n"
-                                    "User passed {} type.".format(type(aligner)))
-            if len(aligner) != 3:
-                raise ValueError("Parameters align_this and with_this must be list-like of length 3.\n"
-                                 "User passed list-like of length {}.".format(len(aligner)))
+            if aligner is not None:
+                try:
+                    aligner = np.array(aligner, dtype=np.float64)
+                except ValueError:
+                    raise ValueError("Parameters align_this and with_this must be list-like of length 3 "
+                                     "containing numeric values.")
+                try:
+                    aligner = aligner.reshape((3,))
+                except ValueError:
+                    raise ValueError("Parameters align_this and with_this must be list-like of length 3. "
+                                     "User passed list-like of length {}.".format(len(aligner)))
+            else:
+                raise ValueError("Parameters align_this and with_this must be list-like of length 3"
+                                " containing numerical values.")
             if np.isnan(aligner).any():
                 raise ValueError("Vector {} contains a NaN value. This function does not handle NaNs."
                                  .format(aligner))
         if anchor_pt is None:
             anchor_pt = self.center
         else:
-            if isinstance(anchor_pt, np.ndarray):
-                if len(anchor_pt) != 3:
-                       raise ValueError("When describing the anchor_pt parameter as a set of"
-                                        "coordinates, must be done in 3 dimensions: an x, y, and z. "
-                                        "User supplied {} dimension(s).".format(len(anchor_pt)))
-            elif isinstance(anchor_pt, (tuple, list)):
-               if all(isinstance(ap, (int,float)) for ap in anchor_pt):
-                   anchor_pt = np.array(anchor_pt)
-                   if len(anchor_pt) != 3:
-                       raise ValueError("When describing the anchor_pt parameter as a set of "
-                                        "coordinates, must be done in 3 dimensions: an x, y, and z. "
-                                        "User supplied {} dimension(s).".format(len(anchor_pt)))
-               else:
-                   raise TypeError("When describing the anchor_pt parameter as a set of cartesian"
-                                   " coordinates, it must be done by specifying a list-like of length 3"
-                                   " that contains exclusively numbers. User passed {} of length 3, but"
-                                   " the user supplied non numerical values.".format(type(anchor_pt)))
+            try:
+                anchor_pt = np.array(anchor_pt, dtype=np.float64)
+            except ValueError:
+                raise ValueError("When describing the anchor_pt parameter as a set of cartesian"
+                                 " coordinates, it must be done by specifying a list-like of length 3"
+                                 " that contains exclusively numeric values. User passed {} of length {}"
+                                 " with non-numerical values.".format(type(anchor_pt), len(anchor_pt)))
+            try:
+                anchor_pt = anchor_pt.reshape((3,))
+            except ValueError:
+                raise ValueError("Parameter anchor_pt must be list-like of length 3. "
+                                 "User passed list-like of length {}.".format(len(anchor_pt)))
+            if np.isnan(anchor_pt).any():
+                raise ValueError("Vector {} contains a NaN value. This function does not handle NaNs."
+                                 .format(anchor_pt))
 
-               ## this is the code for when mBuild gains pathway functionality
-               # elif any(isinstance(ap, (int,float)) for ap in anchor_pt):
-               #     raise ValueError("When describing the parameter anchor_pt it must either contain\n"
-               #                      "a hierarchal pathway or a cartesian coordinate, described by\n"
-               #                      "exclusively numerical values (int, float). User passed a value\n"
-               #                      "containing both numerical and non numerical values.")
-               # else:
-               #     path = deepcopy(anchor_pt)
-               #     anchor_pt = list(self.find_particles_in_path(within_path=anchor_pt))
-               #     if len(anchor_pt) > 1:
-               #         raise MBuildError("This is not a unique anchor point. "
-               #                           "The hierarchal path {} is invalid."
-               #                           "".format(path))
-               #     else:
-               #         anchor_pt = anchor_pt[0].pos
-            else:
-                raise ValueError("The anchor_pt parameter is incorrectly defined. It must be a list-like of "
-                                 "length 3 containing numbers describing the cartesian location of the "
-                                 "anchor.")
-
-        if isinstance(self.lattice_vecs, bool) and not self.lattice_vecs:
-            pass
-        elif not self._warned_already:
-            warn("This function is operating on an object with lattice vectors."
-                 "This operation has not been thoroughly checked for robustness yet."
-                 "The lattice_vecs attribute may no longer be accurate after this"
-                 "operation.", UserWarning)
-            self._warned_already = True
         self._align_vector_with_vector(vec1=align_this, vec2=with_this, anchor_pt=anchor_pt)
 
     def _align_vector_with_vector(self, vec1, vec2, anchor_pt):
@@ -1618,153 +1573,6 @@ class Compound(object):
                 else:
                     break
         self.translate(anchor_pt)
-
-    def align_vector_pairs(self, align_these, with_these, anchor_pt = None):
-       """
-       Given 2 sets (align_these and with_these) of 2 vectors each, rotate a compound
-       so that the vectors align_these point in the direction that with_these do.
-
-       Parameters
-        ----------
-       align_these : array-like
-           The vectors to be aligned. Must represent 3D cartesian coordinates. Angle between these
-           two vectors must be equal to the angle between with_these.
-       with_these : array-like
-           The vectors to serve as the end goal for align_these to be aligned with. Must
-           represent 3D cartesian coordinates. Angle between these two vectors must be
-           equal to the angle between align_these.
-       anchor_pt : optional, accepts list-like, defaults to self.center
-           anchor_pt is used as a way to identify a point in the compound that will remain
-           in the same cartesian coorindates after alignment as it was before. The list-like
-           either contains 3D coordinates or the hierarchical pathway to a unique particle
-           that will serve as the anchor point. Hierarchical pathway functionality is not yet
-           available in this version of mBuild.
-       """
-       for aligner in list([align_these, with_these]):
-           if not isinstance(aligner, (list,tuple)):
-               if not isinstance(aligner, np.ndarray):
-                   raise TypeError("Parameters align_these and with_these must be a list-like of"
-                                   " list-like types.")
-               else:
-                   aligner = aligner.tolist
-           else:
-               aligner = list(aligner)
-           if len(aligner) != 2:
-               raise ValueError("Vector pair {} is not of length 2. Both vectors are required to "
-                                "sufficienly and concisely describe a plane. If you are in"
-                                " the 2D case, please pass (0,0,1) as one of your vectors.".format(aligner))
-           for x in aligner:
-               if np.isnan(x).any():
-                   raise ValueError("Vector {} invalid because it contains nan.".format(x))
-               if np.allclose(np.linalg.norm(x), 0, atol=1e-7):
-                   raise ValueError("Vector {} invalid because it has magnitude zero.".format(x))
-
-       ang_current, ang_goal = map(lambda x: angle(x[0], x[1]),
-                                   [align_these, with_these])
-       if not np.allclose(ang_current, ang_goal, atol= 1e-2):
-           raise ValueError("The vectors specified cannot be aligned because the "
-                            "angle between the vectors specified in align_these "
-                            "is too different from the angle between the vectors "
-                            "specified in with_these. Angles were {} and {} degrees, "
-                            "respectively.".format(ang_current*180/np.pi,
-                                                   ang_goal*180/np.pi))
-       align_these, with_these = map(lambda x: normalized_matrix(x), [align_these, with_these])
-       if not np.allclose(ang_goal,np.pi/2, atol= 5e-3):
-           align_these[1], with_these[1] = map(lambda x: unit_vector(np.cross(x[0], x[1])),
-                                                     [align_these, with_these])
-           # this ensures that the vector pair will be orthagonal
-       if anchor_pt is None:
-           anchor_pt = self.center
-       else:
-           if isinstance(anchor_pt, np.ndarray):
-               pass
-           elif isinstance(anchor_pt, (tuple, list)):
-               if all(isinstance(ap, (int,float)) for ap in anchor_pt):
-                   anchor_pt = np.array(anchor_pt)
-               else:
-                   warn("Hierarchical pathway functionality has not been added in this version of mBuild.\n"
-                        "Please use a different method to describe the anchor point.")
-                   ## this is the code for when the pathway functionality is added
-                   # path = deepcopy(anchor_pt)
-                   # try:
-                   #     anchor_pt = list(self.find_particles_in_path(within_path=anchor_pt))
-                   # except:
-                   #     raise TypeError("The contents, {}, of the {} passed for anchor_pt"
-                   #                     " do not contain the appropriate datatypes."
-                   #                     " anchor_pt must be either a np.ndarray, list,"
-                   #                     " or tuple. If it is a list/tuple, the contents "
-                   #                     "must either be 3D coorindates or the hierarchal "
-                   #                     "pathway of a unique particle."
-                   #                     "".format(anchor_pt, type(anchor_pt)))
-                   # if len(anchor_pt) > 1:
-                   #     raise MBuildError("This is not a unique anchor point. "
-                   #                       "The hierarchal path {} is invalid."
-                   #                       "".format(path))
-                   # else:
-                   #     anchor_pt = anchor_pt[0].pos
-
-           else:
-               raise TypeError("Parameter anchor_pt must be of type list, tuple, or"
-                               " np.ndarray.")
-       if isinstance(self.lattice_vecs, bool) and not self.lattice_vecs:
-           pass
-       elif not self._warned_already:
-            warn("This function is operating on an object with lattice vectors.\n"
-                 "This operatiom has not been thoroughly checked for robustness yet.\n"
-                 "The lattice_vecs attribute may no longer be accurate after this\n"
-                 "operation.", UserWarning)
-            self._warned_already = True
-       self._align(align_these=align_these, with_these=with_these,
-                   anchor_pt=anchor_pt)
-
-
-    def _align(self, align_these, with_these, anchor_pt):
-        """
-        This alignment technique assumes that all the input methods have been checked.
-        The function align_vector_pairs() checks input and calls upon this to execute
-        the alignment. See def align_vector_pairs() for more information.
-        """
-        current = normalized_matrix(deepcopy(np.array(align_these)))
-        goal = normalized_matrix(np.array(with_these))
-        self.translate(-anchor_pt)
-        for ii in range(2):
-            if np.allclose(current[ii], goal[ii], atol=1e-3):
-               continue
-            elif np.allclose(current[ii]*-1, goal[ii], atol= 1e-3):
-               self.rotate(theta = np.pi, around= current[(ii+1)%2])
-               current[ii]*=-1
-               continue
-            orthag = np.cross(current[ii], goal[ii])
-            theta = abs(angle(current[ii], goal[ii]))
-            current = normalized_matrix(np.array(list(_rotate(coordinates=current, around=orthag, theta=theta))))
-            self.rotate(theta=theta, around=orthag) # compare the end vector
-        self.translate(anchor_pt)
-
-#######good script to test this fxn
-# import mbuild as mb
-# from mbuild import Lattice as L
-# lil_basis = {"Po": [[0., 0., 0.]]}
-# lil_lat = L(lattice_spacing=[1, 1, 1], lattice_points=lil_basis)
-# Po = mb.Compound(name="Po")
-# lil_dict = {"Po":Po}
-# lil_comp = lil_lat.populate(x=2, y=2, z=2, compound_dict=lil_dict)
-# pts = {(0., 0., 0.) : "c", (1., 0., 0.) : "b", (1., 1., 0.) : "a",
-#        (0., 1., 1.) : "d", (0., 1., 0.) : "e"}
-# for ii in lil_comp:
-#     if tuple(ii.pos) in pts.keys():
-#         ii.name = pts[tuple(ii.pos)]
-# from copy import deepcopy
-# cop = deepcopy(lil_comp)
-# cop.align_vector_pairs(align_these= [[1, 0,0], [0,0,1]], with_these=[[0,0,1], [1,0,0]])
-# for ii in cop:
-#     if ii.name in "abcde":
-#         print(ii.pos, ii.name)
-# print("\n")
-# for ii in lil_comp:
-#     if ii.name in "abcde":
-#         print(ii.pos, ii.name)
-# print("\n")
-
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
@@ -2261,9 +2069,8 @@ class Compound(object):
         newone._contains_rigid = deepcopy(self._contains_rigid)
         newone._rigid_id = deepcopy(self._rigid_id)
         newone._charge = deepcopy(self._charge)
-        newone.modified_lattice = deepcopy(self.modified_lattice)
-        newone.lattice_vecs = deepcopy(self.lattice_vecs)
-        newone._warned_already = deepcopy(self._warned_already)
+        newone._lattice_vectors = deepcopy(self._lattice_vectors)
+        newone.lattice_vectors = deepcopy(self.lattice_vectors)
         if hasattr(self, 'index'):
             newone.index = deepcopy(self.index)
 
@@ -2311,31 +2118,3 @@ class Compound(object):
 
 
 Particle = Compound
-
-# orientation methods:
-# 1. rotate
-# 2. translate
-# 3. spin (dont add error, it will double count)
-# 4. translate_to
-# 5. align_vector_pairs (from previous PR, must add in error)
-# 6. align_vector_with_vector (write this)
-# 7. _mirror (previous PR)
-#
-# Consider adding pipeline from compound to lattice
-# so we can double populate
-#
-# add in:
-# tips on rotation (3angle)
-# miller_flush_plane
-# miller_normal
-# modified_lattice attribute CHECK*
-# MFL attribute DECIDED AGAINST
-# lattice_vecs attribute CHECK*
-#
-# back burn:
-# if you edit some sub piece whose parent is a lattice,
-# give a warning upon the first offense and change the
-# modified_lattice attribute.
-
-
-# added in miller stuff, now just have to test it out

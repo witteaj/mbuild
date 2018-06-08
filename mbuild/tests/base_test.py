@@ -176,22 +176,22 @@ class BaseTest:
     @pytest.fixture
     def simple_cube(self):
         from mbuild import Lattice as L
-        lil_basis = {"Po": [[0., 0., 0.]]}
-        lil_lat = L(lattice_spacing=[1, 1, 1], lattice_points=lil_basis)
+        simple_basis = {"Po": [[0., 0., 0.]]}
+        simple_lat = L(lattice_spacing=[1, 1, 1], lattice_points=simple_basis)
         Po = mb.Compound(name="Po")
-        lil_dictionary = {"Po":Po}
-        lil_comp = lil_lat.populate(x=2, y=2, z=2, compound_dict=lil_dictionary)
-        return lil_comp
+        simple_dictionary = {"Po":Po}
+        simple_comp = simple_lat.populate(x=2, y=2, z=2, compound_dict=simple_dictionary)
+        return simple_comp
 
     @pytest.fixture
     def longx_cube(self):
         from mbuild import Lattice as L
-        lil_basis = {"Po": [[0., 0., 0.]]}
-        lil_lat = L(lattice_spacing=[1, 1, 1], lattice_points=lil_basis)
+        simple_basis = {"Po": [[0., 0., 0.]]}
+        simple_lat = L(lattice_spacing=[1, 1, 1], lattice_points=simple_basis)
         Po = mb.Compound(name="Po")
-        lil_dictionary = {"Po":Po}
-        lil_comp = lil_lat.populate(x=3, y=2, z=2, compound_dict=lil_dictionary)
-        return lil_comp
+        simple_dictionary = {"Po":Po}
+        simple_comp = simple_lat.populate(x=3, y=2, z=2, compound_dict=simple_dictionary)
+        return simple_comp
 
     def chf(self):
         class CHF(mb.Compound):
