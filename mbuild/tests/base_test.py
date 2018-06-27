@@ -184,6 +184,19 @@ class BaseTest:
         return simple_comp
 
     @pytest.fixture
+<<<<<<< HEAD
+=======
+    def longx_cube(self):
+        from mbuild import Lattice as L
+        simple_basis = {"Po": [[0., 0., 0.]]}
+        simple_lat = L(lattice_spacing=[1, 1, 1], lattice_points=simple_basis)
+        Po = mb.Compound(name="Po")
+        simple_dictionary = {"Po":Po}
+        simple_comp = simple_lat.populate(x=3, y=2, z=2, compound_dict=simple_dictionary)
+        return simple_comp
+
+    @pytest.fixture
+>>>>>>> origin/lattice_orientation1
     def chf(self):
         class CHF(mb.Compound):
             def __init__(self):
