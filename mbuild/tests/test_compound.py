@@ -776,6 +776,47 @@ class TestCompound(BaseTest):
                 ii.name = pts[tuple(ii.pos)]
         simple_cube.translate(anch)
         simple_cube.align_vector_with_vector(vec1, vec2, anchor_pt=anch)
+
+    def test_align_vp_NaNvecs(self, simple_cube):
+        V1 = [np.array([np.nan, 9, 8]),np.random.randn(3)]
+        V2 = [np.random.randint(-10,10)*np.random.randn(3), np.random.randint(-10,10)*np.random.rand(3)]
+        with pytest.raises(ValueError) as err:
+            simple_cube.align_vector_pairs(V1, V2)
+            assert "invalid because it contains nan" in str(err)
+
+    @pytest.mark.parametrize("sameflipsanch",
+                             [
+                                 ([0,0,0]),
+                                 ([1,1,1]),
+                                 (None)
+                             ])
+
+    def test_align_vp_same_anch_XtoZ_wdiag(self, simple_cube, sameflipsanch):
+        v1 = [[1,0,0],[1,1,1]]
+        v2 = [[0,0,1],[1,1,1]]
+        pts = {(0., 0., 0.) : "c", (1., 0., 0.) : "b", (1., 1., 0.) : "a",
+               (0., 1., 1.) : "d", (0., 1., 0.) : "e"}
+        primes = {"a" : np.array([1., 0., 1.]) , "b" : np.array([0., 0., 1.]) , "c" : np.array([0., 0., 0.]),
+                  "d" : np.array([1., 1., 0.]), "e" : np.array([1., 0., 0.])}
+        for ii in simple_cube:
+            if tuple(ii.pos) in pts.keys():
+                ii.name = pts[tuple(ii.pos)]
+        simple_cube.align_vector_pairs(align_these=v1, with_these=v2, anchor_pt=sameflipsanch)
+        for ii in simple_cube:
+            if ii.name in primes.keys():
+                assert np.allclose(primes[ii.name], ii.pos, atol=1e-6)
+
+    def test_align_vp_order_unimportant_XtoZ_wdiag(self, simple_cube):
+        v1 = [[1,1,1], [1,0,0]]
+        v2 = [[1,1,1], [0,0,1]]
+        pts = {(0., 0., 0.) : "c", (1., 0., 0.) : "b", (1., 1., 0.) : "a",
+               (0., 1., 1.) : "d", (0., 1., 0.) : "e"}
+        primes = {"a" : np.array([1., 0., 1.]) , "b" : np.array([0., 0., 1.]) , "c" : np.array([0., 0., 0.]),
+                  "d" : np.array([1., 1., 0.]), "e" : np.array([1., 0., 0.])}
+        for ii in simple_cube:
+            if tuple(ii.pos) in pts.keys():
+                ii.name = pts[tuple(ii.pos)]
+        simple_cube.align_vector_pairs(align_these=v1, with_these=v2)
         for ii in simple_cube:
             if ii.name in primes.keys():
                 assert np.allclose(primes[ii.name], ii.pos, atol=1e-6)
@@ -900,6 +941,45 @@ class TestCompound(BaseTest):
         for ii in longx_cube:
             if ii.name in primes.keys():
                 assert np.allclose(primes[ii.name]+shift, ii.pos, atol=1e-6)
+
+    def test_align_vp_swap_axesXZ_ZX(self,simple_cube):
+        v1 = [[1,0,0],[0,0,1]]
+        v2 = [[0,0,1], [1,0,0]]
+        pts = {(0., 0., 0.) : "c", (1., 0., 0.) : "b", (1., 1., 0.) : "a",
+               (0., 1., 1.) : "d", (0., 1., 0.) : "e"}
+        primes = {"a" : np.array([0., 0., 1.]) , "b" : np.array([0., 1., 1.]) ,
+                  "c" : np.array([0., 1., 0.]),
+                  "d" : np.array([1., 0., 0.]), "e" : np.array([0., 0., 0.])}
+        for ii in simple_cube:
+            if tuple(ii.pos) in pts.keys():
+                ii.name = pts[tuple(ii.pos)]
+        simple_cube.align_vector_pairs(align_these=v1, with_these=v2)
+        for ii in simple_cube:
+            if ii.name in primes.keys():
+                assert np.allclose(primes[ii.name], ii.pos, atol=1e-6)
+
+    def test_align_vp_swap_axesXZ_ZnegX(self,simple_cube):
+        v1 = [[1,0,0],[0,0,1]]
+        v2 = [[0,0,1], [-1,0,0]]
+        pts = {(0., 0., 0.) : "c", (1., 0., 0.) : "b", (1., 1., 0.) : "a",
+               (0., 1., 1.) : "d", (0., 1., 0.) : "e"}
+        primes = {"a" : np.array([1., 1., 1.]) , "b" : np.array([1., 0., 1.]) ,
+                  "c" : np.array([1., 0., 0.]),
+                  "d" : np.array([0., 1., 0.]), "e" : np.array([1., 1., 0.])}
+        for ii in simple_cube:
+            if tuple(ii.pos) in pts.keys():
+                ii.name = pts[tuple(ii.pos)]
+        simple_cube.align_vector_pairs(align_these=v1, with_these=v2, anchor_pt=[0,0,0])
+        for ii in simple_cube:
+            if ii.name in primes.keys():
+                assert np.allclose(primes[ii.name], (ii.pos+np.array([1,0,0])), atol=1e-6)
+
+
+
+# for vector pairs, randomly revolve the lattice and then use lattice vectors to bring it back to a known position
+# this might require the methods to track the lattice vecs (honestly its like 100% the case)
+# begin figuring what other tests you need to write/ what fxns dont have unit tests
+
 
     def test_add_bond_remove_ports(self, hydrogen):
         h_clone = mb.clone(hydrogen)

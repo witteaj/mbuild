@@ -1844,6 +1844,7 @@ class Compound(object):
         self.rotate(theta, around)
         self.translate(center_pos)
 
+
     def align_vector_with_vector(self, align_this, with_this, anchor_pt = None):
         """
         Given vectors, align_this and with_this, rotate a compound so that the vector align_this
@@ -1931,6 +1932,147 @@ class Compound(object):
                 else:
                     break
         self.translate(anchor_pt)
+
+
+    def align_vector_pairs(self, align_these, with_these, anchor_pt = None):
+       """
+       Given 2 sets (align_these and with_these) of 2 vectors each, rotate a compound
+       so that the vectors align_these point in the direction that with_these do.
+
+       Parameters
+        ----------
+       align_these : array-like
+           The vectors to be aligned. Must represent 3D cartesian coordinates. Angle between these
+           two vectors must be equal to the angle between with_these.
+       with_these : array-like
+           The vectors to serve as the end goal for align_these to be aligned with. Must
+           represent 3D cartesian coordinates. Angle between these two vectors must be
+           equal to the angle between align_these.
+       anchor_pt : optional, accepts list-like, defaults to self.center
+           anchor_pt is used as a way to identify a point in the compound that will remain
+           in the same cartesian coorindates after alignment as it was before. The list-like
+           either contains 3D coordinates or the hierarchical pathway to a unique particle
+           that will serve as the anchor point. Hierarchical pathway functionality is not yet
+           available in this version of mBuild.
+       """
+       for aligner in list([align_these, with_these]):
+           if not isinstance(aligner, (list,tuple)):
+               if not isinstance(aligner, np.ndarray):
+                   raise TypeError("Parameters align_these and with_these must be a list-like of"
+                                   " list-like types.")
+               else:
+                   aligner = aligner.tolist
+           else:
+               aligner = list(aligner)
+           if len(aligner) != 2:
+               raise ValueError("Vector pair {} is not of length 2. Both vectors are required to "
+                                "sufficienly and concisely describe a plane. If you are in"
+                                " the 2D case, please pass (0,0,1) as one of your vectors.".format(aligner))
+           for x in aligner:
+               if np.isnan(x).any():
+                   raise ValueError("Vector {} invalid because it contains nan.".format(x))
+               if np.allclose(np.linalg.norm(x), 0, atol=1e-7):
+                   raise ValueError("Vector {} invalid because it has magnitude zero.".format(x))
+
+       ang_current, ang_goal = map(lambda x: angle(x[0], x[1]),
+                                   [align_these, with_these])
+       if not np.allclose(ang_current, ang_goal, atol= 1e-2):
+           raise ValueError("The vectors specified cannot be aligned because the "
+                            "angle between the vectors specified in align_these "
+                            "is too different from the angle between the vectors "
+                            "specified in with_these. Angles were {} and {} degrees, "
+                            "respectively.".format(ang_current*180/np.pi,
+                                                   ang_goal*180/np.pi))
+       align_these, with_these = map(lambda x: normalized_matrix(x), [align_these, with_these])
+       if not np.allclose(ang_goal,np.pi/2, atol= 5e-3):
+           align_these[1], with_these[1] = map(lambda x: unit_vector(np.cross(x[0], x[1])),
+                                                     [align_these, with_these])
+           # this ensures that the vector pair will be orthagonal
+       if anchor_pt is None:
+           anchor_pt = self.center
+       else:
+           if isinstance(anchor_pt, np.ndarray):
+               pass
+           elif isinstance(anchor_pt, (tuple, list)):
+               if all(isinstance(ap, (int,float)) for ap in anchor_pt):
+                   anchor_pt = np.array(anchor_pt)
+               else:
+                   warn("Hierarchical pathway functionality has not been added in this version of mBuild.\n"
+                        "Please use a different method to describe the anchor point.")
+                   ## this is the code for when the pathway functionality is added
+                   # path = deepcopy(anchor_pt)
+                   # try:
+                   #     anchor_pt = list(self.find_particles_in_path(within_path=anchor_pt))
+                   # except:
+                   #     raise TypeError("The contents, {}, of the {} passed for anchor_pt"
+                   #                     " do not contain the appropriate datatypes."
+                   #                     " anchor_pt must be either a np.ndarray, list,"
+                   #                     " or tuple. If it is a list/tuple, the contents "
+                   #                     "must either be 3D coorindates or the hierarchal "
+                   #                     "pathway of a unique particle."
+                   #                     "".format(anchor_pt, type(anchor_pt)))
+                   # if len(anchor_pt) > 1:
+                   #     raise MBuildError("This is not a unique anchor point. "
+                   #                       "The hierarchal path {} is invalid."
+                   #                       "".format(path))
+                   # else:
+                   #     anchor_pt = anchor_pt[0].pos
+
+           else:
+               raise TypeError("Parameter anchor_pt must be of type list, tuple, or"
+                               " np.ndarray.")
+       self._align(align_these=align_these, with_these=with_these,
+                   anchor_pt=anchor_pt)
+
+
+    def _align(self, align_these, with_these, anchor_pt):
+        """
+        This alignment technique assumes that all the input methods have been checked.
+        The function align_vector_pairs() checks input and calls upon this to execute
+        the alignment. See def align_vector_pairs() for more information.
+        """
+        current = normalized_matrix(deepcopy(np.array(align_these)))
+        goal = normalized_matrix(np.array(with_these))
+        self.translate(-anchor_pt)
+        for ii in range(2):
+            if np.allclose(current[ii], goal[ii], atol=1e-3):
+               continue
+            elif np.allclose(current[ii]*-1, goal[ii], atol= 1e-3):
+               self.rotate(theta = np.pi, around= current[(ii+1)%2])
+               current[ii]*=-1
+               continue
+            orthag = np.cross(current[ii], goal[ii])
+            theta = abs(angle(current[ii], goal[ii]))
+            current = normalized_matrix(np.array(list(_rotate(coordinates=current, around=orthag, theta=theta))))
+            self.rotate(theta=theta, around=orthag) # compare the end vector
+        self.translate(anchor_pt)
+
+#######good script to test this fxn
+# import mbuild as mb
+# from mbuild import Lattice as L
+# lil_basis = {"Po": [[0., 0., 0.]]}
+# lil_lat = L(lattice_spacing=[1, 1, 1], lattice_points=lil_basis)
+# Po = mb.Compound(name="Po")
+# lil_dict = {"Po":Po}
+# lil_comp = lil_lat.populate(x=2, y=2, z=2, compound_dict=lil_dict)
+# pts = {(0., 0., 0.) : "c", (1., 0., 0.) : "b", (1., 1., 0.) : "a",
+#        (0., 1., 1.) : "d", (0., 1., 0.) : "e"}
+# for ii in lil_comp:
+#     if tuple(ii.pos) in pts.keys():
+#         ii.name = pts[tuple(ii.pos)]
+# from copy import deepcopy
+# cop = deepcopy(lil_comp)
+# cop.align_vector_pairs(align_these= [[1, 0,0], [0,0,1]], with_these=[[0,0,1], [1,0,0]])
+# for ii in cop:
+#     if ii.name in "abcde":
+#         print(ii.pos, ii.name)
+# print("\n")
+# for ii in lil_comp:
+#     if ii.name in "abcde":
+#         print(ii.pos, ii.name)
+# print("\n")
+
+
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------

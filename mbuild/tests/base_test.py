@@ -184,8 +184,6 @@ class BaseTest:
         return simple_comp
 
     @pytest.fixture
-<<<<<<< HEAD
-=======
     def longx_cube(self):
         from mbuild import Lattice as L
         simple_basis = {"Po": [[0., 0., 0.]]}
@@ -196,7 +194,6 @@ class BaseTest:
         return simple_comp
 
     @pytest.fixture
->>>>>>> origin/lattice_orientation1
     def chf(self):
         class CHF(mb.Compound):
             def __init__(self):
